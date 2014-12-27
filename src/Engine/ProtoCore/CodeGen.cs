@@ -150,7 +150,6 @@ namespace ProtoCore
                     core.AsmOutput = Console.Out;
                 }
             }
-
             ssaPointerList = new List<AST.AssociativeAST.AssociativeNode>();
         }
 
@@ -464,6 +463,12 @@ namespace ProtoCore
 
         }
         #endregion //   EMIT_INSTRUCTION_TO_CONSOLE
+
+        public void EmitVHDL(string code)
+        {
+            Validity.Assert(core.VhdlCore.OutputFile != null);
+            core.VhdlCore.OutputFile.Write(code);
+        }
 
         protected abstract void SetEntry();
 

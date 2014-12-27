@@ -50,7 +50,8 @@ namespace DSConsole
             ProtoFFI.DLLFFIHandler.Register(ProtoFFI.FFILanguage.CSharp, new ProtoFFI.CSModuleHelper());
             ProtoScriptTestRunner runner = new ProtoScriptTestRunner();
 
-            runner.LoadAndExecute(@"D:\jun\Research\git\DesignScriptCore\src\DSConsole\test.ds", core);
+            string vhdlTopLevelModuleName = "ProgramSynthesized";
+            runner.CompileToVHDL(vhdlTopLevelModuleName, @"D:\jun\Research\git\DesignScriptCore\src\DSConsole\test.ds", core);
 
             long ms = sw.ElapsedMilliseconds;
             sw.Stop();

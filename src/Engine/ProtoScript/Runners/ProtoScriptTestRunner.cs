@@ -315,5 +315,17 @@ namespace ProtoScript.Runners
             else
                 return null;
         }
+
+        public bool CompileToVHDL(string topLevelModule, string code, ProtoCore.Core core)
+        {
+            int blockId = ProtoCore.DSASM.Constants.kInvalidIndex;
+            bool succeeded = Compile(code, core, out blockId);
+            if (!succeeded)
+            {
+                throw new ProtoCore.Exceptions.CompileErrorsOccured();
+            }
+
+            return true;
+        }
     }
 }
