@@ -50,7 +50,7 @@ namespace DSConsole
             ProtoFFI.DLLFFIHandler.Register(ProtoFFI.FFILanguage.CSharp, new ProtoFFI.CSModuleHelper());
             ProtoScriptTestRunner runner = new ProtoScriptTestRunner();
 
-            runner.LoadAndExecute(@"test.ds", core);
+            runner.LoadAndExecute(@"D:\jun\Research\git\DesignScriptCore\src\DSConsole\test.ds", core);
 
             long ms = sw.ElapsedMilliseconds;
             sw.Stop();
