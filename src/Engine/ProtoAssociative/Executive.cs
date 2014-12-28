@@ -15,6 +15,30 @@ namespace ProtoAssociative
 		{
 		}
 
+        public override bool CompileToVHDL(ProtoCore.DSASM.CodeBlock parentBlock, ProtoCore.LanguageCodeBlock langBlock, ProtoCore.CompileTime.Context callContext, ProtoCore.AST.Node codeBlockNode = null)
+        {
+            Validity.Assert(langBlock != null);
+            bool buildSucceeded = true;
+
+            core.assocCodegen = new ProtoAssociative.CodeGen(core, callContext, parentBlock);
+
+            System.IO.MemoryStream memstream = new System.IO.MemoryStream(System.Text.Encoding.UTF8.GetBytes(langBlock.body));
+            ProtoCore.DesignScriptParser.Scanner s = new ProtoCore.DesignScriptParser.Scanner(memstream);
+            ProtoCore.DesignScriptParser.Parser p = new ProtoCore.DesignScriptParser.Parser(s, core, core.builtInsLoaded);
+            p.Parse();
+            core.builtInsLoaded = true;
+            codeBlockNode = p.root;
+
+            List<ProtoCore.AST.Node> astNodes = ProtoCore.Utils.ParserUtils.GetAstNodes(codeBlockNode);
+            core.AstNodeList = astNodes;
+
+            core.assocCodegen.EmitVHDL(codeBlockNode as ProtoCore.AST.AssociativeAST.CodeBlockNode);
+
+            buildSucceeded = core.BuildStatus.BuildSucceeded;
+            return buildSucceeded;
+
+        }
+
         public override bool Compile(out int blockId, ProtoCore.DSASM.CodeBlock parentBlock, ProtoCore.LanguageCodeBlock langBlock, ProtoCore.CompileTime.Context callContext, ProtoCore.DebugServices.EventSink sink = null, ProtoCore.AST.Node codeBlockNode = null, ProtoCore.AssociativeGraph.GraphNode graphNode = null)
         {
             Validity.Assert(langBlock != null);

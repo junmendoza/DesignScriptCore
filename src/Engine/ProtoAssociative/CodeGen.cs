@@ -3940,6 +3940,16 @@ namespace ProtoAssociative
             }
         }
 
+        /// <summary>
+        /// Emit VHDL top level module
+        /// </summary>
+        /// <param name="codeBlockNode"></param>
+        /// <returns></returns>
+        public override bool EmitVHDL(ProtoCore.AST.Node codeBlockNode)
+        {
+            return true;
+        }
+
         public override int Emit(ProtoCore.AST.Node codeBlockNode, ProtoCore.AssociativeGraph.GraphNode graphNode = null)
         {
             if (core.Options.IsDeltaExecution)

@@ -12,6 +12,11 @@ namespace ProtoImperative
 		{
 		}
 
+        public override bool CompileToVHDL(ProtoCore.DSASM.CodeBlock parentBlock, ProtoCore.LanguageCodeBlock langBlock, ProtoCore.CompileTime.Context callContext, ProtoCore.AST.Node codeBlockNode = null)
+        {
+            return true;
+        }
+
         public override bool Compile(out int blockId, ProtoCore.DSASM.CodeBlock parentBlock, ProtoCore.LanguageCodeBlock langBlock, ProtoCore.CompileTime.Context callContext, ProtoCore.DebugServices.EventSink sink, ProtoCore.AST.Node codeBlockNode, ProtoCore.AssociativeGraph.GraphNode graphNode = null)
         {
             Validity.Assert(langBlock != null);

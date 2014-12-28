@@ -44,6 +44,13 @@ namespace ProtoCore
 
     public abstract class CodeGen
     {
+        /// <summary>
+        /// Emit VHDL top level module
+        /// </summary>
+        /// <param name="codeBlockNode"></param>
+        /// <returns></returns>
+        public abstract bool EmitVHDL(ProtoCore.AST.Node codeBlockNode);
+
         protected Core core;
         protected bool emitReplicationGuide;
 
@@ -152,7 +159,6 @@ namespace ProtoCore
             }
             ssaPointerList = new List<AST.AssociativeAST.AssociativeNode>();
         }
-
 
         private ProcedureNode GetProcedureNode(int classIndex, int functionIndex)
         {
@@ -464,7 +470,7 @@ namespace ProtoCore
         }
         #endregion //   EMIT_INSTRUCTION_TO_CONSOLE
 
-        public void EmitVHDL(string code)
+        public void EmitToVHDLStream(string code)
         {
             Validity.Assert(core.VhdlCore.OutputFile != null);
             core.VhdlCore.OutputFile.Write(code);

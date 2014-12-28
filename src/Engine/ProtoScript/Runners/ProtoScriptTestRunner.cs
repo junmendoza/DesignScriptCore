@@ -316,16 +316,49 @@ namespace ProtoScript.Runners
                 return null;
         }
 
-        public bool CompileToVHDL(string topLevelModule, string code, ProtoCore.Core core)
+        public bool CompileToVHDL(string topLevelModule, string filename, ProtoCore.Core core)
         {
-            int blockId = ProtoCore.DSASM.Constants.kInvalidIndex;
-            bool succeeded = Compile(code, core, out blockId);
-            if (!succeeded)
+            System.IO.StreamReader reader = null;
+            try
             {
-                throw new ProtoCore.Exceptions.CompileErrorsOccured();
+                reader = new System.IO.StreamReader(filename, Encoding.UTF8, true);
+            }
+            catch (System.IO.IOException)
+            {
+                throw new Exception("Cannot open file " + filename);
             }
 
-            return true;
+            string strSource = reader.ReadToEnd();
+            reader.Dispose();
+
+            core.Options.RootModulePathName = ProtoCore.Utils.FileUtils.GetFullPathName(filename);
+            core.CurrentDSFileName = core.Options.RootModulePathName;
+            core.ExecMode = ProtoCore.DSASM.InterpreterMode.kNormal;
+
+            bool buildSucceeded = false;
+            try
+            {
+                //defining the global Assoc block that wraps the entire .ds source file
+                ProtoCore.LanguageCodeBlock globalBlock = new ProtoCore.LanguageCodeBlock();
+                globalBlock.language = ProtoCore.Language.kAssociative;
+                globalBlock.body = strSource;
+
+                //the wrapper block can be given a unique id to identify it as the global scope
+                globalBlock.id = ProtoCore.LanguageCodeBlock.OUTERMOST_BLOCK_ID;
+
+                //passing the global Assoc wrapper block to the compiler
+                ProtoCore.CompileTime.Context context = new ProtoCore.CompileTime.Context();
+                ProtoCore.Language id = globalBlock.language;
+                core.Executives[id].CompileToVHDL(null, globalBlock, context);
+
+                core.BuildStatus.ReportBuildResult();
+                buildSucceeded = core.BuildStatus.BuildSucceeded;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+            return buildSucceeded;
         }
     }
 }

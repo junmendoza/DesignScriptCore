@@ -4,7 +4,7 @@ namespace ProtoCore.VHDL
     // http://www.xilinx.com/itp/xilinx10/isehelp/ite_r_vhdl_reserved_words.htm
     public struct Keyword
     {
-        public const string Abs             = "abs";            //	Arithmetic operator for absolute value. Unary operator, predefined for any numeric type.  
+        public const string Abs             = "abs";            // Arithmetic operator for absolute value. Unary operator, predefined for any numeric type.  
         public const string Access          = "access";         // A variety of data type whose values are pointers to (or links to, or addresses of) dynamically-allocated objects of some other type.  
         public const string After           = "after";          // Clause used to include delay information in a signal assignment. If there is no after clause, default delay of one simulation delta is assumed.  
         public const string Alias           = "alias";          // Declares an alternate name for all or part of an existing object.  
@@ -116,7 +116,7 @@ namespace ProtoCore.VHDL
                                                                 //    wait on sensitivity_list;
                                                                 //    wait until boolean_expression;
                                                                 //    wait for time_expression;
-                                                                //  These forms can be combined:
+                                                                // These forms can be combined:
                                                                 //      wait on sensitivity_list until boolean_expression for time_expression;
 
         public const string When	            = "when";   // Used to present choices for conditional logic in a case statement.  
