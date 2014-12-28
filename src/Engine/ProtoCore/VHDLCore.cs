@@ -14,11 +14,13 @@ namespace ProtoCore.VHDL
             string path = @"..\..\ControlUnit.vhd";
             OutputFile = new StreamWriter(File.Open(path, FileMode.Create));
 
-            TopLevelModuleName = topLevelModule;
+            TopLevelModuleName = ModuleName = topLevelModule;
         }
 
         public TextWriter OutputFile { get; private set; }
         public string TopLevelModuleName { get; private set; }
+
+        public string ModuleName { get; set; }
     }
 
     public class PortEntry

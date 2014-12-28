@@ -1,3 +1,4 @@
+
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
@@ -8,3 +9,8 @@ port(
 	reset : in std_logic
 )
 end ProgramSynthesized;
+
+architecture Behavioral of ProgramSynthesized is
+
+end Behavioral;
+

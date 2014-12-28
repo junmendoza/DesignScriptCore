@@ -35,6 +35,8 @@ namespace ProtoAssociative
 
         private void VHDL_EmitHeader()
         {
+            EmitToVHDLStream("\n");
+
             // library IEEE;
             // use IEEE.STD_LOGIC_1164.ALL;
             // use IEEE.NUMERIC_STD.ALL;
@@ -86,17 +88,12 @@ namespace ProtoAssociative
             EmitToVHDLStream("\n" + ")" + "\n");
         }
 
-        private void VHDL_EmitPortEntry(ProtoCore.VHDL.PortEntry portEntry)
-        {
-            EmitToVHDLStream(portEntry.Emit());
-        }
-
         private void VHDL_EmitEntity()
         {
             EmitToVHDLStream(
                 ProtoCore.VHDL.Keyword.Entity
                 + " "
-                + core.VhdlCore.TopLevelModuleName
+                + core.VhdlCore.ModuleName
                 + " "
                 + ProtoCore.VHDL.Keyword.Is
                 + "\n"
@@ -115,11 +112,40 @@ namespace ProtoAssociative
             EmitToVHDLStream(
                ProtoCore.VHDL.Keyword.End
                + " "
-               + core.VhdlCore.TopLevelModuleName
+               + core.VhdlCore.ModuleName
                + ";"
-               + "\n"
+               + "\n\n"
                );
         }
+
+
+        private void VHDL_EmitArchitectureHeader()
+        {
+            EmitToVHDLStream(
+               ProtoCore.VHDL.Keyword.Architecture
+               + " "
+               + "Behavioral"
+               + " "
+               + ProtoCore.VHDL.Keyword.Of
+               + " "
+               + core.VhdlCore.ModuleName
+               + " "
+               + ProtoCore.VHDL.Keyword.Is
+               + "\n\n"
+               );
+        }
+
+        private void VHDL_EmitArchitectureEnd()
+        {
+            EmitToVHDLStream(
+               ProtoCore.VHDL.Keyword.End
+               + " "
+               + "Behavioral"
+               + ";"
+               + "\n\n"
+               );
+        }
+
 
         /// <summary>
         /// Emit VHDL top level module
@@ -132,7 +158,6 @@ namespace ProtoAssociative
             // Emit VHDL Header
             // Emit SSA
             // Emit Entity 
-            // Emit Architecture
             // Emit Architecture Header
             // Emit Architecture Body
             //=====================================
@@ -140,8 +165,12 @@ namespace ProtoAssociative
 
             // Emit VHDL Header
             VHDL_EmitHeader();
+
             // Emit Entity 
             VHDL_EmitEntity();
+
+            // Emit Architecture Header
+            VHDL_EmitArchitectureHeader();
 
             ProtoCore.AssociativeGraph.GraphNode graphNode = null;
 
@@ -235,6 +264,8 @@ namespace ProtoAssociative
             }
 
             core.InferedType = inferedType;
+
+            VHDL_EmitArchitectureEnd();
 
             if (core.AsmOutput != Console.Out)
             {
