@@ -18,3 +18,4 @@ bin/AnyCPU/Debug/FunctionObject.ds
 src/AssemblySharedInfoGenerator/AssemblySharedInfo.cs
 src/AssemblySharedInfoGenerator/AssemblySharedInfo.cs
 src/AssemblySharedInfoGenerator/AssemblySharedInfo.cs
+*.TMP
