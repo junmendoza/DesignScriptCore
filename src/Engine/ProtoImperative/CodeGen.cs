@@ -33,7 +33,7 @@ namespace ProtoImperative
         /// </summary>
         /// <param name="codeBlockNode"></param>
         /// <returns></returns>
-        public override bool EmitVHDL(ProtoCore.AST.Node codeBlockNode)
+        public override int VHDL_Emit(ProtoCore.AST.Node codeBlockNode)
         {
             throw new NotImplementedException();
         }

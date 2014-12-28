@@ -32,7 +32,7 @@ namespace ProtoAssociative
             List<ProtoCore.AST.Node> astNodes = ProtoCore.Utils.ParserUtils.GetAstNodes(codeBlockNode);
             core.AstNodeList = astNodes;
 
-            core.assocCodegen.EmitVHDL(codeBlockNode as ProtoCore.AST.AssociativeAST.CodeBlockNode);
+            core.assocCodegen.VHDL_Emit(codeBlockNode as ProtoCore.AST.AssociativeAST.CodeBlockNode);
 
             buildSucceeded = core.BuildStatus.BuildSucceeded;
             return buildSucceeded;

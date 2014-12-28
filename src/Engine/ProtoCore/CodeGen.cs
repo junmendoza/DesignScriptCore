@@ -49,7 +49,7 @@ namespace ProtoCore
         /// </summary>
         /// <param name="codeBlockNode"></param>
         /// <returns></returns>
-        public abstract bool EmitVHDL(ProtoCore.AST.Node codeBlockNode);
+        public abstract int VHDL_Emit(ProtoCore.AST.Node codeBlockNode);
 
         protected Core core;
         protected bool emitReplicationGuide;

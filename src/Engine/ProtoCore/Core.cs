@@ -922,25 +922,9 @@ namespace ProtoCore
         None
     }
 
-
-    public class VHDLCore
-    {
-        public VHDLCore(string topLevelModule)
-        {
-            // Setup output vhdl file
-            string path = @"D:\jun\Research\git\DesignScriptCore\src\DSConsole\ControlUnit.vhd";
-            OutputFile = new StreamWriter(File.Open(path, FileMode.Create));
-
-            TopLevelModuleName = topLevelModule;
-        }
-
-        public TextWriter OutputFile { get; private set; }
-        public string TopLevelModuleName { get; private set; }
-    }
-
     public class Core
     {
-        public VHDLCore VhdlCore { get; set; }
+        public ProtoCore.VHDL.VHDLCore VhdlCore { get; set; }
 
         #region RUNTIME_PROPERTIES
 

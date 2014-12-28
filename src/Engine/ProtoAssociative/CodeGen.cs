@@ -30,6 +30,229 @@ namespace ProtoAssociative
 
     public class CodeGen : ProtoCore.CodeGen
     {
+
+        #region VHDL_CODEGEN
+
+        private void VHDL_EmitHeader()
+        {
+            // library IEEE;
+            // use IEEE.STD_LOGIC_1164.ALL;
+            // use IEEE.NUMERIC_STD.ALL;
+            EmitToVHDLStream(
+                ProtoCore.VHDL.Keyword.Library
+                + " "
+                + "IEEE"
+                + ";"
+                + "\n"
+                );
+
+            EmitToVHDLStream(
+                ProtoCore.VHDL.Keyword.Use
+                + " "
+                + "IEEE.STD_LOGIC_1164.ALL"
+                + ";"
+                + "\n"
+                );
+
+            EmitToVHDLStream(
+                ProtoCore.VHDL.Keyword.Use
+                + " "
+                + "IEEE.NUMERIC_STD.ALL"
+                + ";"
+                + "\n"
+                );
+
+            EmitToVHDLStream("\n");
+        }
+
+        private void VHDL_EmitPortDeclaration(List<ProtoCore.VHDL.PortEntry> listPortEntry)
+        {
+            EmitToVHDLStream(
+                ProtoCore.VHDL.Keyword.Port
+                + "("
+                + " "
+                );
+
+            EmitToVHDLStream("\n\t");
+            for (int i = 0; i < listPortEntry.Count; ++i)
+            {
+                ProtoCore.VHDL.PortEntry portEntry = listPortEntry[i];
+                EmitToVHDLStream(portEntry.Emit());
+                if (i < (listPortEntry.Count - 1))
+                {
+                    EmitToVHDLStream(";\n\t");
+                }
+            }
+            EmitToVHDLStream("\n" + ")" + "\n");
+        }
+
+        private void VHDL_EmitPortEntry(ProtoCore.VHDL.PortEntry portEntry)
+        {
+            EmitToVHDLStream(portEntry.Emit());
+        }
+
+        private void VHDL_EmitEntity()
+        {
+            EmitToVHDLStream(
+                ProtoCore.VHDL.Keyword.Entity
+                + " "
+                + core.VhdlCore.TopLevelModuleName
+                + " "
+                + ProtoCore.VHDL.Keyword.Is
+                + "\n"
+                );
+
+            // Port entries
+            ProtoCore.VHDL.PortEntry clock = new ProtoCore.VHDL.PortEntry("clock", ProtoCore.VHDL.PortEntry.Direction.In, 1);
+            ProtoCore.VHDL.PortEntry reset = new ProtoCore.VHDL.PortEntry("reset", ProtoCore.VHDL.PortEntry.Direction.In, 1);
+
+            List<ProtoCore.VHDL.PortEntry> listPortEntry = new List<ProtoCore.VHDL.PortEntry>();
+            listPortEntry.Add(clock);
+            listPortEntry.Add(reset);
+
+            VHDL_EmitPortDeclaration(listPortEntry);
+
+            EmitToVHDLStream(
+               ProtoCore.VHDL.Keyword.End
+               + " "
+               + core.VhdlCore.TopLevelModuleName
+               + ";"
+               + "\n"
+               );
+        }
+
+        /// <summary>
+        /// Emit VHDL top level module
+        /// </summary>
+        /// <param name="codeBlockNode"></param>
+        /// <returns></returns>
+        public override int VHDL_Emit(ProtoCore.AST.Node codeBlockNode)
+        {
+            //=====================================
+            // Emit VHDL Header
+            // Emit SSA
+            // Emit Entity 
+            // Emit Architecture
+            // Emit Architecture Header
+            // Emit Architecture Body
+            //=====================================
+
+
+            // Emit VHDL Header
+            VHDL_EmitHeader();
+            // Emit Entity 
+            VHDL_EmitEntity();
+
+            ProtoCore.AssociativeGraph.GraphNode graphNode = null;
+
+            this.localCodeBlockNode = codeBlockNode;
+            ProtoCore.AST.AssociativeAST.CodeBlockNode codeblock = codeBlockNode as ProtoCore.AST.AssociativeAST.CodeBlockNode;
+            bool isTopBlock = null == codeBlock.parent;
+            if (!isTopBlock)
+            {
+                // If this is an inner block where there can be no classes, we can start at parsing at the global function state
+                compilePass = ProtoCore.Compiler.Associative.CompilePass.kGlobalFuncSig;
+            }
+
+            codeblock.Body = SplitMulitpleAssignment(codeblock.Body);
+
+            bool hasReturnStatement = false;
+            ProtoCore.Type inferedType = new ProtoCore.Type();
+            bool ssaTransformed = false;
+            while (ProtoCore.Compiler.Associative.CompilePass.kDone != compilePass)
+            {
+                // Emit SSA only after generating the class definitions
+                if (core.Options.GenerateSSA)
+                {
+                    if (compilePass > ProtoCore.Compiler.Associative.CompilePass.kClassName && !ssaTransformed)
+                    {
+                        if (!core.IsParsingCodeBlockNode && !core.Options.IsDeltaExecution)
+                        {
+                            //Audit class table for multiple symbol definition and emit warning.
+                            this.core.ClassTable.AuditMultipleDefinition(this.core.BuildStatus, graphNode);
+                        }
+                        codeblock.Body = BuildSSA(codeblock.Body, context);
+                        core.CachedSSANodes.Clear();
+                        core.CachedSSANodes.AddRange(codeblock.Body);
+                        ssaTransformed = true;
+                        if (core.Options.DumpIL)
+                        {
+                            CodeGenDS codegenDS = new CodeGenDS(codeblock.Body);
+                            EmitCompileLog(codegenDS.GenerateCode());
+                        }
+                    }
+                }
+
+                foreach (AssociativeNode node in codeblock.Body)
+                {
+                    inferedType = TypeSystem.BuildPrimitiveTypeObject(PrimitiveType.kTypeVar, 0);
+
+                    //
+                    // TODO Jun:    Handle stand alone language blocks
+                    //              Integrate the subPass into a proper pass
+                    //              
+                    //              **Need to take care of EmitImportNode, in which I used the same code to handle imported language block nodes - Randy
+                    //
+                    if (node is LanguageBlockNode)
+                    {
+                        // Build a binaryn node with a temporary lhs for every stand-alone language block
+                        var iNode = nodeBuilder.BuildIdentfier(core.GenerateTempLangageVar());
+                        var langBlockNode = nodeBuilder.BuildBinaryExpression(iNode, node);
+
+                        DfsTraverse(langBlockNode, ref inferedType, false, graphNode, ProtoCore.Compiler.Associative.SubCompilePass.kUnboundIdentifier);
+                    }
+                    else
+                    {
+                        DfsTraverse(node, ref inferedType, false, graphNode, ProtoCore.Compiler.Associative.SubCompilePass.kUnboundIdentifier);
+                        SetDeltaCompilePC(node);
+                    }
+
+                    if (NodeUtils.IsReturnExpressionNode(node))
+                        hasReturnStatement = true;
+                }
+
+                if (compilePass == ProtoCore.Compiler.Associative.CompilePass.kGlobalScope && !hasReturnStatement)
+                {
+                    EmitReturnNull();
+                }
+
+                compilePass++;
+
+                // We have compiled all classes
+                if (compilePass == ProtoCore.Compiler.Associative.CompilePass.kGlobalScope && isTopBlock)
+                {
+                    EmitFunctionCallToInitStaticProperty(codeblock.Body);
+                }
+
+            }
+
+            ResolveFinalNodeRefs();
+            ResolveSSADependencies();
+
+            if (codeBlock.parent == null)  // top-most langauge block
+            {
+                ResolveFunctionGroups();
+            }
+
+            core.InferedType = inferedType;
+
+            if (core.AsmOutput != Console.Out)
+            {
+                core.AsmOutput.Flush();
+            }
+
+            core.VhdlCore.OutputFile.Flush();
+
+            this.localCodeBlockNode = codeBlockNode;
+
+            // Reset the callsite guids in preparation for the next compilation
+            core.CallsiteGuidMap = new Dictionary<Guid, int>();
+
+            return codeBlock.codeBlockId;
+        }
+
+        #endregion
+
         private readonly bool ignoreRankCheck;
 
         private readonly List<AssociativeNode> astNodes;
@@ -3938,16 +4161,6 @@ namespace ProtoAssociative
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// Emit VHDL top level module
-        /// </summary>
-        /// <param name="codeBlockNode"></param>
-        /// <returns></returns>
-        public override bool EmitVHDL(ProtoCore.AST.Node codeBlockNode)
-        {
-            return true;
         }
 
         public override int Emit(ProtoCore.AST.Node codeBlockNode, ProtoCore.AssociativeGraph.GraphNode graphNode = null)

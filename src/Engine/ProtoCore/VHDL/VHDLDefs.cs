@@ -95,14 +95,14 @@ namespace ProtoCore.VHDL
         public const string False               = "false"; 	
         public const string Integer             = "integer"; 	
         public const string Array               = "array";              // A composite type in which all values belong to the same data type (e.g., string is an array of the data type character).  
-        public const string String              = "String";             // (1-dimensional array of type character)
-        public const string Bit_vector          = "Bit_vector";         // (1-dimensional array of type bit)
-        public const string Std_ulogic          = "Std_ulogic";         // (an enumerated type with the values ’U’, ’X’, ’0’, ’1’, ’Z’, ’W’, ’L’, ’H’, ’-’)
-        public const string Std_logic           = "Std_logic";          //  (same as std_ulogic except that this is a resolved type)
-        public const string Std_ulogic_vector   = "Std_ulogic_vector";  // (an array of std_ulogic)
-        public const string Std_logic_vector    = "Std_logic_vector";   // (an array of std_logic)
-        public const string Unsigned            = "Unsigned";           // (an array of std_logic)
-        public const string Signed              = "Signed";             // (an array of std_logic)
+        public const string String              = "string";             // (1-dimensional array of type character)
+        public const string Bit_vector          = "bit_vector";         // (1-dimensional array of type bit)
+        public const string Std_ulogic          = "std_ulogic";         // (an enumerated type with the values ’U’, ’X’, ’0’, ’1’, ’Z’, ’W’, ’L’, ’H’, ’-’)
+        public const string Std_logic           = "std_logic";          //  (same as std_ulogic except that this is a resolved type)
+        public const string Std_ulogic_vector   = "std_ulogic_vector";  // (an array of std_ulogic)
+        public const string Std_logic_vector    = "std_logic_vector";   // (an array of std_logic)
+        public const string Unsigned            = "unsigned";           // (an array of std_logic)
+        public const string Signed              = "signed";             // (an array of std_logic)
                                                 
 
 

@@ -318,6 +318,8 @@ namespace ProtoScript.Runners
 
         public bool CompileToVHDL(string topLevelModule, string filename, ProtoCore.Core core)
         {
+            core.VhdlCore = new ProtoCore.VHDL.VHDLCore(topLevelModule);
+
             System.IO.StreamReader reader = null;
             try
             {

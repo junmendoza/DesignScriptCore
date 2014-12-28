@@ -51,7 +51,7 @@ namespace DSConsole
             ProtoScriptTestRunner runner = new ProtoScriptTestRunner();
 
             string vhdlTopLevelModuleName = "ProgramSynthesized";
-            runner.CompileToVHDL(vhdlTopLevelModuleName, @"D:\jun\Research\git\DesignScriptCore\src\DSConsole\test.ds", core);
+            runner.CompileToVHDL(vhdlTopLevelModuleName, @"..\..\test.ds", core);
 
             long ms = sw.ElapsedMilliseconds;
             sw.Stop();
