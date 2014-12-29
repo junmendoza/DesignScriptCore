@@ -39,7 +39,7 @@ namespace ProtoAssociative
             foreach (KeyValuePair<int, SymbolNode> kvp in symbolTable.symbolList)
             {
                 ProtoCore.VHDL.AST.SignalDeclaration signalDecl = new ProtoCore.VHDL.AST.SignalDeclaration(kvp.Value.name, 32);
-                sbSignalDeclarations.Append(signalDecl.Emit());
+                sbSignalDeclarations.Append(signalDecl.ToString());
                 sbSignalDeclarations.Append('\n');
             }
             return sbSignalDeclarations.ToString();
@@ -91,7 +91,7 @@ namespace ProtoAssociative
             for (int i = 0; i < listPortEntry.Count; ++i)
             {
                 ProtoCore.VHDL.AST.PortEntry portEntry = listPortEntry[i];
-                EmitToVHDLStream(portEntry.Emit());
+                EmitToVHDLStream(portEntry.ToString());
                 if (i < (listPortEntry.Count - 1))
                 {
                     EmitToVHDLStream(";\n\t");

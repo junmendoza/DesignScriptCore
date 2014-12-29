@@ -67,7 +67,7 @@ namespace ProtoCore.VHDL
     {
         public abstract class VHDLNode
         {
-            public abstract string Emit();
+            public abstract string ToString();
         }
 
         public class PortEntry : VHDLNode
@@ -86,7 +86,7 @@ namespace ProtoCore.VHDL
                 this.BitCount = bits;
             }
 
-            public override string Emit()
+            public override string ToString()
             {
                 string dir = string.Empty;
                 if (EntryDirection == Direction.In)
@@ -137,7 +137,7 @@ namespace ProtoCore.VHDL
                 this.BitCount = bits;
             }
 
-            public override string Emit()
+            public override string ToString()
             {
                 string type = string.Empty;
                 if (BitCount == 1)
@@ -181,7 +181,7 @@ namespace ProtoCore.VHDL
                 this.VariableDeclarations = new List<VHDLNode>(varDeclaration);
             }
 
-            public override string Emit()
+            public override string ToString()
             {
                 StringBuilder proc = new StringBuilder();
                 proc.Append(ProcessName);
@@ -223,7 +223,7 @@ namespace ProtoCore.VHDL
                 {
                     for (int i = 0; i < Body.Count; ++i)
                     {
-                        proc.Append(Body[i].Emit());
+                        proc.Append(Body[i].ToString());
                         proc.Append("\n");
                     }
                 }
