@@ -785,7 +785,7 @@ public Node root { get; set; }
 		Hydrogen(out node);
 		if (!core.IsParsingPreloadedAssembly && !core.IsParsingCodeBlockNode)
 		{
-		   ProtoCore.Utils.CoreUtils.InsertPredefinedAndBuiltinMethods(core, node, builtinMethodsLoaded);
+		   //ProtoCore.Utils.CoreUtils.InsertPredefinedAndBuiltinMethods(core, node, builtinMethodsLoaded);
 		   root = node;
 		}
 		else

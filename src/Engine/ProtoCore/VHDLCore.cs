@@ -24,11 +24,19 @@ namespace ProtoCore.VHDL
         /// Sets the module name
         /// </summary>
         /// <param name="componentName"></param>
-        public void SetupFunctionCompilation(string componentName)
+        public void SetupTargetComponent(string componentName)
         {
-            string path = @"..\..\" + componentName + ".vhd";
             ModuleName = componentName;
-            MapOutputFile[ModuleName] = new StreamWriter(File.Open(path, FileMode.Create));
+            if (!MapOutputFile.ContainsKey(ModuleName))
+            {
+                string path = @"..\..\" + componentName + ".vhd";
+                MapOutputFile[ModuleName] = new StreamWriter(File.Open(path, FileMode.Create));
+            }
+        }
+
+        public void SetupTargetComponentTopLevel()
+        {
+            SetupTargetComponent(TopLevelModuleName);
         }
 
         public TextWriter GetOutputStream()

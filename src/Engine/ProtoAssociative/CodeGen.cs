@@ -144,6 +144,9 @@ namespace ProtoAssociative
                + ";"
                + "\n\n"
                );
+
+            // After emitting a module, always reset the next module to the toplevel
+            core.VhdlCore.SetupTargetComponentTopLevel();
         }
 
         private void VHDL_EmitFunctionSignature(FunctionDefinitionNode funcDefNode)
@@ -152,10 +155,16 @@ namespace ProtoAssociative
             // The function arguments are compiled to the component input signals 
             // The function arguments are compiled to the process sensitivity list
             // The function return variable is compiled into an output signal
+            core.VhdlCore.SetupTargetComponent(funcDefNode.Name);
 
-            
+            // Emit VHDL Header
+            VHDL_EmitHeader();
 
-            EmitToVHDLStream("");
+            // Emit Entity 
+            VHDL_EmitEntity();
+
+            // Emit Architecture Header
+            VHDL_EmitArchitectureHeader();
         }
 
 
@@ -6114,6 +6123,8 @@ namespace ProtoAssociative
             codeBlock.blockType = ProtoCore.DSASM.CodeBlockType.kFunction;
             if (IsParsingGlobalFunctionSig() || IsParsingMemberFunctionSig())
             {
+                VHDL_EmitFunctionSignature(funcDef);
+
                 Validity.Assert(null == localProcedure);
                 localProcedure = new ProtoCore.DSASM.ProcedureNode();
 
@@ -6344,6 +6355,7 @@ namespace ProtoAssociative
                             hasReturnStatement = true;
                     }
                     EmitCompileLogFunctionEnd();
+                    VHDL_EmitArchitectureEnd();
 
                     // All locals have been stack allocated, update the local count of this function
                     localProcedure.localCount = core.BaseOffset;
