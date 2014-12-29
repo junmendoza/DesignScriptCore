@@ -105,7 +105,6 @@ namespace ProtoCore.VHDL
                 type = 
                     ProtoCore.VHDL.Keyword.Std_logic_vector
                     + "("
-                    + " "
                     + (BitCount - 1).ToString()
                     + " "
                     + ProtoCore.VHDL.Keyword.Downto
@@ -120,6 +119,48 @@ namespace ProtoCore.VHDL
 
         public string SignalName { get; private set; }
         public Direction EntryDirection { get; private set; }
+        public int BitCount { get; private set; }
+    }
+
+    public class SignalDeclaration
+    {
+        public SignalDeclaration(string signal, int bits)
+        {
+            this.SignalName = signal;
+            this.BitCount = bits;
+        }
+
+        public string Emit()
+        {
+            string type = string.Empty;
+            if (BitCount == 1)
+            {
+                type = ProtoCore.VHDL.Keyword.Std_logic;
+            }
+            else
+            {
+                type =
+                    ProtoCore.VHDL.Keyword.Std_logic_vector
+                    + "("
+                    + (BitCount - 1).ToString()
+                    + " "
+                    + ProtoCore.VHDL.Keyword.Downto
+                    + " "
+                    + "0"
+                    + ")";
+            }
+
+            string signalDecl = 
+                ProtoCore.VHDL.Keyword.Signal 
+                + " " 
+                + SignalName 
+                + " : " 
+                + type 
+                + ";";
+            return signalDecl;
+        }
+
+        public string SignalName { get; private set; }
         public int BitCount { get; private set; }
     }
 

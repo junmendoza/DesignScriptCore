@@ -33,6 +33,18 @@ namespace ProtoAssociative
 
         #region VHDL_CODEGEN
 
+        private string VHDL_GenerateAllocatedSignals(SymbolTable symbolTable)
+        {
+            StringBuilder sbSignalDeclarations = new StringBuilder();
+            foreach (KeyValuePair<int, SymbolNode> kvp in symbolTable.symbolList)
+            {
+                ProtoCore.VHDL.SignalDeclaration signalDecl = new ProtoCore.VHDL.SignalDeclaration(kvp.Value.name, 32);
+                sbSignalDeclarations.Append(signalDecl.Emit());
+                sbSignalDeclarations.Append('\n');
+            }
+            return sbSignalDeclarations.ToString();
+        }
+
         private void VHDL_EmitHeader()
         {
             EmitToVHDLStream("\n");
@@ -110,7 +122,6 @@ namespace ProtoAssociative
                );
         }
 
-
         private void VHDL_EmitArchitectureHeader()
         {
             EmitToVHDLStream(
@@ -141,6 +152,19 @@ namespace ProtoAssociative
             core.VhdlCore.SetupTargetComponentTopLevel();
         }
 
+        private void VHDL_FinalizeComponent()
+        {
+            // Local signals
+            string signalList = VHDL_GenerateAllocatedSignals(codeBlock.symbolTable);
+            EmitToVHDLStream(signalList + "\n");
+
+            // Architecture body
+            EmitToVHDLStream(ProtoCore.VHDL.Keyword.Begin + "\n\n");
+
+            VHDL_EmitArchitectureEnd();
+            core.VhdlCore.CommitOutputStream();
+        }
+
         private void VHDL_EmitFunctionSignature(FunctionDefinitionNode funcDefNode)
         {
             // The function is compiled into a component with one process
@@ -154,9 +178,19 @@ namespace ProtoAssociative
 
 
             // Port entries
-            ProtoCore.VHDL.PortEntry reset = new ProtoCore.VHDL.PortEntry("reset", ProtoCore.VHDL.PortEntry.Direction.In, 1);
             List<ProtoCore.VHDL.PortEntry> listPortEntry = new List<ProtoCore.VHDL.PortEntry>();
+            ProtoCore.VHDL.PortEntry reset = new ProtoCore.VHDL.PortEntry("reset", ProtoCore.VHDL.PortEntry.Direction.In, 1);
             listPortEntry.Add(reset);
+
+            // Function args as port entry
+            if (null != funcDefNode.Signature)
+            {
+                foreach (VarDeclNode argNode in funcDefNode.Signature.Arguments)
+                {
+                    ProtoCore.VHDL.PortEntry portEntry = new ProtoCore.VHDL.PortEntry(argNode.NameNode.Name, ProtoCore.VHDL.PortEntry.Direction.In, 32);
+                    listPortEntry.Add(portEntry);
+                }
+            }
 
             // Emit Entity 
             VHDL_EmitEntity(listPortEntry);
@@ -292,14 +326,12 @@ namespace ProtoAssociative
 
             core.InferedType = inferedType;
 
-            VHDL_EmitArchitectureEnd();
-
             if (core.AsmOutput != Console.Out)
             {
                 core.AsmOutput.Flush();
             }
 
-            core.VhdlCore.CommitOutputStream();
+            VHDL_FinalizeComponent();
 
             this.localCodeBlockNode = codeBlockNode;
 

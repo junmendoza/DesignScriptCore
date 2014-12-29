@@ -1,4 +1,4 @@
-
+/*
 def Increment(a : int)
 {
 	t = a + 1;
@@ -7,3 +7,7 @@ def Increment(a : int)
 x = 1;
 y = Increment(x);
 z = y * 2;
+*/
+
+a = 1;
+b = 2;

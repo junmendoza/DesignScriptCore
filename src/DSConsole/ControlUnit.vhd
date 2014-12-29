@@ -12,5 +12,10 @@ end ProgramSynthesized;
 
 architecture Behavioral of ProgramSynthesized is
 
+signal a : std_logic_vector(31 downto 0);
+signal b : std_logic_vector(31 downto 0);
+
+begin
+
 end Behavioral;
 
