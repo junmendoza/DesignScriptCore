@@ -19,3 +19,7 @@ src/AssemblySharedInfoGenerator/AssemblySharedInfo.cs
 src/AssemblySharedInfoGenerator/AssemblySharedInfo.cs
 src/AssemblySharedInfoGenerator/AssemblySharedInfo.cs
 *.TMP
+src/DSConsole/ControlUnit.vhd
+src/DSConsole/Increment.vhd
+src/DSConsole/ControlUnit.vhd
+src/DSConsole/test.ds
