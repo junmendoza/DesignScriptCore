@@ -129,6 +129,13 @@ namespace ProtoCore.VHDL
     public struct Constants
     {
         public const int kInvalidIndex = -1;
+
+        public struct ProcessName
+        {
+            public const string ClockSync = "ClockSync";
+            public const string ResetSync = "ResetSync";
+            public const string Prefix = "proc";
+        }
     }
 
 }

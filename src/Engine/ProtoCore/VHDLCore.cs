@@ -63,9 +63,14 @@ namespace ProtoCore.VHDL
         public string ModuleName { get; set; }
     }
 
-    namespace Construct
+    namespace AST
     {
-        public class PortEntry
+        public abstract class VHDLNode
+        {
+            public abstract string Emit();
+        }
+
+        public class PortEntry : VHDLNode
         {
             public enum Direction
             {
@@ -81,7 +86,7 @@ namespace ProtoCore.VHDL
                 this.BitCount = bits;
             }
 
-            public string Emit()
+            public override string Emit()
             {
                 string dir = string.Empty;
                 if (EntryDirection == Direction.In)
@@ -124,7 +129,7 @@ namespace ProtoCore.VHDL
             public int BitCount { get; private set; }
         }
 
-        public class SignalDeclaration
+        public class SignalDeclaration : VHDLNode
         {
             public SignalDeclaration(string signal, int bits)
             {
@@ -132,7 +137,7 @@ namespace ProtoCore.VHDL
                 this.BitCount = bits;
             }
 
-            public string Emit()
+            public override string Emit()
             {
                 string type = string.Empty;
                 if (BitCount == 1)
@@ -166,17 +171,78 @@ namespace ProtoCore.VHDL
             public int BitCount { get; private set; }
         }
 
-        public class Process
+        public class Process : VHDLNode
         {
-            public Process(string name, List<string> sensitivityList, string body)
+            public Process(string description, int processCount, List<string> sensitivityList, List<VHDLNode> varDeclaration, List<VHDLNode> body)
             {
+                this.ProcessName = ProtoCore.VHDL.Constants.ProcessName.Prefix + "_" + processCount.ToString() + " " + description;
+                this.SensitivityList = new List<string>(sensitivityList);
+                this.Body = new List<VHDLNode>(body);
+                this.VariableDeclarations = new List<VHDLNode>(varDeclaration);
             }
 
-            public string Emit()
+            public override string Emit()
             {
+                StringBuilder proc = new StringBuilder();
+                proc.Append(ProcessName);
+                proc.Append(" : ");
+                proc.Append(ProtoCore.VHDL.Keyword.Process);
+
+                // Generate sensitivity list
+                if (SensitivityList.Count > 0)
+                {
+                    proc.Append("(");
+                    for (int i = 0; i < SensitivityList.Count; ++i)
+                    {
+                        proc.Append(SensitivityList[i]);
+                        if (i < (SensitivityList.Count - 1))
+                        {
+                            proc.Append(", ");
+                        }
+                    }
+                    proc.Append(")");
+                }
+                proc.Append("\n");
+
+                // Generate variable declaration 
+                if (VariableDeclarations.Count > 0)
+                {
+                    for (int i = 0; i < VariableDeclarations.Count; ++i)
+                    {
+                        proc.Append(VariableDeclarations[i]);
+                        proc.Append("\n");
+                    }
+                }
+                proc.Append("\n");
+
+                // Generate body
+                proc.Append(ProtoCore.VHDL.Keyword.Begin);
+                proc.Append("\n");
+
+                if (Body.Count > 0)
+                {
+                    for (int i = 0; i < Body.Count; ++i)
+                    {
+                        proc.Append(Body[i].Emit());
+                        proc.Append("\n");
+                    }
+                }
+                proc.Append("\n");
+
+                proc.Append("\n");
+                proc.Append(ProtoCore.VHDL.Keyword.End);
+                proc.Append(" ");
+                proc.Append(ProtoCore.VHDL.Keyword.Process);
+                proc.Append(ProcessName);
+                proc.Append(ProtoCore.VHDL.Keyword.Process);
+                proc.Append(";");
                 return string.Empty;
             }
 
+            public string ProcessName { get; private set; }
+            public List<string> SensitivityList { get; private set; }
+            public List<VHDLNode> VariableDeclarations { get; private set; }
+            public List<VHDLNode> Body { get; private set; }
         }
     }
 }
