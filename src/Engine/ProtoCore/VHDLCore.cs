@@ -63,105 +63,120 @@ namespace ProtoCore.VHDL
         public string ModuleName { get; set; }
     }
 
-    public class PortEntry
+    namespace Construct
     {
-        public enum Direction
+        public class PortEntry
         {
-            In,
-            Out,
-            InOut
+            public enum Direction
+            {
+                In,
+                Out,
+                InOut
+            }
+
+            public PortEntry(string signal, Direction direction, int bits)
+            {
+                this.SignalName = signal;
+                this.EntryDirection = direction;
+                this.BitCount = bits;
+            }
+
+            public string Emit()
+            {
+                string dir = string.Empty;
+                if (EntryDirection == Direction.In)
+                {
+                    dir = ProtoCore.VHDL.Keyword.In;
+                }
+                else if (EntryDirection == Direction.In)
+                {
+                    dir = ProtoCore.VHDL.Keyword.Out;
+                }
+                else
+                {
+                    dir = ProtoCore.VHDL.Keyword.Inout;
+                }
+
+                string type = string.Empty;
+                if (BitCount == 1)
+                {
+                    type = ProtoCore.VHDL.Keyword.Std_logic;
+                }
+                else
+                {
+                    type =
+                        ProtoCore.VHDL.Keyword.Std_logic_vector
+                        + "("
+                        + (BitCount - 1).ToString()
+                        + " "
+                        + ProtoCore.VHDL.Keyword.Downto
+                        + " "
+                        + "0"
+                        + ")";
+                }
+
+                string entry = SignalName + " : " + dir + " " + type;
+                return entry;
+            }
+
+            public string SignalName { get; private set; }
+            public Direction EntryDirection { get; private set; }
+            public int BitCount { get; private set; }
         }
 
-        public PortEntry(string signal, Direction direction, int bits)
+        public class SignalDeclaration
         {
-            this.SignalName = signal;
-            this.EntryDirection = direction;
-            this.BitCount = bits;
-        }
-
-        public string Emit()
-        {
-            string dir =  string.Empty;
-            if (EntryDirection == Direction.In)
+            public SignalDeclaration(string signal, int bits)
             {
-                dir = ProtoCore.VHDL.Keyword.In;
-            }
-            else if (EntryDirection == Direction.In)
-            {
-                dir = ProtoCore.VHDL.Keyword.Out;
-            }
-            else
-            {
-                dir = ProtoCore.VHDL.Keyword.Inout;
+                this.SignalName = signal;
+                this.BitCount = bits;
             }
 
-            string type = string.Empty;
-            if (BitCount == 1)
+            public string Emit()
             {
-                type = ProtoCore.VHDL.Keyword.Std_logic;
-            }
-            else
-            {
-                type = 
-                    ProtoCore.VHDL.Keyword.Std_logic_vector
-                    + "("
-                    + (BitCount - 1).ToString()
+                string type = string.Empty;
+                if (BitCount == 1)
+                {
+                    type = ProtoCore.VHDL.Keyword.Std_logic;
+                }
+                else
+                {
+                    type =
+                        ProtoCore.VHDL.Keyword.Std_logic_vector
+                        + "("
+                        + (BitCount - 1).ToString()
+                        + " "
+                        + ProtoCore.VHDL.Keyword.Downto
+                        + " "
+                        + "0"
+                        + ")";
+                }
+
+                string signalDecl =
+                    ProtoCore.VHDL.Keyword.Signal
                     + " "
-                    + ProtoCore.VHDL.Keyword.Downto
-                    + " "
-                    + "0"
-                    + ")";
+                    + SignalName
+                    + " : "
+                    + type
+                    + ";";
+                return signalDecl;
             }
 
-            string entry = SignalName + " : " + dir + " " + type;
-            return entry;        
+            public string SignalName { get; private set; }
+            public int BitCount { get; private set; }
         }
 
-        public string SignalName { get; private set; }
-        public Direction EntryDirection { get; private set; }
-        public int BitCount { get; private set; }
+        public class Process
+        {
+            public Process(string name, List<string> sensitivityList, string body)
+            {
+            }
+
+            public string Emit()
+            {
+                return string.Empty;
+            }
+
+        }
     }
-
-    public class SignalDeclaration
-    {
-        public SignalDeclaration(string signal, int bits)
-        {
-            this.SignalName = signal;
-            this.BitCount = bits;
-        }
-
-        public string Emit()
-        {
-            string type = string.Empty;
-            if (BitCount == 1)
-            {
-                type = ProtoCore.VHDL.Keyword.Std_logic;
-            }
-            else
-            {
-                type =
-                    ProtoCore.VHDL.Keyword.Std_logic_vector
-                    + "("
-                    + (BitCount - 1).ToString()
-                    + " "
-                    + ProtoCore.VHDL.Keyword.Downto
-                    + " "
-                    + "0"
-                    + ")";
-            }
-
-            string signalDecl = 
-                ProtoCore.VHDL.Keyword.Signal 
-                + " " 
-                + SignalName 
-                + " : " 
-                + type 
-                + ";";
-            return signalDecl;
-        }
-
-        public string SignalName { get; private set; }
-        public int BitCount { get; private set; }
-    }
-
 }
