@@ -146,6 +146,18 @@ namespace ProtoAssociative
                );
         }
 
+        private void VHDL_EmitFunctionSignature(FunctionDefinitionNode funcDefNode)
+        {
+            // The function is compiled into a component with one process
+            // The function arguments are compiled to the component input signals 
+            // The function arguments are compiled to the process sensitivity list
+            // The function return variable is compiled into an output signal
+
+            
+
+            EmitToVHDLStream("");
+        }
+
 
         /// <summary>
         /// Emit VHDL top level module
@@ -272,7 +284,7 @@ namespace ProtoAssociative
                 core.AsmOutput.Flush();
             }
 
-            core.VhdlCore.OutputFile.Flush();
+            core.VhdlCore.CommitOutputStream();
 
             this.localCodeBlockNode = codeBlockNode;
 

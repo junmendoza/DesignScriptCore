@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using ProtoCore.Utils;
 
 namespace ProtoCore.VHDL
 {
@@ -10,14 +11,45 @@ namespace ProtoCore.VHDL
     {
         public VHDLCore(string topLevelModule)
         {
+            MapOutputFile = new Dictionary<string, TextWriter>();
+
             // Setup output vhdl file
             string path = @"..\..\ControlUnit.vhd";
-            OutputFile = new StreamWriter(File.Open(path, FileMode.Create));
-
             TopLevelModuleName = ModuleName = topLevelModule;
+            MapOutputFile[ModuleName] = new StreamWriter(File.Open(path, FileMode.Create));
         }
 
-        public TextWriter OutputFile { get; private set; }
+        /// <summary>
+        /// Creates the target output vhdl file stream
+        /// Sets the module name
+        /// </summary>
+        /// <param name="componentName"></param>
+        public void SetupFunctionCompilation(string componentName)
+        {
+            string path = @"..\..\" + componentName + ".vhd";
+            ModuleName = componentName;
+            MapOutputFile[ModuleName] = new StreamWriter(File.Open(path, FileMode.Create));
+        }
+
+        public TextWriter GetOutputStream()
+        {
+            Validity.Assert(MapOutputFile.Count > 0);
+            Validity.Assert(MapOutputFile[ModuleName] != null);
+            return MapOutputFile[ModuleName];
+        }
+
+        /// <summary>
+        /// Saves the destination vhdl files by flushing the output streams
+        /// </summary>
+        public void CommitOutputStream()
+        {
+            foreach (var kvp in MapOutputFile)
+            {
+                kvp.Value.Flush();
+            }
+        }
+
+        public Dictionary<string, TextWriter> MapOutputFile { get; private set; }
         public string TopLevelModuleName { get; private set; }
 
         public string ModuleName { get; set; }

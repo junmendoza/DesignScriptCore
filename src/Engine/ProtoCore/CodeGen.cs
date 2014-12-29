@@ -472,8 +472,7 @@ namespace ProtoCore
 
         public void EmitToVHDLStream(string code)
         {
-            Validity.Assert(core.VhdlCore.OutputFile != null);
-            core.VhdlCore.OutputFile.Write(code);
+            core.VhdlCore.GetOutputStream().Write(code);
         }
 
         protected abstract void SetEntry();
