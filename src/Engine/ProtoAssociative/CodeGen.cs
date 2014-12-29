@@ -88,7 +88,7 @@ namespace ProtoAssociative
             EmitToVHDLStream("\n" + ")" + "\n");
         }
 
-        private void VHDL_EmitEntity()
+        private void VHDL_EmitEntity(List<ProtoCore.VHDL.PortEntry> listPortEntry)
         {
             EmitToVHDLStream(
                 ProtoCore.VHDL.Keyword.Entity
@@ -98,14 +98,6 @@ namespace ProtoAssociative
                 + ProtoCore.VHDL.Keyword.Is
                 + "\n"
                 );
-
-            // Port entries
-            ProtoCore.VHDL.PortEntry clock = new ProtoCore.VHDL.PortEntry("clock", ProtoCore.VHDL.PortEntry.Direction.In, 1);
-            ProtoCore.VHDL.PortEntry reset = new ProtoCore.VHDL.PortEntry("reset", ProtoCore.VHDL.PortEntry.Direction.In, 1);
-
-            List<ProtoCore.VHDL.PortEntry> listPortEntry = new List<ProtoCore.VHDL.PortEntry>();
-            listPortEntry.Add(clock);
-            listPortEntry.Add(reset);
 
             VHDL_EmitPortDeclaration(listPortEntry);
 
@@ -160,8 +152,14 @@ namespace ProtoAssociative
             // Emit VHDL Header
             VHDL_EmitHeader();
 
+
+            // Port entries
+            ProtoCore.VHDL.PortEntry reset = new ProtoCore.VHDL.PortEntry("reset", ProtoCore.VHDL.PortEntry.Direction.In, 1);
+            List<ProtoCore.VHDL.PortEntry> listPortEntry = new List<ProtoCore.VHDL.PortEntry>();
+            listPortEntry.Add(reset);
+
             // Emit Entity 
-            VHDL_EmitEntity();
+            VHDL_EmitEntity(listPortEntry);
 
             // Emit Architecture Header
             VHDL_EmitArchitectureHeader();
@@ -187,8 +185,16 @@ namespace ProtoAssociative
             // Emit VHDL Header
             VHDL_EmitHeader();
 
+            // Port entries
+            ProtoCore.VHDL.PortEntry clock = new ProtoCore.VHDL.PortEntry("clock", ProtoCore.VHDL.PortEntry.Direction.In, 1);
+            ProtoCore.VHDL.PortEntry reset = new ProtoCore.VHDL.PortEntry("reset", ProtoCore.VHDL.PortEntry.Direction.In, 1);
+
+            List<ProtoCore.VHDL.PortEntry> listPortEntry = new List<ProtoCore.VHDL.PortEntry>();
+            listPortEntry.Add(clock);
+            listPortEntry.Add(reset);
+
             // Emit Entity 
-            VHDL_EmitEntity();
+            VHDL_EmitEntity(listPortEntry);
 
             // Emit Architecture Header
             VHDL_EmitArchitectureHeader();
