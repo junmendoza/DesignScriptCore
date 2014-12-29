@@ -162,7 +162,6 @@ namespace ProtoAssociative
             EmitToVHDLStream(ProtoCore.VHDL.Keyword.Begin + "\n\n");
 
             VHDL_EmitArchitectureEnd();
-            core.VhdlCore.CommitOutputStream();
         }
 
         private void VHDL_EmitFunctionSignature(FunctionDefinitionNode funcDefNode)
@@ -332,6 +331,7 @@ namespace ProtoAssociative
             }
 
             VHDL_FinalizeComponent();
+            core.VhdlCore.CommitOutputStream();
 
             this.localCodeBlockNode = codeBlockNode;
 
@@ -6392,8 +6392,10 @@ namespace ProtoAssociative
                         if (NodeUtils.IsReturnExpressionNode(bnode))
                             hasReturnStatement = true;
                     }
+
                     EmitCompileLogFunctionEnd();
-                    VHDL_EmitArchitectureEnd();
+
+                    VHDL_FinalizeComponent();
 
                     // All locals have been stack allocated, update the local count of this function
                     localProcedure.localCount = core.BaseOffset;
