@@ -23,3 +23,15 @@ src/DSConsole/ControlUnit.vhd
 src/DSConsole/Increment.vhd
 src/DSConsole/ControlUnit.vhd
 src/DSConsole/test.ds
+*.cmd_log
+*.xreport
+*.prj
+*.html
+*.lso
+*.gise
+*.xrpt
+*.ref
+*.xmsgs
+*.vho
+*.xst
+*.syr

@@ -26,7 +26,7 @@ namespace ProtoCore.VHDL
                     portList.Append(";\n\t");
                 }
             }
-            portList.Append("\n" + ")" + "\n");
+            portList.Append("\n" + ");" + "\n");
             return portList.ToString();
         }
 

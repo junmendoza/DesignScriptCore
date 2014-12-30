@@ -18,7 +18,7 @@ namespace ProtoCore.VHDL.AST
             this.Name = moduleName;
 
             // Setup output vhdl file
-            string path = @"..\..\" + this.Name + ".vhd";
+            string path = @"..\..\..\DSAccelerate\" + this.Name + ".vhd";
             OutputFile = new StreamWriter(File.Open(path, FileMode.Create));
 
             LibraryList = new List<LibraryNode>();
