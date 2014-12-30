@@ -185,6 +185,10 @@ namespace ProtoCore.VHDL.AST
             sbModule.Append(sbArchitectureEnd);
             sbModule.Append('\n');
 
+            // TODO Jun: Temp vars in DS are assigned with '%' at codegen
+            // Handle this here for now.
+            sbModule = sbModule.Replace("%tSSA_", "tSSA_");
+
             return sbModule.ToString();
         }
 
