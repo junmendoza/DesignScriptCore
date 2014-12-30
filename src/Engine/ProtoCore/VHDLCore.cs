@@ -79,10 +79,137 @@ namespace ProtoCore.VHDL
 
             public override string ToString()
             {
-                return string.Empty;
+                //==============================
+                // Library import
+                //==============================
+                StringBuilder sbLibrary = new StringBuilder();
+                foreach (LibraryNode node in LibraryList)
+                {
+                    sbLibrary.Append(node.ToString());
+                    sbLibrary.Append("\n");
+                }
+
+                //==============================
+                // Use modules
+                //==============================
+                StringBuilder sbUseModules = new StringBuilder();
+                foreach (UseNode node in UseNodeList)
+                {
+                    sbUseModules.Append(node.ToString());
+                    sbUseModules.Append("\n");
+                }
+
+                //==============================
+                // Entity decl
+                //==============================
+                StringBuilder sbEntity = new StringBuilder();
+                sbEntity.Append(Entity.ToString());
+
+                //==============================
+                // Architecture decl
+                //==============================
+                StringBuilder sbArchitectureDecl = new StringBuilder();
+                sbArchitectureDecl.Append(ProtoCore.VHDL.Keyword.Architecture);
+                sbArchitectureDecl.Append(" ");
+                sbArchitectureDecl.Append("Behavioral");
+                sbArchitectureDecl.Append(" ");
+                sbArchitectureDecl.Append(ProtoCore.VHDL.Keyword.Of);
+                sbArchitectureDecl.Append(" ");
+                sbArchitectureDecl.Append(Name);
+                sbArchitectureDecl.Append(" ");
+                sbArchitectureDecl.Append(ProtoCore.VHDL.Keyword.Is);
+
+                //==============================
+                // Signal list
+                //==============================
+                StringBuilder sbSignalList = new StringBuilder();
+                foreach (SignalDeclarationNode node in SignalDeclarationList)
+                {
+                    sbSignalList.Append(node.ToString());
+                    sbSignalList.Append("\n");
+                }
+
+                //==============================
+                // Component list
+                //==============================
+                StringBuilder sbComponents = new StringBuilder();
+                foreach (ComponentNode node in ComponentList)
+                {
+                    sbComponents.Append(node.ToString());
+                    sbComponents.Append("\n");
+                }
+
+                //==============================
+                // Architecture begin
+                //==============================
+                StringBuilder sbArchitectureBegin = new StringBuilder();
+                sbArchitectureBegin.Append(ProtoCore.VHDL.Keyword.Begin);
+
+                //==============================
+                // Portmap list
+                //==============================
+                StringBuilder sbPortMap = new StringBuilder(); 
+                foreach (PortMapNode node in PortMapList)
+                {
+                    sbPortMap.Append(node.ToString());
+                    sbPortMap.Append("\n");
+                }
+
+                //==============================
+                // Process list
+                //==============================
+                StringBuilder sbProcess = new StringBuilder();
+                foreach (ProcessNode node in ProcessList)
+                {
+                    sbProcess.Append(node.ToString());
+                    sbProcess.Append("\n");
+                }
+
+                //==============================
+                // Architecture end
+                //==============================
+                StringBuilder sbArchitectureEnd = new StringBuilder();
+                sbArchitectureEnd.Append(ProtoCore.VHDL.Keyword.End);
+                sbArchitectureEnd.Append(" ");
+                sbArchitectureEnd.Append("Behavioral");
+                sbArchitectureEnd.Append(";");
+
+                
+                StringBuilder sbModule = new StringBuilder();
+                sbModule.Append(sbLibrary);
+                sbModule.Append('\n');
+                sbModule.Append(sbUseModules);
+                sbModule.Append('\n');
+                sbModule.Append(sbEntity);
+                sbModule.Append('\n');
+                sbModule.Append(sbArchitectureDecl);
+                sbModule.Append('\n');
+                sbModule.Append(sbSignalList);
+                sbModule.Append('\n');
+                sbModule.Append(sbComponents);
+                sbModule.Append('\n');
+                sbModule.Append(sbArchitectureBegin);
+                sbModule.Append('\n');
+                sbModule.Append(sbPortMap);
+                sbModule.Append('\n');
+                sbModule.Append(sbProcess);
+                sbModule.Append('\n');
+                sbModule.Append(sbArchitectureEnd);
+                sbModule.Append('\n');
+
+                return sbModule.ToString();
             }
 
             public string Name { get; private set; }
+
+            public List<LibraryNode> LibraryList { get; private set; }
+            public List<UseNode> UseNodeList { get; private set; }
+            public EntityNode Entity { get; private set; }
+            public List<SignalDeclarationNode> SignalDeclarationList { get; private set; }
+            public List<ComponentNode> ComponentList { get; private set; }
+            public List<PortMapNode> PortMapList { get; private set; }
+            public List<ProcessNode> ProcessList { get; private set; }
+
             public TextWriter OutputFile { get; private set; }
         }
 
@@ -155,7 +282,41 @@ namespace ProtoCore.VHDL
                 entity.Append(" ");
                 entity.Append(Name);
                 entity.Append(";");
-                entity.Append("\n\n");
+
+                return entity.ToString();
+            }
+
+            public List<PortEntryNode> PortEntryList { get; private set; }
+            public string Name { get; private set; }
+        }
+
+        public class ComponentNode : VHDLNode
+        {
+            public ComponentNode(string name, List<PortEntryNode> portEntryList)
+            {
+                this.Name = name;
+                this.PortEntryList = new List<PortEntryNode>(portEntryList);
+            }
+
+            public override string ToString()
+            {
+                StringBuilder entity = new StringBuilder();
+
+                entity.Append(ProtoCore.VHDL.Keyword.Component);
+                entity.Append(" ");
+                entity.Append(Name);
+                entity.Append(" ");
+                entity.Append(ProtoCore.VHDL.Keyword.Is);
+                entity.Append("\n");
+
+                entity.Append(ProtoCore.VHDL.Utils.GeneratePortList(PortEntryList));
+
+                entity.Append(ProtoCore.VHDL.Keyword.End);
+                entity.Append(" ");
+                entity.Append(ProtoCore.VHDL.Keyword.Component);
+                entity.Append(" ");
+                entity.Append(Name);
+                entity.Append(";");
 
                 return entity.ToString();
             }
@@ -263,6 +424,21 @@ namespace ProtoCore.VHDL
 
             public string SignalName { get; private set; }
             public int BitCount { get; private set; }
+        }
+
+        public class PortMapNode : VHDLNode
+        {
+            public PortMapNode(string name)
+            {
+                this.Name = name;
+            }
+
+            public override string ToString()
+            {
+                StringBuilder portmap = new StringBuilder();
+                return portmap.ToString();
+            }
+            public string Name { get; private set; }
         }
 
         public class ProcessNode : VHDLNode
