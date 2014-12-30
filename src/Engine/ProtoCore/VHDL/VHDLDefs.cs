@@ -130,13 +130,14 @@ namespace ProtoCore.VHDL
     {
         public const int kInvalidIndex = -1;
         public const string kSignalAssignSymbol = "<=";
+        public const string ExecutionStartFlagName = "execution_started";
 
-        public struct ProcessName
-        {
-            public const string ClockSync = "ClockSync";
-            public const string ResetSync = "ResetSync";
-            public const string Prefix = "proc";
-        }
+        public const string ClockSync = "ClockSync";
+        public const string ResetSync = "ResetSync";
+        public const string RisingEdge = "rising_edge";
+        public const string ClockSignalName = "clock";
+        public const string ResetSignalName = "reset";
+        public const string ProcessPrefix = "proc";
     }
 
 }

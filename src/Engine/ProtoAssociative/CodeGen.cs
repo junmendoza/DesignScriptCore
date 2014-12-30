@@ -240,6 +240,104 @@ namespace ProtoAssociative
             topModule.Entity = entity;
 
 
+            // Auto generated signals
+            ProtoCore.VHDL.AST.SignalDeclarationNode execFlag = 
+                new ProtoCore.VHDL.AST.SignalDeclarationNode(ProtoCore.VHDL.Constants.ExecutionStartFlagName, 1);
+
+            // execution_started <= '0'
+            ProtoCore.VHDL.AST.AssignmentNode execStartFlagSet0 = new ProtoCore.VHDL.AST.AssignmentNode(
+                new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.ExecutionStartFlagName),
+                new ProtoCore.VHDL.AST.BitStringNode(0)
+                );
+            
+            // execution_started <= '1'
+            ProtoCore.VHDL.AST.AssignmentNode execStartFlagSet1 = new ProtoCore.VHDL.AST.AssignmentNode(
+                new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.ExecutionStartFlagName),
+                new ProtoCore.VHDL.AST.BitStringNode(1)
+                );
+
+            //===============================
+            // Entry process
+            //===============================
+
+
+            // ExecutionLogic ifstmt
+            //
+            //  if execution_started = '0' then
+            //      execution_started <= '1';
+            //      x <= X"00000001"; -- 1
+            //  end if; 
+            ProtoCore.VHDL.AST.IfNode executionBodyIf = new ProtoCore.VHDL.AST.IfNode();
+            executionBodyIf.IfExpr = new ProtoCore.VHDL.AST.BinaryExpressionNode(
+                new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.ExecutionStartFlagName),
+                new ProtoCore.VHDL.AST.BitStringNode(0),
+                ProtoCore.VHDL.AST.BinaryExpressionNode.Operator.Eq
+                );
+
+            // ExecutionLogic body
+            List<ProtoCore.VHDL.AST.VHDLNode> execLogicBody = new List<ProtoCore.VHDL.AST.VHDLNode>();
+            execLogicBody.Add(execStartFlagSet1);
+
+            // rising_edge call
+            List<ProtoCore.VHDL.AST.VHDLNode> argList = new List<ProtoCore.VHDL.AST.VHDLNode>();
+            argList.Add(new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.ClockSignalName));
+            ProtoCore.VHDL.AST.FunctionCallNode clockedgeCall = new ProtoCore.VHDL.AST.FunctionCallNode(
+                ProtoCore.VHDL.Constants.RisingEdge,
+                argList
+                );
+                
+            // clock sync ifstmt
+            ProtoCore.VHDL.AST.IfNode clockIf = new ProtoCore.VHDL.AST.IfNode(ProtoCore.VHDL.Constants.ClockSync);
+            clockIf.IfExpr = clockedgeCall;
+            clockIf.IfBody = execLogicBody;
+
+            // Reset sync ifstmt
+            ProtoCore.VHDL.AST.IfNode resetSyncIf = new ProtoCore.VHDL.AST.IfNode(ProtoCore.VHDL.Constants.ResetSync);
+            resetSyncIf.IfExpr = new ProtoCore.VHDL.AST.BinaryExpressionNode(
+                new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.ResetSignalName),
+                new ProtoCore.VHDL.AST.BitStringNode(1),
+                ProtoCore.VHDL.AST.BinaryExpressionNode.Operator.Eq
+                );
+
+            resetSyncIf.ElsifExpr = new ProtoCore.VHDL.AST.BinaryExpressionNode(
+                new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.ResetSignalName),
+                new ProtoCore.VHDL.AST.BitStringNode(0),
+                ProtoCore.VHDL.AST.BinaryExpressionNode.Operator.Eq
+                );
+
+            // Reset sync if body (reset = 1)
+            List<ProtoCore.VHDL.AST.VHDLNode> resetBody1 = new List<ProtoCore.VHDL.AST.VHDLNode>();
+            resetBody1.Add(execStartFlagSet0);
+            resetSyncIf.IfBody = resetBody1;
+
+            // Reset sync elsif body (reset = 0)
+            List<ProtoCore.VHDL.AST.VHDLNode> resetBody0 = new List<ProtoCore.VHDL.AST.VHDLNode>();
+            resetBody0.Add(clockIf);
+            resetSyncIf.ElsifBody = resetBody0;
+
+
+            // Process Body
+            List<ProtoCore.VHDL.AST.VHDLNode> processBody = new List<ProtoCore.VHDL.AST.VHDLNode>();
+            processBody.Add(resetSyncIf);
+
+            // Process variable declaration
+            List<ProtoCore.VHDL.AST.VHDLNode> variableDeclList = new List<ProtoCore.VHDL.AST.VHDLNode>();
+
+            // Sensitivity
+            List<string> sensitivityList = new List<string>();
+            sensitivityList.Add(ProtoCore.VHDL.Constants.ClockSignalName);
+
+            // Entry Process
+            ProtoCore.VHDL.AST.ProcessNode entryProcess = new ProtoCore.VHDL.AST.ProcessNode(
+                core.VhdlCore.TopLevelModuleName,
+                topModule.GetProcessCount() + 1,
+                sensitivityList,
+                variableDeclList,
+                processBody
+                );
+            topModule.ProcessList.Add(entryProcess);
+
+            
             ProtoCore.AssociativeGraph.GraphNode graphNode = null;
 
             this.localCodeBlockNode = codeBlockNode;
@@ -338,7 +436,7 @@ namespace ProtoAssociative
                 core.AsmOutput.Flush();
             }
 
-            topModule.SignalDeclarationList = ProtoCore.VHDL.Utils.GenerateSignalsDeclarationList(codeBlock.symbolTable);
+            topModule.SignalDeclarationList.AddRange(ProtoCore.VHDL.Utils.GenerateSignalsDeclarationList(codeBlock.symbolTable));
             core.VhdlCore.EmitModulesToFile();
 
             this.localCodeBlockNode = codeBlockNode;

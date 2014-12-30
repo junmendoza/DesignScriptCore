@@ -21,13 +21,13 @@ namespace ProtoCore.VHDL.AST
             string path = @"..\..\" + this.Name + ".vhd";
             OutputFile = new StreamWriter(File.Open(path, FileMode.Create));
 
-            LibraryList = null;
-            UseNodeList = null;
+            LibraryList = new List<LibraryNode>();
+            UseNodeList = new List<UseNode>();
             Entity = null;
-            SignalDeclarationList = null;
-            ComponentList = null;
-            PortMapList = null;
-            ProcessList = null;
+            SignalDeclarationList = new List<SignalDeclarationNode>();
+            ComponentList = new List<ComponentNode>();
+            PortMapList = new List<PortMapNode>();
+            ProcessList = new List<ProcessNode>();
         }
 
         public void Emit()
@@ -36,13 +36,18 @@ namespace ProtoCore.VHDL.AST
             OutputFile.Write(ToString());
         }
 
+        public int GetProcessCount()
+        {
+            return ProcessList.Count;
+        }
+
         public override string ToString()
         {
             //==============================
             // Library import
             //==============================
             StringBuilder sbLibrary = new StringBuilder();
-            if (LibraryList != null)
+            if (LibraryList.Count > 0)
             {
                 foreach (LibraryNode node in LibraryList)
                 {
@@ -55,7 +60,7 @@ namespace ProtoCore.VHDL.AST
             // Use modules
             //==============================
             StringBuilder sbUseModules = new StringBuilder();
-            if (UseNodeList != null)
+            if (UseNodeList.Count > 0)
             {
                 foreach (UseNode node in UseNodeList)
                 {
@@ -91,7 +96,7 @@ namespace ProtoCore.VHDL.AST
             // Signal list
             //==============================
             StringBuilder sbSignalList = new StringBuilder();
-            if (SignalDeclarationList != null)
+            if (SignalDeclarationList.Count > 0)
             {
                 foreach (SignalDeclarationNode node in SignalDeclarationList)
                 {
@@ -104,7 +109,7 @@ namespace ProtoCore.VHDL.AST
             // Component list
             //==============================
             StringBuilder sbComponents = new StringBuilder();
-            if (ComponentList != null)
+            if (ComponentList.Count > 0)
             {
                 foreach (ComponentNode node in ComponentList)
                 {
@@ -123,7 +128,7 @@ namespace ProtoCore.VHDL.AST
             // Portmap list
             //==============================
             StringBuilder sbPortMap = new StringBuilder();
-            if (PortMapList != null)
+            if (PortMapList.Count > 0)
             {
                 foreach (PortMapNode node in PortMapList)
                 {
@@ -136,7 +141,7 @@ namespace ProtoCore.VHDL.AST
             // Process list
             //==============================
             StringBuilder sbProcess = new StringBuilder();
-            if (ProcessList != null)
+            if (ProcessList.Count > 0)
             {
                 foreach (ProcessNode node in ProcessList)
                 {
@@ -425,7 +430,7 @@ namespace ProtoCore.VHDL.AST
     {
         public ProcessNode(string description, int processCount, List<string> sensitivityList, List<VHDLNode> varDeclaration, List<VHDLNode> body)
         {
-            this.ProcessName = ProtoCore.VHDL.Constants.ProcessName.Prefix + "_" + processCount.ToString() + " " + description;
+            this.ProcessName = ProtoCore.VHDL.Constants.ProcessPrefix + "_" + processCount.ToString() + "_" + description;
             this.SensitivityList = new List<string>(sensitivityList);
             this.Body = new List<VHDLNode>(body);
             this.VariableDeclarations = new List<VHDLNode>(varDeclaration);
@@ -433,60 +438,73 @@ namespace ProtoCore.VHDL.AST
 
         public override string ToString()
         {
-            StringBuilder proc = new StringBuilder();
-            proc.Append(ProcessName);
-            proc.Append(" : ");
-            proc.Append(ProtoCore.VHDL.Keyword.Process);
+            StringBuilder processStart = new StringBuilder();
+            processStart.Append(ProcessName);
+            processStart.Append(" : ");
+            processStart.Append(ProtoCore.VHDL.Keyword.Process);
 
             // Generate sensitivity list
             if (SensitivityList.Count > 0)
             {
-                proc.Append("(");
+                processStart.Append("(");
                 for (int i = 0; i < SensitivityList.Count; ++i)
                 {
-                    proc.Append(SensitivityList[i]);
+                    processStart.Append(SensitivityList[i]);
                     if (i < (SensitivityList.Count - 1))
                     {
-                        proc.Append(", ");
+                        processStart.Append(", ");
                     }
                 }
-                proc.Append(")");
+                processStart.Append(")");
             }
-            proc.Append("\n");
 
             // Generate variable declaration 
+            StringBuilder processVarDecl = new StringBuilder();
             if (VariableDeclarations.Count > 0)
             {
                 for (int i = 0; i < VariableDeclarations.Count; ++i)
                 {
-                    proc.Append(VariableDeclarations[i]);
-                    proc.Append("\n");
+                    processVarDecl.Append(VariableDeclarations[i]);
+                    processVarDecl.Append("\n");
                 }
             }
-            proc.Append("\n");
+
 
             // Generate body
-            proc.Append(ProtoCore.VHDL.Keyword.Begin);
-            proc.Append("\n");
+            StringBuilder processBody = new StringBuilder();
+            processBody.Append(ProtoCore.VHDL.Keyword.Begin);
+            processBody.Append("\n");
 
             if (Body.Count > 0)
             {
+            
                 for (int i = 0; i < Body.Count; ++i)
                 {
-                    proc.Append(Body[i].ToString());
-                    proc.Append("\n");
+                    processBody.Append(Body[i].ToString());
+                    processBody.Append("\n");
                 }
             }
-            proc.Append("\n");
 
-            proc.Append("\n");
-            proc.Append(ProtoCore.VHDL.Keyword.End);
-            proc.Append(" ");
-            proc.Append(ProtoCore.VHDL.Keyword.Process);
-            proc.Append(ProcessName);
-            proc.Append(ProtoCore.VHDL.Keyword.Process);
-            proc.Append(";");
-            return string.Empty;
+            StringBuilder processEnd = new StringBuilder();
+            processEnd.Append("\n");
+            processEnd.Append(ProtoCore.VHDL.Keyword.End);
+            processEnd.Append(" ");
+            processEnd.Append(ProtoCore.VHDL.Keyword.Process);
+            processEnd.Append(" ");
+            processEnd.Append(ProcessName);
+            processEnd.Append(";");
+
+
+            StringBuilder sbFormat = new StringBuilder();
+            sbFormat.Append(processStart);
+            sbFormat.Append("\n");
+            sbFormat.Append(processVarDecl);
+            sbFormat.Append("\n");
+            sbFormat.Append(processBody);
+            sbFormat.Append("\n");
+            sbFormat.Append(processEnd);
+            sbFormat.Append("\n");
+            return sbFormat.ToString();
         }
 
         public string ProcessName { get; private set; }
@@ -507,9 +525,9 @@ namespace ProtoCore.VHDL.AST
         {
             StringBuilder sbFormat = new StringBuilder();
             sbFormat.Append(LHS.ToString());
-            sbFormat.Append("");
+            sbFormat.Append(" ");
             sbFormat.Append(ProtoCore.VHDL.Constants.kSignalAssignSymbol);
-            sbFormat.Append("");
+            sbFormat.Append(" ");
             sbFormat.Append(RHS.ToString());
             sbFormat.Append(";");
             return sbFormat.ToString();
@@ -537,9 +555,9 @@ namespace ProtoCore.VHDL.AST
         {
             StringBuilder sbFormat = new StringBuilder();
             sbFormat.Append(LHS.ToString());
-            sbFormat.Append("");
+            sbFormat.Append(" ");
             sbFormat.Append(ProtoCore.VHDL.Utils.GetBinaryOperatorString(Optr));
-            sbFormat.Append("");
+            sbFormat.Append(" ");
             sbFormat.Append(RHS.ToString());
             return sbFormat.ToString();
         }
@@ -551,7 +569,7 @@ namespace ProtoCore.VHDL.AST
 
     public class IfNode : VHDLNode
     {
-        public IfNode(string name)
+        public IfNode(string name = null)
         {  
             this.Name = name;
 
@@ -582,11 +600,11 @@ namespace ProtoCore.VHDL.AST
 
             // If expr
             sbIfExpr.Append(ProtoCore.VHDL.Keyword.If);
-            sbIfExpr.Append("(");
+            sbIfExpr.Append(" ");
             sbIfExpr.Append(IfExpr.ToString());
-            sbIfExpr.Append(")");
+            sbIfExpr.Append(" ");
             sbIfExpr.Append(ProtoCore.VHDL.Keyword.Then);
-            sbIfExpr.Append("\n\t");
+            sbIfExpr.Append("\n");
 
             // If body
             StringBuilder sbIfBody = new StringBuilder();
@@ -595,6 +613,7 @@ namespace ProtoCore.VHDL.AST
                 sbIfBody.Append(node.ToString());
                 sbIfBody.Append("\n");
             }
+            sbIfBody.Append("\n");
 
             // Elsif expr
             StringBuilder sbElsifExpr = new StringBuilder();
@@ -602,11 +621,11 @@ namespace ProtoCore.VHDL.AST
             if (ElsifBody != null && ElsifBody.Count > 0)
             {
                 sbElsifExpr.Append(ProtoCore.VHDL.Keyword.Elsif);
-                sbElsifExpr.Append("(");
+                sbElsifExpr.Append(" ");
                 sbElsifExpr.Append(IfExpr.ToString());
-                sbElsifExpr.Append(")");
+                sbElsifExpr.Append(" ");
                 sbElsifExpr.Append(ProtoCore.VHDL.Keyword.Then);
-                sbElsifExpr.Append("\n\t");
+                sbElsifExpr.Append("\n");
 
                 // Elsif body
                 foreach (AST.VHDLNode node in ElsifBody)
@@ -630,27 +649,66 @@ namespace ProtoCore.VHDL.AST
                     sbElseBody.Append(node.ToString());
                     sbElseBody.Append("\n");
                 }
+                sbElseBody.Append("\n"); 
             }
 
+            StringBuilder sbEndIf = new StringBuilder();
+            sbEndIf.Append(ProtoCore.VHDL.Keyword.End);
+            sbEndIf.Append(" ");
+            sbEndIf.Append(ProtoCore.VHDL.Keyword.If);
+            sbEndIf.Append(" ");
+            sbEndIf.Append(Name);
+            sbEndIf.Append(";");
+
+
             StringBuilder sbFormat = new StringBuilder();
-            sbFormat.Append(sbIfExpr); 
-            sbFormat.Append(sbIfBody); 
-            sbFormat.Append(sbElsifExpr); 
-            sbFormat.Append(sbElsifBody); 
-            sbFormat.Append(sbElse); 
+            sbFormat.Append(sbIfExpr);
+            sbFormat.Append(sbIfBody);
+            sbFormat.Append(sbElsifExpr);
+            sbFormat.Append(sbElsifBody);
+            sbFormat.Append(sbElse);
             sbFormat.Append(sbElseBody);
+            sbFormat.Append(sbEndIf);
             return sbFormat.ToString();
         }
 
         public string Name { get; private set; }
 
-        public VHDLNode IfExpr { get; private set; }
-        public List<VHDLNode> IfBody { get; private set; }
+        public VHDLNode IfExpr { get; set; }
+        public List<VHDLNode> IfBody { get; set; }
 
-        public VHDLNode ElsifExpr { get; private set; }
-        public List<VHDLNode> ElsifBody { get; private set; }
+        public VHDLNode ElsifExpr { get; set; }
+        public List<VHDLNode> ElsifBody { get; set; }
 
-        public List<VHDLNode> ElseBody { get; private set; }
+        public List<VHDLNode> ElseBody { get; set; }
+    }
+
+    public class FunctionCallNode : VHDLNode
+    {
+        public FunctionCallNode(string functionName, List<VHDLNode> argList)
+        {
+            this.FunctionName = functionName;
+            ArgumentList = new List<VHDLNode>(argList);
+        }
+
+        public override string ToString()
+        {
+            StringBuilder sbFormat = new StringBuilder();
+            sbFormat.Append(FunctionName);
+            sbFormat.Append("(");
+            for (int n = 0; n < ArgumentList.Count; ++n)
+            {
+                sbFormat.Append(ArgumentList[n].ToString());
+                if (n < ArgumentList.Count - 1)
+                {
+                    sbFormat.Append(", ");
+                }
+            }
+            sbFormat.Append(")");
+            return sbFormat.ToString();
+        }
+        public string FunctionName { get; private set; }
+        public List<VHDLNode> ArgumentList { get; private set; }
     }
 
     public class IdentifierNode : VHDLNode
@@ -677,6 +735,14 @@ namespace ProtoCore.VHDL.AST
         public override string ToString()
         {
             StringBuilder sbFormat = new StringBuilder();
+            if (Value == 0 || Value == 1)
+            {
+                sbFormat.Append("'");
+                sbFormat.Append(Value.ToString());
+                sbFormat.Append("'");
+                return sbFormat.ToString();
+            }
+
             int[] bits = decimal.GetBits(Value);
             sbFormat.Append(bits.ToString());
             return sbFormat.ToString();
