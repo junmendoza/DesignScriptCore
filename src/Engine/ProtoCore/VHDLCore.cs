@@ -32,32 +32,6 @@ namespace ProtoCore.VHDL
             return CreateModule(TopLevelModuleName);
         }
 
-        /// <summary>
-        /// Creates the target output vhdl file stream
-        /// Sets the module name
-        /// </summary>
-        /// <param name="componentName"></param>
-        //public void SetupTargetComponent(string componentName)
-        //{
-        //    ModuleName = componentName;
-        //    if (!ModuleMap.ContainsKey(ModuleName))
-        //    {
-        //        ModuleMap[ModuleName] = new AST.ModuleNode(ModuleName);
-        //    }
-        //}
-
-        //public void SetupTargetComponentTopLevel()
-        //{
-        //    SetupTargetComponent(TopLevelModuleName);
-        //}
-
-        //public TextWriter GetOutputStream()
-        //{
-        //    Validity.Assert(ModuleMap.Count > 0);
-        //    Validity.Assert(ModuleMap[ModuleName] != null);
-        //    return ModuleMap[ModuleName].OutputFile;
-        //}
-
         public AST.ModuleNode GetCurrentModule()
         {
             Validity.Assert(ModuleMap.Count > 0);

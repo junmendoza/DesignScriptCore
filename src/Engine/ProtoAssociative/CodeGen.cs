@@ -257,10 +257,10 @@ namespace ProtoAssociative
                 new ProtoCore.VHDL.AST.BitStringNode(1)
                 );
 
-            //===============================
-            // Entry process
-            //===============================
 
+            // ExecutionLogic body
+            topModule.ExecutionBody = new List<ProtoCore.VHDL.AST.VHDLNode>();
+            topModule.ExecutionBody.Add(execStartFlagSet1);
 
             // ExecutionLogic ifstmt
             //
@@ -275,9 +275,8 @@ namespace ProtoAssociative
                 ProtoCore.VHDL.AST.BinaryExpressionNode.Operator.Eq
                 );
 
-            // ExecutionLogic body
-            List<ProtoCore.VHDL.AST.VHDLNode> execLogicBody = new List<ProtoCore.VHDL.AST.VHDLNode>();
-            execLogicBody.Add(execStartFlagSet1);
+            executionBodyIf.IfBody = topModule.ExecutionBody;
+
 
             // rising_edge call
             List<ProtoCore.VHDL.AST.VHDLNode> argList = new List<ProtoCore.VHDL.AST.VHDLNode>();
@@ -290,7 +289,7 @@ namespace ProtoAssociative
             // clock sync ifstmt
             ProtoCore.VHDL.AST.IfNode clockIf = new ProtoCore.VHDL.AST.IfNode(ProtoCore.VHDL.Constants.ClockSync);
             clockIf.IfExpr = clockedgeCall;
-            clockIf.IfBody = execLogicBody;
+            clockIf.IfBody = topModule.ExecutionBody;
 
             // Reset sync ifstmt
             ProtoCore.VHDL.AST.IfNode resetSyncIf = new ProtoCore.VHDL.AST.IfNode(ProtoCore.VHDL.Constants.ResetSync);
@@ -9148,8 +9147,34 @@ namespace ProtoAssociative
             }
             core.DebugProps.breakOptions = oldOptions;
 
-            //if post fix, now traverse the post fix
+            ProtoCore.VHDL.AST.VHDLNode rNode= null;
+            if (bnode.RightNode is FunctionCallNode)
+            {
+            }
+            else
+            {
+                if (bnode.RightNode is IntNode)
+                {
+                    rNode = new ProtoCore.VHDL.AST.HexStringNode((int)(bnode.RightNode as IntNode).Value);
+                }
+                else if (bnode.RightNode is IdentifierNode)
+                {
+                    rNode = new ProtoCore.VHDL.AST.IdentifierNode((bnode.RightNode as IdentifierNode).Name);
+                }
 
+                if (rNode != null)
+                {
+                    ProtoCore.VHDL.AST.AssignmentNode assignNode = new ProtoCore.VHDL.AST.AssignmentNode(
+                        new ProtoCore.VHDL.AST.IdentifierNode(bnode.LeftNode.Name),
+                        rNode
+                        );
+
+                    ProtoCore.VHDL.AST.ModuleNode module = core.VhdlCore.GetCurrentModule();
+                    module.ExecutionBody.Add(assignNode);
+                }
+            }
+
+            //if post fix, now traverse the post fix
 #if ENABLE_INC_DEC_FIX
                 if (bnode.RightNode is PostFixNode)
                     EmitPostFixNode(bnode.RightNode, ref inferedType);

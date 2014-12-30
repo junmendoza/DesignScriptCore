@@ -28,6 +28,7 @@ namespace ProtoCore.VHDL.AST
             ComponentList = new List<ComponentNode>();
             PortMapList = new List<PortMapNode>();
             ProcessList = new List<ProcessNode>();
+            ExecutionBody = new List<VHDLNode>();
         }
 
         public void Emit()
@@ -198,6 +199,10 @@ namespace ProtoCore.VHDL.AST
         public List<ProcessNode> ProcessList { get; set; }
 
         public TextWriter OutputFile { get; private set; }
+
+        // This list contains the current execution logic of the current process
+        // This will be stored within the process 
+        public List<VHDLNode> ExecutionBody { get; set; }
     }
 
     public class LibraryNode : VHDLNode
@@ -574,12 +579,12 @@ namespace ProtoCore.VHDL.AST
             this.Name = name;
 
             IfExpr = null;
-            IfBody = null;
+            IfBody = new List<VHDLNode>();
 
             ElsifExpr = null;
-            ElsifBody = null;
+            ElsifBody = new List<VHDLNode>();
 
-            ElseBody = null;
+            ElseBody = new List<VHDLNode>();
         }
 
         public override string ToString()
@@ -618,7 +623,7 @@ namespace ProtoCore.VHDL.AST
             // Elsif expr
             StringBuilder sbElsifExpr = new StringBuilder();
             StringBuilder sbElsifBody = new StringBuilder();
-            if (ElsifBody != null && ElsifBody.Count > 0)
+            if (ElsifBody.Count > 0)
             {
                 sbElsifExpr.Append(ProtoCore.VHDL.Keyword.Elsif);
                 sbElsifExpr.Append(" ");
@@ -638,7 +643,7 @@ namespace ProtoCore.VHDL.AST
             // Else 
             StringBuilder sbElse = new StringBuilder();
             StringBuilder sbElseBody = new StringBuilder();
-            if (ElseBody != null && ElseBody.Count > 0)
+            if (ElseBody.Count > 0)
             {
                 sbElse.Append(ProtoCore.VHDL.Keyword.Else);
                 sbElse.Append("\n\t");
