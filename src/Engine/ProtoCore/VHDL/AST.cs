@@ -20,6 +20,20 @@ namespace ProtoCore.VHDL.AST
             // Setup output vhdl file
             string path = @"..\..\" + this.Name + ".vhd";
             OutputFile = new StreamWriter(File.Open(path, FileMode.Create));
+
+            LibraryList = null;
+            UseNodeList = null;
+            Entity = null;
+            SignalDeclarationList = null;
+            ComponentList = null;
+            PortMapList = null;
+            ProcessList = null;
+        }
+
+        public void Emit()
+        {
+            Validity.Assert(OutputFile != null);
+            OutputFile.Write(ToString());
         }
 
         public override string ToString()
@@ -28,27 +42,36 @@ namespace ProtoCore.VHDL.AST
             // Library import
             //==============================
             StringBuilder sbLibrary = new StringBuilder();
-            foreach (LibraryNode node in LibraryList)
+            if (LibraryList != null)
             {
-                sbLibrary.Append(node.ToString());
-                sbLibrary.Append("\n");
+                foreach (LibraryNode node in LibraryList)
+                {
+                    sbLibrary.Append(node.ToString());
+                    sbLibrary.Append("\n");
+                }
             }
 
             //==============================
             // Use modules
             //==============================
             StringBuilder sbUseModules = new StringBuilder();
-            foreach (UseNode node in UseNodeList)
+            if (UseNodeList != null)
             {
-                sbUseModules.Append(node.ToString());
-                sbUseModules.Append("\n");
+                foreach (UseNode node in UseNodeList)
+                {
+                    sbUseModules.Append(node.ToString());
+                    sbUseModules.Append("\n");
+                }
             }
 
             //==============================
             // Entity decl
             //==============================
             StringBuilder sbEntity = new StringBuilder();
-            sbEntity.Append(Entity.ToString());
+            if (Entity != null)
+            {
+                sbEntity.Append(Entity.ToString());
+            }
 
             //==============================
             // Architecture decl
@@ -68,20 +91,26 @@ namespace ProtoCore.VHDL.AST
             // Signal list
             //==============================
             StringBuilder sbSignalList = new StringBuilder();
-            foreach (SignalDeclarationNode node in SignalDeclarationList)
+            if (SignalDeclarationList != null)
             {
-                sbSignalList.Append(node.ToString());
-                sbSignalList.Append("\n");
+                foreach (SignalDeclarationNode node in SignalDeclarationList)
+                {
+                    sbSignalList.Append(node.ToString());
+                    sbSignalList.Append("\n");
+                }
             }
 
             //==============================
             // Component list
             //==============================
             StringBuilder sbComponents = new StringBuilder();
-            foreach (ComponentNode node in ComponentList)
+            if (ComponentList != null)
             {
-                sbComponents.Append(node.ToString());
-                sbComponents.Append("\n");
+                foreach (ComponentNode node in ComponentList)
+                {
+                    sbComponents.Append(node.ToString());
+                    sbComponents.Append("\n");
+                }
             }
 
             //==============================
@@ -93,21 +122,27 @@ namespace ProtoCore.VHDL.AST
             //==============================
             // Portmap list
             //==============================
-            StringBuilder sbPortMap = new StringBuilder(); 
-            foreach (PortMapNode node in PortMapList)
+            StringBuilder sbPortMap = new StringBuilder();
+            if (PortMapList != null)
             {
-                sbPortMap.Append(node.ToString());
-                sbPortMap.Append("\n");
+                foreach (PortMapNode node in PortMapList)
+                {
+                    sbPortMap.Append(node.ToString());
+                    sbPortMap.Append("\n");
+                }
             }
 
             //==============================
             // Process list
             //==============================
             StringBuilder sbProcess = new StringBuilder();
-            foreach (ProcessNode node in ProcessList)
+            if (ProcessList != null)
             {
-                sbProcess.Append(node.ToString());
-                sbProcess.Append("\n");
+                foreach (ProcessNode node in ProcessList)
+                {
+                    sbProcess.Append(node.ToString());
+                    sbProcess.Append("\n");
+                }
             }
 
             //==============================
@@ -127,8 +162,10 @@ namespace ProtoCore.VHDL.AST
             sbModule.Append('\n');
             sbModule.Append(sbEntity);
             sbModule.Append('\n');
+            sbModule.Append("\n");
             sbModule.Append(sbArchitectureDecl);
             sbModule.Append('\n');
+            sbModule.Append("\n");
             sbModule.Append(sbSignalList);
             sbModule.Append('\n');
             sbModule.Append(sbComponents);
@@ -147,13 +184,13 @@ namespace ProtoCore.VHDL.AST
 
         public string Name { get; private set; }
 
-        public List<LibraryNode> LibraryList { get; private set; }
-        public List<UseNode> UseNodeList { get; private set; }
-        public EntityNode Entity { get; private set; }
-        public List<SignalDeclarationNode> SignalDeclarationList { get; private set; }
-        public List<ComponentNode> ComponentList { get; private set; }
-        public List<PortMapNode> PortMapList { get; private set; }
-        public List<ProcessNode> ProcessList { get; private set; }
+        public List<LibraryNode> LibraryList { get; set; }
+        public List<UseNode> UseNodeList { get; set; }
+        public EntityNode Entity { get; set; }
+        public List<SignalDeclarationNode> SignalDeclarationList { get; set; }
+        public List<ComponentNode> ComponentList { get; set; }
+        public List<PortMapNode> PortMapList { get; set; }
+        public List<ProcessNode> ProcessList { get; set; }
 
         public TextWriter OutputFile { get; private set; }
     }
@@ -173,7 +210,6 @@ namespace ProtoCore.VHDL.AST
             library.Append(" ");
             library.Append(Name);
             library.Append(";");
-            library.Append("\n");
 
             return library.ToString();
         }
@@ -195,7 +231,6 @@ namespace ProtoCore.VHDL.AST
             use.Append(" ");
             use.Append(Name);
             use.Append(";");
-            use.Append("\n");
 
             return use.ToString();
         }

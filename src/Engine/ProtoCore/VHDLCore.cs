@@ -12,9 +12,23 @@ namespace ProtoCore.VHDL
         public VHDLCore(string topLevelModule)
         {
             TopLevelModuleName = ModuleName = topLevelModule;
-
             ModuleMap = new Dictionary<string, AST.ModuleNode>();
-            ModuleMap[ModuleName] = new AST.ModuleNode(TopLevelModuleName);
+        }
+
+        public ProtoCore.VHDL.AST.ModuleNode CreateModule(string componentName)
+        {
+            ModuleName = componentName;
+            if (!ModuleMap.ContainsKey(ModuleName))
+            {
+                ModuleMap[ModuleName] = new AST.ModuleNode(ModuleName);
+                return ModuleMap[ModuleName];
+            }
+            return null;
+        }
+
+        public ProtoCore.VHDL.AST.ModuleNode CreateTopModule()
+        {
+            return CreateModule(TopLevelModuleName);
         }
 
         /// <summary>
@@ -22,34 +36,42 @@ namespace ProtoCore.VHDL
         /// Sets the module name
         /// </summary>
         /// <param name="componentName"></param>
-        public void SetupTargetComponent(string componentName)
-        {
-            ModuleName = componentName;
-            if (!ModuleMap.ContainsKey(ModuleName))
-            {
-                ModuleMap[ModuleName] = new AST.ModuleNode(ModuleName);
-            }
-        }
+        //public void SetupTargetComponent(string componentName)
+        //{
+        //    ModuleName = componentName;
+        //    if (!ModuleMap.ContainsKey(ModuleName))
+        //    {
+        //        ModuleMap[ModuleName] = new AST.ModuleNode(ModuleName);
+        //    }
+        //}
 
-        public void SetupTargetComponentTopLevel()
-        {
-            SetupTargetComponent(TopLevelModuleName);
-        }
+        //public void SetupTargetComponentTopLevel()
+        //{
+        //    SetupTargetComponent(TopLevelModuleName);
+        //}
 
-        public TextWriter GetOutputStream()
+        //public TextWriter GetOutputStream()
+        //{
+        //    Validity.Assert(ModuleMap.Count > 0);
+        //    Validity.Assert(ModuleMap[ModuleName] != null);
+        //    return ModuleMap[ModuleName].OutputFile;
+        //}
+
+        public AST.ModuleNode GetCurrentModule()
         {
             Validity.Assert(ModuleMap.Count > 0);
             Validity.Assert(ModuleMap[ModuleName] != null);
-            return ModuleMap[ModuleName].OutputFile;
+            return ModuleMap[ModuleName];
         }
 
         /// <summary>
-        /// Saves the destination vhdl files by flushing the output streams
+        /// Emits module to stream and saves to file
         /// </summary>
-        public void CommitOutputStream()
+        public void EmitModulesToFile()
         {
             foreach (var kvp in ModuleMap)
             {
+                kvp.Value.Emit();
                 kvp.Value.OutputFile.Flush();
             }
         }

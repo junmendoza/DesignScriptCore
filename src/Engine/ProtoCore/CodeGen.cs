@@ -470,10 +470,6 @@ namespace ProtoCore
         }
         #endregion //   EMIT_INSTRUCTION_TO_CONSOLE
 
-        public void EmitToVHDLStream(string code)
-        {
-            core.VhdlCore.GetOutputStream().Write(code);
-        }
 
         protected abstract void SetEntry();
 

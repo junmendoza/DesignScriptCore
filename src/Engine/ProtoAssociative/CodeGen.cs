@@ -31,8 +31,9 @@ namespace ProtoAssociative
     public class CodeGen : ProtoCore.CodeGen
     {
 
-        #region VHDL_CODEGEN
 
+        #region VHDL_CODEGEN
+        /*
         private string VHDL_GenerateAllocatedSignals(SymbolTable symbolTable)
         {
             StringBuilder sbSignalDeclarations = new StringBuilder();
@@ -197,7 +198,8 @@ namespace ProtoAssociative
             // Emit Architecture Header
             VHDL_EmitArchitectureHeader();
         }
-
+        */
+        #endregion
 
         /// <summary>
         /// Emit VHDL top level module
@@ -213,24 +215,30 @@ namespace ProtoAssociative
             // Emit Architecture Header
             // Emit Architecture Body
             //=====================================
+            ProtoCore.VHDL.AST.ModuleNode topModule = core.VhdlCore.CreateTopModule();
 
+            // Library list
+            List<string> libaryNameList = new List<string>();
+            libaryNameList.Add("IEEE");
+            topModule.LibraryList = ProtoCore.VHDL.Utils.GenerateLibraryNodeList(libaryNameList);
 
-            // Emit VHDL Header
-            VHDL_EmitHeader();
+            // Module list
+            List<string> moduleNameList = new List<string>();
+            moduleNameList.Add("IEEE.STD_LOGIC_1164.ALL");
+            moduleNameList.Add("IEEE.NUMERIC_STD.ALL");
+            topModule.UseNodeList = ProtoCore.VHDL.Utils.GenerateUseNodeList(moduleNameList);
 
             // Port entries
             ProtoCore.VHDL.AST.PortEntryNode clock = new ProtoCore.VHDL.AST.PortEntryNode("clock", ProtoCore.VHDL.AST.PortEntryNode.Direction.In, 1);
             ProtoCore.VHDL.AST.PortEntryNode reset = new ProtoCore.VHDL.AST.PortEntryNode("reset", ProtoCore.VHDL.AST.PortEntryNode.Direction.In, 1);
-
             List<ProtoCore.VHDL.AST.PortEntryNode> listPortEntry = new List<ProtoCore.VHDL.AST.PortEntryNode>();
             listPortEntry.Add(clock);
             listPortEntry.Add(reset);
 
-            // Emit Entity 
-            VHDL_EmitEntity(listPortEntry);
+            // Entity Declaration
+            ProtoCore.VHDL.AST.EntityNode entity = new ProtoCore.VHDL.AST.EntityNode(core.VhdlCore.TopLevelModuleName, listPortEntry);
+            topModule.Entity = entity;
 
-            // Emit Architecture Header
-            VHDL_EmitArchitectureHeader();
 
             ProtoCore.AssociativeGraph.GraphNode graphNode = null;
 
@@ -330,8 +338,8 @@ namespace ProtoAssociative
                 core.AsmOutput.Flush();
             }
 
-            VHDL_FinalizeComponent();
-            core.VhdlCore.CommitOutputStream();
+            topModule.SignalDeclarationList = ProtoCore.VHDL.Utils.GenerateSignalsDeclarationList(codeBlock.symbolTable);
+            core.VhdlCore.EmitModulesToFile();
 
             this.localCodeBlockNode = codeBlockNode;
 
@@ -341,7 +349,6 @@ namespace ProtoAssociative
             return codeBlock.codeBlockId;
         }
 
-        #endregion
 
         private readonly bool ignoreRankCheck;
 
@@ -6161,7 +6168,7 @@ namespace ProtoAssociative
             codeBlock.blockType = ProtoCore.DSASM.CodeBlockType.kFunction;
             if (IsParsingGlobalFunctionSig() || IsParsingMemberFunctionSig())
             {
-                VHDL_EmitFunctionSignature(funcDef);
+                //VHDL_EmitFunctionSignature(funcDef);
 
                 Validity.Assert(null == localProcedure);
                 localProcedure = new ProtoCore.DSASM.ProcedureNode();
@@ -6394,8 +6401,6 @@ namespace ProtoAssociative
                     }
 
                     EmitCompileLogFunctionEnd();
-
-                    VHDL_FinalizeComponent();
 
                     // All locals have been stack allocated, update the local count of this function
                     localProcedure.localCount = core.BaseOffset;
