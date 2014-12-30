@@ -167,10 +167,10 @@ namespace ProtoCore.VHDL.AST
             sbModule.Append('\n');
             sbModule.Append(sbEntity);
             sbModule.Append('\n');
-            sbModule.Append("\n");
+            sbModule.Append('\n');
             sbModule.Append(sbArchitectureDecl);
             sbModule.Append('\n');
-            sbModule.Append("\n");
+            sbModule.Append('\n');
             sbModule.Append(sbSignalList);
             sbModule.Append('\n');
             sbModule.Append(sbComponents);

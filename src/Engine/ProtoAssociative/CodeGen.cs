@@ -241,8 +241,9 @@ namespace ProtoAssociative
 
 
             // Auto generated signals
-            ProtoCore.VHDL.AST.SignalDeclarationNode execFlag = 
+            ProtoCore.VHDL.AST.SignalDeclarationNode execStartFlagSignal = 
                 new ProtoCore.VHDL.AST.SignalDeclarationNode(ProtoCore.VHDL.Constants.ExecutionStartFlagName, 1);
+            topModule.SignalDeclarationList.Add(execStartFlagSignal);
 
             // execution_started <= '0'
             ProtoCore.VHDL.AST.AssignmentNode execStartFlagSet0 = new ProtoCore.VHDL.AST.AssignmentNode(

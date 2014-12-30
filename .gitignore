@@ -35,3 +35,6 @@ src/DSConsole/test.ds
 *.vho
 *.xst
 *.syr
+*.ngc
+*.ngr
+*.stx
