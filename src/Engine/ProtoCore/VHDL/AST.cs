@@ -494,4 +494,212 @@ namespace ProtoCore.VHDL.AST
         public List<VHDLNode> VariableDeclarations { get; private set; }
         public List<VHDLNode> Body { get; private set; }
     }
+    
+    public class AssignmentNode : VHDLNode
+    {
+        public AssignmentNode(VHDLNode lhs, VHDLNode rhs)
+        {
+            LHS = lhs;
+            RHS = rhs;
+        }
+
+        public override string ToString()
+        {
+            StringBuilder sbFormat = new StringBuilder();
+            sbFormat.Append(LHS.ToString());
+            sbFormat.Append("");
+            sbFormat.Append(ProtoCore.VHDL.Constants.kSignalAssignSymbol);
+            sbFormat.Append("");
+            sbFormat.Append(RHS.ToString());
+            sbFormat.Append(";");
+            return sbFormat.ToString();
+        }
+
+        public VHDLNode LHS { get; private set; }
+        public VHDLNode RHS { get; private set; }
+    }
+
+    public class BinaryExpressionNode : VHDLNode
+    {
+        public enum Operator
+        {
+            Or, Nor, Xnor, And, Not, Eq
+        }
+
+        public BinaryExpressionNode(VHDLNode lhs, VHDLNode rhs, Operator optr)
+        {
+            this.LHS = lhs;
+            this.RHS = rhs;
+            this.Optr = optr;
+        }
+
+        public override string ToString()
+        {
+            StringBuilder sbFormat = new StringBuilder();
+            sbFormat.Append(LHS.ToString());
+            sbFormat.Append("");
+            sbFormat.Append(ProtoCore.VHDL.Utils.GetBinaryOperatorString(Optr));
+            sbFormat.Append("");
+            sbFormat.Append(RHS.ToString());
+            return sbFormat.ToString();
+        }
+
+        public Operator Optr { get; private set; }
+        public VHDLNode LHS { get; private set; }
+        public VHDLNode RHS { get; private set; }
+    }
+
+    public class IfNode : VHDLNode
+    {
+        public IfNode(string name)
+        {  
+            this.Name = name;
+
+            IfExpr = null;
+            IfBody = null;
+
+            ElsifExpr = null;
+            ElsifBody = null;
+
+            ElseBody = null;
+        }
+
+        public override string ToString()
+        {
+            StringBuilder sbIfExpr = new StringBuilder();
+
+            // Optional name
+            if (!string.IsNullOrEmpty(Name))
+            {
+                sbIfExpr.Append(Name);
+                sbIfExpr.Append(" ");
+                sbIfExpr.Append(":");
+                sbIfExpr.Append(" ");
+            }
+
+            // An ifnode must always have an expression
+            Validity.Assert(sbIfExpr != null);
+
+            // If expr
+            sbIfExpr.Append(ProtoCore.VHDL.Keyword.If);
+            sbIfExpr.Append("(");
+            sbIfExpr.Append(IfExpr.ToString());
+            sbIfExpr.Append(")");
+            sbIfExpr.Append(ProtoCore.VHDL.Keyword.Then);
+            sbIfExpr.Append("\n\t");
+
+            // If body
+            StringBuilder sbIfBody = new StringBuilder();
+            foreach (AST.VHDLNode node in IfBody)
+            {
+                sbIfBody.Append(node.ToString());
+                sbIfBody.Append("\n");
+            }
+
+            // Elsif expr
+            StringBuilder sbElsifExpr = new StringBuilder();
+            StringBuilder sbElsifBody = new StringBuilder();
+            if (ElsifBody != null && ElsifBody.Count > 0)
+            {
+                sbElsifExpr.Append(ProtoCore.VHDL.Keyword.Elsif);
+                sbElsifExpr.Append("(");
+                sbElsifExpr.Append(IfExpr.ToString());
+                sbElsifExpr.Append(")");
+                sbElsifExpr.Append(ProtoCore.VHDL.Keyword.Then);
+                sbElsifExpr.Append("\n\t");
+
+                // Elsif body
+                foreach (AST.VHDLNode node in ElsifBody)
+                {
+                    sbElsifBody.Append(node.ToString());
+                    sbElsifBody.Append("\n");
+                }
+            }
+
+            // Else 
+            StringBuilder sbElse = new StringBuilder();
+            StringBuilder sbElseBody = new StringBuilder();
+            if (ElseBody != null && ElseBody.Count > 0)
+            {
+                sbElse.Append(ProtoCore.VHDL.Keyword.Else);
+                sbElse.Append("\n\t");
+
+                // Else body
+                foreach (AST.VHDLNode node in ElseBody)
+                {
+                    sbElseBody.Append(node.ToString());
+                    sbElseBody.Append("\n");
+                }
+            }
+
+            StringBuilder sbFormat = new StringBuilder();
+            sbFormat.Append(sbIfExpr); 
+            sbFormat.Append(sbIfBody); 
+            sbFormat.Append(sbElsifExpr); 
+            sbFormat.Append(sbElsifBody); 
+            sbFormat.Append(sbElse); 
+            sbFormat.Append(sbElseBody);
+            return sbFormat.ToString();
+        }
+
+        public string Name { get; private set; }
+
+        public VHDLNode IfExpr { get; private set; }
+        public List<VHDLNode> IfBody { get; private set; }
+
+        public VHDLNode ElsifExpr { get; private set; }
+        public List<VHDLNode> ElsifBody { get; private set; }
+
+        public List<VHDLNode> ElseBody { get; private set; }
+    }
+
+    public class IdentifierNode : VHDLNode
+    {
+        public IdentifierNode(string value)
+        {
+            this.Value = value;
+        }
+
+        public override string ToString()
+        {
+            return Value;
+        }
+        public string Value { get; private set; }
+    }
+
+    public class BitStringNode : VHDLNode
+    {
+        public BitStringNode(int value)
+        {
+            this.Value = value;
+        }
+
+        public override string ToString()
+        {
+            StringBuilder sbFormat = new StringBuilder();
+            int[] bits = decimal.GetBits(Value);
+            sbFormat.Append(bits.ToString());
+            return sbFormat.ToString();
+        }
+        public int Value { get; private set; }
+        public string StringFormat { get; private set; }
+    }
+
+    public class HexStringNode : VHDLNode
+    {
+        public HexStringNode(int value)
+        {
+            this.Value = value;
+        }
+
+        public override string ToString()
+        {
+            StringBuilder sbFormat = new StringBuilder();
+            string hexString = Value.ToString("X8");
+            sbFormat.Append("X" + '"' + hexString + '"');
+            return sbFormat.ToString();
+        }
+        public int Value { get; private set; }
+        public string StringFormat { get; private set; }
+    }
 }

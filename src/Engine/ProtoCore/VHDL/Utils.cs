@@ -60,5 +60,23 @@ namespace ProtoCore.VHDL
             }
             return signalDeclList;
         }
+
+        public static void InitTables()
+        {
+            BinaryExprOperatorTable = new Dictionary<AST.BinaryExpressionNode.Operator, string>();
+            BinaryExprOperatorTable.Add(AST.BinaryExpressionNode.Operator.Or, ProtoCore.VHDL.Keyword.Or);
+            BinaryExprOperatorTable.Add(AST.BinaryExpressionNode.Operator.Nor, ProtoCore.VHDL.Keyword.Nor);
+            BinaryExprOperatorTable.Add(AST.BinaryExpressionNode.Operator.Xnor, ProtoCore.VHDL.Keyword.Xnor);
+            BinaryExprOperatorTable.Add(AST.BinaryExpressionNode.Operator.And, ProtoCore.VHDL.Keyword.And);
+            BinaryExprOperatorTable.Add(AST.BinaryExpressionNode.Operator.Not, ProtoCore.VHDL.Keyword.Nor);
+            BinaryExprOperatorTable.Add(AST.BinaryExpressionNode.Operator.Eq, "=");
+        }
+
+        public static string GetBinaryOperatorString(VHDL.AST.BinaryExpressionNode.Operator optr)
+        {
+            return BinaryExprOperatorTable[optr];
+        }
+
+        public static Dictionary<VHDL.AST.BinaryExpressionNode.Operator, string> BinaryExprOperatorTable = null;
     }
 }

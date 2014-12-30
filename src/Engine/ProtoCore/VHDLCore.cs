@@ -13,6 +13,7 @@ namespace ProtoCore.VHDL
         {
             TopLevelModuleName = ModuleName = topLevelModule;
             ModuleMap = new Dictionary<string, AST.ModuleNode>();
+            ProtoCore.VHDL.Utils.InitTables();
         }
 
         public ProtoCore.VHDL.AST.ModuleNode CreateModule(string componentName)

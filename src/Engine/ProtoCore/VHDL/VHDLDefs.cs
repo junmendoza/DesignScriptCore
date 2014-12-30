@@ -129,6 +129,7 @@ namespace ProtoCore.VHDL
     public struct Constants
     {
         public const int kInvalidIndex = -1;
+        public const string kSignalAssignSymbol = "<=";
 
         public struct ProcessName
         {
