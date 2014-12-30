@@ -38,3 +38,15 @@ src/DSConsole/test.ds
 *.ngc
 *.ngr
 *.stx
+*.c
+*.didat
+*.obj
+*.log
+*.cmd
+*.dbg
+*.dat
+src/DSAccelerate/isim/pn_info
+src/DSAccelerate/isim/Testbench_ProgramSynthesized_isim_beh.exe.sim/tmp_save/_1
+*.vdb
+*.ini
+*.wdb
