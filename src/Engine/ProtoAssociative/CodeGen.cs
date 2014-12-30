@@ -38,7 +38,7 @@ namespace ProtoAssociative
             StringBuilder sbSignalDeclarations = new StringBuilder();
             foreach (KeyValuePair<int, SymbolNode> kvp in symbolTable.symbolList)
             {
-                ProtoCore.VHDL.AST.SignalDeclaration signalDecl = new ProtoCore.VHDL.AST.SignalDeclaration(kvp.Value.name, 32);
+                ProtoCore.VHDL.AST.SignalDeclarationNode signalDecl = new ProtoCore.VHDL.AST.SignalDeclarationNode(kvp.Value.name, 32);
                 sbSignalDeclarations.Append(signalDecl.ToString());
                 sbSignalDeclarations.Append('\n');
             }
@@ -79,7 +79,7 @@ namespace ProtoAssociative
             EmitToVHDLStream("\n");
         }
 
-        private void VHDL_EmitPortDeclaration(List<ProtoCore.VHDL.AST.PortEntry> listPortEntry)
+        private void VHDL_EmitPortDeclaration(List<ProtoCore.VHDL.AST.PortEntryNode> listPortEntry)
         {
             EmitToVHDLStream(
                 ProtoCore.VHDL.Keyword.Port
@@ -90,7 +90,7 @@ namespace ProtoAssociative
             EmitToVHDLStream("\n\t");
             for (int i = 0; i < listPortEntry.Count; ++i)
             {
-                ProtoCore.VHDL.AST.PortEntry portEntry = listPortEntry[i];
+                ProtoCore.VHDL.AST.PortEntryNode portEntry = listPortEntry[i];
                 EmitToVHDLStream(portEntry.ToString());
                 if (i < (listPortEntry.Count - 1))
                 {
@@ -100,7 +100,7 @@ namespace ProtoAssociative
             EmitToVHDLStream("\n" + ")" + "\n");
         }
 
-        private void VHDL_EmitEntity(List<ProtoCore.VHDL.AST.PortEntry> listPortEntry)
+        private void VHDL_EmitEntity(List<ProtoCore.VHDL.AST.PortEntryNode> listPortEntry)
         {
             EmitToVHDLStream(
                 ProtoCore.VHDL.Keyword.Entity
@@ -177,8 +177,8 @@ namespace ProtoAssociative
 
 
             // Port entries
-            List<ProtoCore.VHDL.AST.PortEntry> listPortEntry = new List<ProtoCore.VHDL.AST.PortEntry>();
-            ProtoCore.VHDL.AST.PortEntry reset = new ProtoCore.VHDL.AST.PortEntry("reset", ProtoCore.VHDL.AST.PortEntry.Direction.In, 1);
+            List<ProtoCore.VHDL.AST.PortEntryNode> listPortEntry = new List<ProtoCore.VHDL.AST.PortEntryNode>();
+            ProtoCore.VHDL.AST.PortEntryNode reset = new ProtoCore.VHDL.AST.PortEntryNode("reset", ProtoCore.VHDL.AST.PortEntryNode.Direction.In, 1);
             listPortEntry.Add(reset);
 
             // Function args as port entry
@@ -186,7 +186,7 @@ namespace ProtoAssociative
             {
                 foreach (VarDeclNode argNode in funcDefNode.Signature.Arguments)
                 {
-                    ProtoCore.VHDL.AST.PortEntry portEntry = new ProtoCore.VHDL.AST.PortEntry(argNode.NameNode.Name, ProtoCore.VHDL.AST.PortEntry.Direction.In, 32);
+                    ProtoCore.VHDL.AST.PortEntryNode portEntry = new ProtoCore.VHDL.AST.PortEntryNode(argNode.NameNode.Name, ProtoCore.VHDL.AST.PortEntryNode.Direction.In, 32);
                     listPortEntry.Add(portEntry);
                 }
             }
@@ -219,10 +219,10 @@ namespace ProtoAssociative
             VHDL_EmitHeader();
 
             // Port entries
-            ProtoCore.VHDL.AST.PortEntry clock = new ProtoCore.VHDL.AST.PortEntry("clock", ProtoCore.VHDL.AST.PortEntry.Direction.In, 1);
-            ProtoCore.VHDL.AST.PortEntry reset = new ProtoCore.VHDL.AST.PortEntry("reset", ProtoCore.VHDL.AST.PortEntry.Direction.In, 1);
+            ProtoCore.VHDL.AST.PortEntryNode clock = new ProtoCore.VHDL.AST.PortEntryNode("clock", ProtoCore.VHDL.AST.PortEntryNode.Direction.In, 1);
+            ProtoCore.VHDL.AST.PortEntryNode reset = new ProtoCore.VHDL.AST.PortEntryNode("reset", ProtoCore.VHDL.AST.PortEntryNode.Direction.In, 1);
 
-            List<ProtoCore.VHDL.AST.PortEntry> listPortEntry = new List<ProtoCore.VHDL.AST.PortEntry>();
+            List<ProtoCore.VHDL.AST.PortEntryNode> listPortEntry = new List<ProtoCore.VHDL.AST.PortEntryNode>();
             listPortEntry.Add(clock);
             listPortEntry.Add(reset);
 

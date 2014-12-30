@@ -13,8 +13,8 @@ namespace ProtoCore.VHDL
         {
             TopLevelModuleName = ModuleName = topLevelModule;
 
-            ModuleMap = new Dictionary<string, AST.Module>();
-            ModuleMap[ModuleName] = new AST.Module(TopLevelModuleName);
+            ModuleMap = new Dictionary<string, AST.ModuleNode>();
+            ModuleMap[ModuleName] = new AST.ModuleNode(TopLevelModuleName);
         }
 
         /// <summary>
@@ -27,7 +27,7 @@ namespace ProtoCore.VHDL
             ModuleName = componentName;
             if (!ModuleMap.ContainsKey(ModuleName))
             {
-                ModuleMap[ModuleName] = new AST.Module(ModuleName);
+                ModuleMap[ModuleName] = new AST.ModuleNode(ModuleName);
             }
         }
 
@@ -54,7 +54,7 @@ namespace ProtoCore.VHDL
             }
         }
 
-        public Dictionary<string, AST.Module> ModuleMap { get; private set; }
+        public Dictionary<string, AST.ModuleNode> ModuleMap { get; private set; }
         public string TopLevelModuleName { get; private set; }
 
         public string ModuleName { get; set; }
@@ -66,9 +66,9 @@ namespace ProtoCore.VHDL
         {
         }
 
-        public class Module : VHDLNode
+        public class ModuleNode : VHDLNode
         {
-            public Module(string moduleName)
+            public ModuleNode(string moduleName)
             {
                 this.Name = moduleName;
 
@@ -82,13 +82,13 @@ namespace ProtoCore.VHDL
                 return string.Empty;
             }
 
-            public string Name { get; set; }
+            public string Name { get; private set; }
             public TextWriter OutputFile { get; private set; }
         }
 
-        public class Library : VHDLNode
+        public class LibraryNode : VHDLNode
         {
-            public Library(string libraryName)
+            public LibraryNode(string libraryName)
             {
                 this.Name = libraryName;
             }
@@ -108,9 +108,9 @@ namespace ProtoCore.VHDL
             public string Name { get; private set; }
         }
 
-        public class Use : VHDLNode
+        public class UseNode : VHDLNode
         {
-            public Use(string moduleName)
+            public UseNode(string moduleName)
             {
                 this.Name = moduleName;
             }
@@ -130,12 +130,12 @@ namespace ProtoCore.VHDL
             public string Name { get; private set; }
         }
 
-        public class Entity : VHDLNode
+        public class EntityNode : VHDLNode
         {
-            public Entity(string name, List<PortEntry> portEntryList)
+            public EntityNode(string name, List<PortEntryNode> portEntryList)
             {
                 this.Name = name;
-                this.PortEntryList = new List<PortEntry>(portEntryList);
+                this.PortEntryList = new List<PortEntryNode>(portEntryList);
             }
 
             public override string ToString()
@@ -160,11 +160,11 @@ namespace ProtoCore.VHDL
                 return entity.ToString();
             }
 
-            public List<PortEntry> PortEntryList { get; private set; }
+            public List<PortEntryNode> PortEntryList { get; private set; }
             public string Name { get; private set; }
         }
 
-        public class PortEntry : VHDLNode
+        public class PortEntryNode : VHDLNode
         {
             public enum Direction
             {
@@ -173,7 +173,7 @@ namespace ProtoCore.VHDL
                 InOut
             }
 
-            public PortEntry(string signal, Direction direction, int bits)
+            public PortEntryNode(string signal, Direction direction, int bits)
             {
                 this.SignalName = signal;
                 this.EntryDirection = direction;
@@ -223,9 +223,9 @@ namespace ProtoCore.VHDL
             public int BitCount { get; private set; }
         }
 
-        public class SignalDeclaration : VHDLNode
+        public class SignalDeclarationNode : VHDLNode
         {
-            public SignalDeclaration(string signal, int bits)
+            public SignalDeclarationNode(string signal, int bits)
             {
                 this.SignalName = signal;
                 this.BitCount = bits;
@@ -265,9 +265,9 @@ namespace ProtoCore.VHDL
             public int BitCount { get; private set; }
         }
 
-        public class Process : VHDLNode
+        public class ProcessNode : VHDLNode
         {
-            public Process(string description, int processCount, List<string> sensitivityList, List<VHDLNode> varDeclaration, List<VHDLNode> body)
+            public ProcessNode(string description, int processCount, List<string> sensitivityList, List<VHDLNode> varDeclaration, List<VHDLNode> body)
             {
                 this.ProcessName = ProtoCore.VHDL.Constants.ProcessName.Prefix + "_" + processCount.ToString() + " " + description;
                 this.SensitivityList = new List<string>(sensitivityList);

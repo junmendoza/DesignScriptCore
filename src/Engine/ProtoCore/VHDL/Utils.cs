@@ -9,7 +9,7 @@ namespace ProtoCore.VHDL
 {
     public static class Utils
     {
-        public static string GeneratePortList(List<AST.PortEntry> portEntryList)
+        public static string GeneratePortList(List<AST.PortEntryNode> portEntryList)
         {
             StringBuilder portList = new StringBuilder();
             portList.Append(ProtoCore.VHDL.Keyword.Port);
@@ -19,7 +19,7 @@ namespace ProtoCore.VHDL
             portList.Append("\n\t");
             for (int i = 0; i < portEntryList.Count; ++i)
             {
-                ProtoCore.VHDL.AST.PortEntry portEntry = portEntryList[i];
+                ProtoCore.VHDL.AST.PortEntryNode portEntry = portEntryList[i];
                 portList.Append(portEntry.ToString());
                 if (i < (portEntryList.Count - 1))
                 {
