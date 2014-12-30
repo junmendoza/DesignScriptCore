@@ -627,7 +627,7 @@ namespace ProtoCore.VHDL.AST
             {
                 sbElsifExpr.Append(ProtoCore.VHDL.Keyword.Elsif);
                 sbElsifExpr.Append(" ");
-                sbElsifExpr.Append(IfExpr.ToString());
+                sbElsifExpr.Append(ElsifExpr.ToString());
                 sbElsifExpr.Append(" ");
                 sbElsifExpr.Append(ProtoCore.VHDL.Keyword.Then);
                 sbElsifExpr.Append("\n");

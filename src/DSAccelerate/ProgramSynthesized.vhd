@@ -19,21 +19,26 @@ signal b : std_logic_vector(31 downto 0);
 
 begin
 
-proc_1_ProgramSynthesized : process(clock)
+	proc_1_ProgramSynthesized : process(clock)
 
-begin
-ResetSync : if reset = '1' then
-execution_started <= '0';
+	begin
+		ResetSync : if reset = '1' then
+			execution_started <= '0';
 
-elsif reset = '1' then
-ClockSync : if rising_edge(clock) then
-execution_started <= '1';
+		elsif reset = '0' then
+			ClockSync : if rising_edge(clock) then
+				if execution_started = '0' then
+					execution_started <= '1';
+					a <= X"00000001";
+					b <= X"00000002";
 
-end if ClockSync;
-end if ResetSync;
+				end if ;
+
+			end if ClockSync;
+		end if ResetSync;
 
 
-end process proc_1_ProgramSynthesized;
+	end process proc_1_ProgramSynthesized;
 
 
 end Behavioral;
