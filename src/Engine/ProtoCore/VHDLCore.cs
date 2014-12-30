@@ -11,12 +11,10 @@ namespace ProtoCore.VHDL
     {
         public VHDLCore(string topLevelModule)
         {
-            MapOutputFile = new Dictionary<string, TextWriter>();
-
-            // Setup output vhdl file
-            string path = @"..\..\ControlUnit.vhd";
             TopLevelModuleName = ModuleName = topLevelModule;
-            MapOutputFile[ModuleName] = new StreamWriter(File.Open(path, FileMode.Create));
+
+            ModuleMap = new Dictionary<string, AST.Module>();
+            ModuleMap[ModuleName] = new AST.Module(TopLevelModuleName);
         }
 
         /// <summary>
@@ -27,10 +25,9 @@ namespace ProtoCore.VHDL
         public void SetupTargetComponent(string componentName)
         {
             ModuleName = componentName;
-            if (!MapOutputFile.ContainsKey(ModuleName))
+            if (!ModuleMap.ContainsKey(ModuleName))
             {
-                string path = @"..\..\" + componentName + ".vhd";
-                MapOutputFile[ModuleName] = new StreamWriter(File.Open(path, FileMode.Create));
+                ModuleMap[ModuleName] = new AST.Module(ModuleName);
             }
         }
 
@@ -41,9 +38,9 @@ namespace ProtoCore.VHDL
 
         public TextWriter GetOutputStream()
         {
-            Validity.Assert(MapOutputFile.Count > 0);
-            Validity.Assert(MapOutputFile[ModuleName] != null);
-            return MapOutputFile[ModuleName];
+            Validity.Assert(ModuleMap.Count > 0);
+            Validity.Assert(ModuleMap[ModuleName] != null);
+            return ModuleMap[ModuleName].OutputFile;
         }
 
         /// <summary>
@@ -51,13 +48,13 @@ namespace ProtoCore.VHDL
         /// </summary>
         public void CommitOutputStream()
         {
-            foreach (var kvp in MapOutputFile)
+            foreach (var kvp in ModuleMap)
             {
-                kvp.Value.Flush();
+                kvp.Value.OutputFile.Flush();
             }
         }
 
-        public Dictionary<string, TextWriter> MapOutputFile { get; private set; }
+        public Dictionary<string, AST.Module> ModuleMap { get; private set; }
         public string TopLevelModuleName { get; private set; }
 
         public string ModuleName { get; set; }
@@ -67,7 +64,104 @@ namespace ProtoCore.VHDL
     {
         public abstract class VHDLNode
         {
-            public abstract string ToString();
+        }
+
+        public class Module : VHDLNode
+        {
+            public Module(string moduleName)
+            {
+                this.Name = moduleName;
+
+                // Setup output vhdl file
+                string path = @"..\..\" + this.Name + ".vhd";
+                OutputFile = new StreamWriter(File.Open(path, FileMode.Create));
+            }
+
+            public override string ToString()
+            {
+                return string.Empty;
+            }
+
+            public string Name { get; set; }
+            public TextWriter OutputFile { get; private set; }
+        }
+
+        public class Library : VHDLNode
+        {
+            public Library(string libraryName)
+            {
+                this.Name = libraryName;
+            }
+
+            public override string ToString()
+            {
+                StringBuilder library = new StringBuilder();
+
+                library.Append(ProtoCore.VHDL.Keyword.Library);
+                library.Append(" ");
+                library.Append(Name);
+                library.Append(";");
+                library.Append("\n");
+
+                return library.ToString();
+            }
+            public string Name { get; private set; }
+        }
+
+        public class Use : VHDLNode
+        {
+            public Use(string moduleName)
+            {
+                this.Name = moduleName;
+            }
+
+            public override string ToString()
+            {
+                StringBuilder use = new StringBuilder();
+
+                use.Append(ProtoCore.VHDL.Keyword.Use);
+                use.Append(" ");
+                use.Append(Name);
+                use.Append(";");
+                use.Append("\n");
+
+                return use.ToString();
+            }
+            public string Name { get; private set; }
+        }
+
+        public class Entity : VHDLNode
+        {
+            public Entity(string name, List<PortEntry> portEntryList)
+            {
+                this.Name = name;
+                this.PortEntryList = new List<PortEntry>(portEntryList);
+            }
+
+            public override string ToString()
+            {
+                StringBuilder entity = new StringBuilder();
+                
+                entity.Append(ProtoCore.VHDL.Keyword.Entity);
+                entity.Append(" ");
+                entity.Append(Name);
+                entity.Append(" ");
+                entity.Append(ProtoCore.VHDL.Keyword.Is);
+                entity.Append("\n");
+
+                entity.Append(ProtoCore.VHDL.Utils.GeneratePortList(PortEntryList));
+
+                entity.Append(ProtoCore.VHDL.Keyword.End);
+                entity.Append(" ");
+                entity.Append(Name);
+                entity.Append(";");
+                entity.Append("\n\n");
+
+                return entity.ToString();
+            }
+
+            public List<PortEntry> PortEntryList { get; private set; }
+            public string Name { get; private set; }
         }
 
         public class PortEntry : VHDLNode

@@ -195,6 +195,7 @@
     <Compile Include="Utils\StringUtils.cs" />
     <Compile Include="Utils\Validity.cs" />
     <Compile Include="VHDLCore.cs" />
+    <Compile Include="VHDL\Utils.cs" />
     <Compile Include="VHDL\VHDLDefs.cs" />
   </ItemGroup>
   <ItemGroup>
