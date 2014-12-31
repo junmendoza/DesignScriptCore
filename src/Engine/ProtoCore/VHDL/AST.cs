@@ -41,6 +41,10 @@ namespace ProtoCore.VHDL.AST
 
         private List<VHDLNode> GetCurrentExecutionBody()
         {
+            IfNode resetSync = null;
+            IfNode clockSync = null;
+            IfNode executionStartFlagIf = null;
+
             // The execution body in the top level module is at the elsif body of the ClockSync
             ProcessNode procNode = ProcessList[ProcessList.Count - 1];
             bool isFirstProcessOnTopModule = IsTopModule == true && ProcessList.Count == 1;
@@ -53,6 +57,16 @@ namespace ProtoCore.VHDL.AST
                 //    elsif reset = '0' then
                 //        ClockSync : if rising_edge(clock) then
                 //            if execution_started = '0' then       <-- Process body
+                resetSync = procNode.Body[0] as IfNode;
+                Validity.Assert(resetSync != null);
+
+                clockSync = resetSync.ElsifBody[0] as IfNode;
+                Validity.Assert(clockSync != null);
+
+                executionStartFlagIf = clockSync.IfBody[0] as IfNode;
+                Validity.Assert(executionStartFlagIf != null);
+
+                return executionStartFlagIf.IfBody;
             }
 
             // The execution body of a process is the elsif body of the ResetSync
@@ -63,13 +77,16 @@ namespace ProtoCore.VHDL.AST
             //
             //    elsif reset = '0' then
             //            x <= a                     <-- Process body
-            return procNode.Body;
+            resetSync = procNode.Body[0] as IfNode;
+            Validity.Assert(resetSync != null);
+
+            return resetSync.ElsifBody;
         }
 
         /// <summary>
         /// The current process instantiates its own copy and contents of the execution body 
         /// This function must be called before creating a new process
-        /// // The execution body is cleared
+        /// The execution body is cleared
         /// </summary>
         public void CloseCurrentProcess()
         {
