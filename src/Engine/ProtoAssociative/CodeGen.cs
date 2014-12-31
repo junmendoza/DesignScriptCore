@@ -32,7 +32,7 @@ namespace ProtoAssociative
     {
         #region VHDL_CODEGEN
 
-        private void VHDL_EmitFunctionDefiniton(FunctionDefinitionNode funcDefNode)
+        private void VHDL_EmitFunctionDefinitonBegin(FunctionDefinitionNode funcDefNode)
         {
             //=====================================
             // Emit VHDL Header
@@ -118,7 +118,11 @@ namespace ProtoAssociative
                 processBody
                 );
             functionModule.ProcessList.Add(entryProcess);
+        }
 
+
+        private void VHDL_EmitFunctionDefinitionEnd()
+        {
             // After completing a function definition, restore the top module
             core.VhdlCore.SetTopModule();
         }
@@ -6267,8 +6271,6 @@ namespace ProtoAssociative
                     localProcedure.isVarArg = funcDef.Signature.IsVarArg;
                 }
 
-                VHDL_EmitFunctionDefiniton(funcDef);
-
                 if (ProtoCore.DSASM.Constants.kInvalidIndex == globalClassIndex)
                 {
                     globalProcIndex = codeBlock.procedureTable.Append(localProcedure);
@@ -6311,6 +6313,8 @@ namespace ProtoAssociative
             }
             else if (parseGlobalFunctionBody || parseMemberFunctionBody)
             {
+                VHDL_EmitFunctionDefinitonBegin(funcDef);
+
                 if (core.Options.DisableDisposeFunctionDebug)
                 {
                     if (CoreUtils.IsDisposeMethod(node.Name))
@@ -6421,6 +6425,8 @@ namespace ProtoAssociative
                     }
 
                     EmitCompileLogFunctionEnd();
+
+                    VHDL_EmitFunctionDefinitionEnd();
 
                     // All locals have been stack allocated, update the local count of this function
                     localProcedure.localCount = core.BaseOffset;
