@@ -72,6 +72,11 @@ namespace ProtoCore.VHDL
             BinaryExprOperatorTable.Add(AST.BinaryExpressionNode.Operator.Eq, "=");
         }
 
+        public static string GeneratePortMapName(string componentName, int instanceCount)
+        {
+            return "call_" + instanceCount.ToString() + "_" + componentName;
+        }
+
         public static string GetBinaryOperatorString(VHDL.AST.BinaryExpressionNode.Operator optr)
         {
             return BinaryExprOperatorTable[optr];

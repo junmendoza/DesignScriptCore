@@ -486,9 +486,10 @@ namespace ProtoCore.VHDL.AST
 
     public class PortMapNode : VHDLNode
     {
-        public PortMapNode(string name)
+        public PortMapNode(string instanceName, ComponentNode component)
         {
-            this.Name = name;
+            this.Name = instanceName;
+            this.Component = component;
         }
 
         public override string ToString()
@@ -497,6 +498,7 @@ namespace ProtoCore.VHDL.AST
             return portmap.ToString();
         }
         public string Name { get; private set; }
+        public ComponentNode Component { get; private set; }
     }
 
     public class ProcessNode : VHDLNode

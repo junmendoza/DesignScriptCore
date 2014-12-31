@@ -14,6 +14,7 @@ namespace ProtoCore.VHDL
             TopLevelModuleName = ModuleName = topLevelModule;
             ModuleMap = new Dictionary<string, AST.ModuleNode>();
             ProtoCore.VHDL.Utils.InitTables();
+            ComponentInstanceCountMap = new Dictionary<string, int>();
         }
 
         public ProtoCore.VHDL.AST.ModuleNode CreateModule(string componentName)
@@ -30,6 +31,13 @@ namespace ProtoCore.VHDL
         public ProtoCore.VHDL.AST.ModuleNode CreateTopModule()
         {
             return CreateModule(TopLevelModuleName);
+        }
+
+        public AST.ModuleNode GetModule(string name)
+        {
+            Validity.Assert(ModuleMap.Count > 0);
+            Validity.Assert(ModuleMap[name] != null);
+            return ModuleMap[name];
         }
 
         public AST.ModuleNode GetCurrentModule()
@@ -56,9 +64,28 @@ namespace ProtoCore.VHDL
             }
         }
 
+        public void UpdateComponentInstanceCount(string componentName)
+        {
+            if (ComponentInstanceCountMap.ContainsKey(componentName))
+            {
+                // Increment the instance count
+                ComponentInstanceCountMap[componentName]++;
+            }
+            else
+            {
+                // The component is instantiated for the first time
+                ComponentInstanceCountMap.Add(componentName, 1);
+            }
+        }
+
+
         public Dictionary<string, AST.ModuleNode> ModuleMap { get; private set; }
         public string TopLevelModuleName { get; private set; }
-
         public string ModuleName { get; set; }
+
+        /// <summary>
+        /// Tracks the number of times a component is instantiated
+        /// </summary>
+        public Dictionary<string, int> ComponentInstanceCountMap { get; private set; }
     }
 }

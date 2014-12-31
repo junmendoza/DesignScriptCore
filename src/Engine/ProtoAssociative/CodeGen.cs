@@ -34,7 +34,15 @@ namespace ProtoAssociative
         
         private void VHDL_EmitAssignmentStmt(BinaryExpressionNode bnode)
         {
-            ProtoCore.VHDL.AST.ModuleNode module = core.VhdlCore.GetCurrentModule();
+            ProtoCore.VHDL.AST.ModuleNode module = null;
+            if (localProcedure == null)
+            {
+                module = core.VhdlCore.GetCurrentModule();
+            }
+            else
+            {
+                module = core.VhdlCore.GetModule(localProcedure.name);
+            }
 
             string lhsName = string.Empty;
             IdentifierNode leftIdentNode = bnode.LeftNode as IdentifierNode;
@@ -85,18 +93,26 @@ namespace ProtoAssociative
         private void VHDL_EmitComponentInstanceFromFunctionCall(string lhs, FunctionCallNode funcCallNode)
         {
             ProtoCore.VHDL.AST.ModuleNode module = core.VhdlCore.GetCurrentModule();
+
             string functionCallName = funcCallNode.Function.Name;
             string functionReturnSignalName = "return_" + functionCallName;
+
+            ProtoCore.VHDL.AST.ModuleNode functionModule = core.VhdlCore.GetModule(functionCallName);
+            core.VhdlCore.UpdateComponentInstanceCount(functionCallName);
 
             //========================================
             // Emit component
             //========================================
+            ProtoCore.VHDL.AST.ComponentNode componentToInstantiate = 
+                new ProtoCore.VHDL.AST.ComponentNode(functionCallName, functionModule.Entity.PortEntryList);
+            module.ComponentList.Add(componentToInstantiate);
 
             //========================================
             // Emit portmap
             //========================================
-            ProtoCore.VHDL.AST.PortMapNode portmap = new ProtoCore.VHDL.AST.PortMapNode(functionCallName);
-
+            string instanceName = ProtoCore.VHDL.Utils.GeneratePortMapName(functionCallName, core.VhdlCore.ComponentInstanceCountMap[functionCallName]);
+            ProtoCore.VHDL.AST.PortMapNode portmap = new ProtoCore.VHDL.AST.PortMapNode(instanceName, componentToInstantiate);
+            module.PortMapList.Add(portmap);
 
             //========================================
             // Emit return process
@@ -153,7 +169,7 @@ namespace ProtoAssociative
             module.ProcessList.Add(returnProcess);
         }
 
-        private void VHDL_EmitFunctionDefinitonBegin(FunctionDefinitionNode funcDefNode)
+        private void VHDL_EmitFunctionDefiniton(FunctionDefinitionNode funcDefNode)
         {
             //=====================================
             // Emit VHDL Header
@@ -240,14 +256,11 @@ namespace ProtoAssociative
                 processBody
                 );
             functionModule.ProcessList.Add(entryProcess);
-        }
 
-
-        private void VHDL_EmitFunctionDefinitionEnd()
-        {
             // After completing a function definition, restore the top module
             core.VhdlCore.SetTopModule();
         }
+
 
         /// <summary>
         /// Emit VHDL top level module
@@ -6315,6 +6328,8 @@ namespace ProtoAssociative
             codeBlock.blockType = ProtoCore.DSASM.CodeBlockType.kFunction;
             if (IsParsingGlobalFunctionSig() || IsParsingMemberFunctionSig())
             {
+                VHDL_EmitFunctionDefiniton(funcDef);
+
                 Validity.Assert(null == localProcedure);
                 localProcedure = new ProtoCore.DSASM.ProcedureNode();
 
@@ -6436,8 +6451,6 @@ namespace ProtoAssociative
             }
             else if (parseGlobalFunctionBody || parseMemberFunctionBody)
             {
-                VHDL_EmitFunctionDefinitonBegin(funcDef);
-
                 if (core.Options.DisableDisposeFunctionDebug)
                 {
                     if (CoreUtils.IsDisposeMethod(node.Name))
@@ -6548,8 +6561,6 @@ namespace ProtoAssociative
                     }
 
                     EmitCompileLogFunctionEnd();
-
-                    VHDL_EmitFunctionDefinitionEnd();
 
                     // All locals have been stack allocated, update the local count of this function
                     localProcedure.localCount = core.BaseOffset;
@@ -8430,7 +8441,9 @@ namespace ProtoAssociative
             ProtoCore.Type rightType = TypeSystem.BuildPrimitiveTypeObject(PrimitiveType.kTypeVar, 0);
 
             DebugProperties.BreakpointOptions oldOptions = core.DebugProps.breakOptions;
-            
+
+            VHDL_EmitAssignmentStmt(bnode);
+
             /*
             proc emitbinaryexpression(node)
                 if node is assignment
@@ -9197,8 +9210,6 @@ namespace ProtoAssociative
                 throw new BuildHaltException(message);
             }
             core.DebugProps.breakOptions = oldOptions;
-
-            VHDL_EmitAssignmentStmt(bnode);
 
             //if post fix, now traverse the post fix
 #if ENABLE_INC_DEC_FIX
