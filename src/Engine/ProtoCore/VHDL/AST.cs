@@ -29,6 +29,7 @@ namespace ProtoCore.VHDL.AST
             PortMapList = new List<PortMapNode>();
             ProcessList = new List<ProcessNode>();
             ExecutionBody = new List<VHDLNode>();
+            ReturnSignalName = string.Empty;
         }
 
         public void Emit()
@@ -201,6 +202,7 @@ namespace ProtoCore.VHDL.AST
         public List<ComponentNode> ComponentList { get; set; }
         public List<PortMapNode> PortMapList { get; set; }
         public List<ProcessNode> ProcessList { get; set; }
+        public string ReturnSignalName { get; set; }
 
         public TextWriter OutputFile { get; private set; }
 
@@ -342,7 +344,7 @@ namespace ProtoCore.VHDL.AST
             {
                 dir = ProtoCore.VHDL.Keyword.In;
             }
-            else if (EntryDirection == Direction.In)
+            else if (EntryDirection == Direction.Out)
             {
                 dir = ProtoCore.VHDL.Keyword.Out;
             }

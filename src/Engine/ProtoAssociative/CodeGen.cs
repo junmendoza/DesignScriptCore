@@ -31,6 +31,66 @@ namespace ProtoAssociative
     public class CodeGen : ProtoCore.CodeGen
     {
         #region VHDL_CODEGEN
+        
+        private void VHDL_EmitAssignmentStmt(BinaryExpressionNode bnode)
+        {
+            ProtoCore.VHDL.AST.ModuleNode module = core.VhdlCore.GetCurrentModule();
+            Validity.Assert(module != null);
+
+            ProtoCore.VHDL.AST.VHDLNode rNode = null;
+            if (bnode.RightNode is FunctionCallNode)
+            {
+                VHDL_EmitComponentInstance(bnode.RightNode as FunctionCallNode);
+            }
+            else
+            {
+                if (bnode.RightNode is IntNode)
+                {
+                    rNode = new ProtoCore.VHDL.AST.HexStringNode((int)(bnode.RightNode as IntNode).Value);
+                }
+                else if (bnode.RightNode is IdentifierNode)
+                {
+                    rNode = new ProtoCore.VHDL.AST.IdentifierNode((bnode.RightNode as IdentifierNode).Name);
+                }
+
+                if (rNode != null)
+                {
+                    string lhsName = string.Empty;
+                    IdentifierNode leftIdentNode = bnode.LeftNode as IdentifierNode;
+                    Validity.Assert(leftIdentNode != null);
+                    lhsName = leftIdentNode.Value;
+                    if (lhsName == ProtoCore.DSDefinitions.Keyword.Return)
+                    {
+                        Validity.Assert(!string.IsNullOrEmpty(module.ReturnSignalName));
+                        lhsName = module.ReturnSignalName;
+                    }
+
+                    ProtoCore.VHDL.AST.AssignmentNode assignNode = new ProtoCore.VHDL.AST.AssignmentNode(
+                        new ProtoCore.VHDL.AST.IdentifierNode(lhsName),
+                        rNode
+                        );
+                    module.ExecutionBody.Add(assignNode);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handle DS function call 
+        ///     Emit component
+        ///     Emit portmap
+        ///     Close current process
+        ///     Emit return process
+        ///     Set return process as current process
+        /// </summary>
+        /// <param name="funcCallNode"></param>
+        private void VHDL_EmitComponentInstance(FunctionCallNode funcCallNode)
+        {
+            // Emit component
+            // Emit portmap
+            // Close current process
+            // Emit return process
+            // Set return process as current process
+        }
 
         private void VHDL_EmitFunctionDefinitonBegin(FunctionDefinitionNode funcDefNode)
         {
@@ -43,6 +103,7 @@ namespace ProtoAssociative
             //=====================================
             ProtoCore.VHDL.AST.ModuleNode functionModule = core.VhdlCore.CreateModule(funcDefNode.Name);
             string funcName = functionModule.Name;
+            functionModule.ReturnSignalName = "return_" + funcName;
 
             // Library list
             List<string> libaryNameList = new List<string>();
@@ -75,14 +136,15 @@ namespace ProtoAssociative
                 }
             }
 
+            // Return signal
+            listPortEntry.Add(new ProtoCore.VHDL.AST.PortEntryNode(functionModule.ReturnSignalName, ProtoCore.VHDL.AST.PortEntryNode.Direction.Out, 32));
+
             // Entity Declaration
             ProtoCore.VHDL.AST.EntityNode entity = new ProtoCore.VHDL.AST.EntityNode(funcName, listPortEntry);
             functionModule.Entity = entity;
 
             // ExecutionLogic body
-            functionModule.ExecutionBody = new List<ProtoCore.VHDL.AST.VHDLNode>();
-            //functionModule.ExecutionBody.Add(execStartFlagSet1);
-
+            functionModule.ExecutionBody = new List<ProtoCore.VHDL.AST.VHDLNode>(); 
 
             // Reset sync ifstmt
             ProtoCore.VHDL.AST.IfNode resetSyncIf = new ProtoCore.VHDL.AST.IfNode(ProtoCore.VHDL.Constants.ResetSync);
@@ -9075,32 +9137,7 @@ namespace ProtoAssociative
             }
             core.DebugProps.breakOptions = oldOptions;
 
-            ProtoCore.VHDL.AST.VHDLNode rNode= null;
-            if (bnode.RightNode is FunctionCallNode)
-            {
-            }
-            else
-            {
-                if (bnode.RightNode is IntNode)
-                {
-                    rNode = new ProtoCore.VHDL.AST.HexStringNode((int)(bnode.RightNode as IntNode).Value);
-                }
-                else if (bnode.RightNode is IdentifierNode)
-                {
-                    rNode = new ProtoCore.VHDL.AST.IdentifierNode((bnode.RightNode as IdentifierNode).Name);
-                }
-
-                if (rNode != null)
-                {
-                    ProtoCore.VHDL.AST.AssignmentNode assignNode = new ProtoCore.VHDL.AST.AssignmentNode(
-                        new ProtoCore.VHDL.AST.IdentifierNode(bnode.LeftNode.Name),
-                        rNode
-                        );
-
-                    ProtoCore.VHDL.AST.ModuleNode module = core.VhdlCore.GetCurrentModule();
-                    module.ExecutionBody.Add(assignNode);
-                }
-            }
+            VHDL_EmitAssignmentStmt(bnode);
 
             //if post fix, now traverse the post fix
 #if ENABLE_INC_DEC_FIX

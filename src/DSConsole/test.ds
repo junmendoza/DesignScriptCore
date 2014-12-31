@@ -1,22 +1,23 @@
 
-/*
-def Increment(a : int)
+
+def Assign(a : int)
 {
-	t = a + 1;
-	return = t;
+	//p = a + 1;
+	p = 100;
+	return = p;
 }
 x = 1;
 y = Increment(x);
 z = y * 2;
+
+
+/*
+a = 10;
+b = a;
+c = a + b;
 */
 
 /*
-
-a = 10;
-b = a
-c = a + b;
-
-*/
-
 a = 1;
 b = 2;
+*/
