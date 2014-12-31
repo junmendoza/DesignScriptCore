@@ -486,19 +486,65 @@ namespace ProtoCore.VHDL.AST
 
     public class PortMapNode : VHDLNode
     {
-        public PortMapNode(string instanceName, ComponentNode component)
+        public PortMapNode(string instanceName, ComponentNode component, List<string> signalMap)
         {
             this.Name = instanceName;
             this.Component = component;
+            this.SignalMap = new List<string>(signalMap);
         }
 
         public override string ToString()
         {
-            StringBuilder portmap = new StringBuilder();
-            return portmap.ToString();
+            //InstanceName : ComponentName port map
+            //(
+            //    reset => reset,
+            //    a => local_signal,
+            //    return_val => return_val_local_signal
+            //);
+		
+            StringBuilder portmapDecl = new StringBuilder();
+
+            // Declaration
+            portmapDecl.Append(Name);
+            portmapDecl.Append(" : ");
+            portmapDecl.Append(Component.Name);
+            portmapDecl.Append(" ");
+            portmapDecl.Append(ProtoCore.VHDL.Keyword.Port);
+            portmapDecl.Append(" ");
+            portmapDecl.Append(ProtoCore.VHDL.Keyword.Map);
+
+            // Signal map
+            StringBuilder portmapSignals = new StringBuilder();
+            portmapSignals.Append("(");
+            portmapSignals.Append("\n");
+
+            Validity.Assert(Component.PortEntryList.Count == SignalMap.Count);
+            for (int n = 0; n < SignalMap.Count; ++n)
+            {
+                portmapSignals.Append(Component.PortEntryList[n].SignalName);
+                portmapSignals.Append(" ");
+                portmapSignals.Append("=>");
+                portmapSignals.Append(" ");
+                portmapSignals.Append(SignalMap[n]);
+                if (n < (SignalMap.Count - 1))
+                {
+                    portmapSignals.Append(",");
+                }
+                portmapSignals.Append("\n");
+            }
+            portmapSignals.Append(");");
+            
+            StringBuilder sbFormat = new StringBuilder();
+            sbFormat.Append(portmapDecl);
+            sbFormat.Append("\n");
+            sbFormat.Append(portmapSignals);
+
+            return sbFormat.ToString();
         }
+
         public string Name { get; private set; }
         public ComponentNode Component { get; private set; }
+        public List<string> SignalMap { get; private set; }
     }
 
     public class ProcessNode : VHDLNode

@@ -13,32 +13,64 @@ end ProgramSynthesized;
 architecture Behavioral of ProgramSynthesized is
 
 signal execution_started : std_logic;
+signal call_1_Assign_return_val : std_logic_vector(31 downto 0);
 signal a : std_logic_vector(31 downto 0);
-signal b : std_logic_vector(31 downto 0);
+signal x : std_logic_vector(31 downto 0);
+signal tSSA_1_3111717f2951425799ff62e670b79133 : std_logic_vector(31 downto 0);
+signal tSSA_2_3111717f2951425799ff62e670b79133 : std_logic_vector(31 downto 0);
+signal y : std_logic_vector(31 downto 0);
+signal p : std_logic_vector(31 downto 0);
+signal tSSA_0_3111717f2951425799ff62e670b79133 : std_logic_vector(31 downto 0);
 
+component Assign is
+port( 
+	reset : in std_logic;
+	a : in std_logic_vector(31 downto 0);
+	return_Assign : out std_logic_vector(31 downto 0)
+);
+end component Assign;
 
 begin
+call_1_Assign : Assign port map
+(
+reset => reset,
+a => tSSA_1_3111717f2951425799ff62e670b79133,
+return_Assign => call_1_Assign_return_val
+);
 
-	proc_1_ProgramSynthesized : process(clock)
+proc_1_ProgramSynthesized : process(clock)
 
-	begin
-		ResetSync : if reset = '1' then
-			execution_started <= '0';
+begin
+ResetSync : if reset = '1' then
+execution_started <= '0';
 
-		elsif reset = '0' then
-			ClockSync : if rising_edge(clock) then
-				if execution_started = '0' then
-					execution_started <= '1';
-					a <= X"00000001";
-					b <= X"00000002";
+elsif reset = '0' then
+ClockSync : if rising_edge(clock) then
+if execution_started = '0' then
+execution_started <= '1';
+x <= X"00000001";
+tSSA_1_3111717f2951425799ff62e670b79133 <= x;
 
-				end if ;
+end if ;
 
-			end if ClockSync;
-		end if ResetSync;
+end if ClockSync;
+end if ResetSync;
 
 
-	end process proc_1_ProgramSynthesized;
+end process proc_1_ProgramSynthesized;
+
+proc_2_call_1_Assign_return_val : process(call_1_Assign_return_val)
+
+begin
+ResetSync : if reset = '1' then
+
+elsif reset = '0' then
+tSSA_2_3111717f2951425799ff62e670b79133 <= call_1_Assign_return_val;
+y <= tSSA_2_3111717f2951425799ff62e670b79133;
+end if ResetSync;
+
+
+end process proc_2_call_1_Assign_return_val;
 
 
 end Behavioral;

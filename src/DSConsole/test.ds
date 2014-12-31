@@ -2,13 +2,11 @@
 
 def Assign(a : int)
 {
-	//p = a + 1;
 	p = 100;
 	return = p;
 }
 x = 1;
-y = Increment(x);
-z = y * 2;
+y = Assign(x);
 
 
 /*

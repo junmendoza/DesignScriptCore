@@ -111,19 +111,35 @@ namespace ProtoAssociative
                 new ProtoCore.VHDL.AST.ComponentNode(functionCallName, functionModule.Entity.PortEntryList);
             module.ComponentList.Add(componentToInstantiate);
 
-            //========================================
-            // Emit portmap
-            //========================================
-            string instanceName = ProtoCore.VHDL.Utils.GeneratePortMapName(functionCallName, core.VhdlCore.ComponentInstanceCountMap[functionCallName]);
-            ProtoCore.VHDL.AST.PortMapNode portmap = new ProtoCore.VHDL.AST.PortMapNode(instanceName, componentToInstantiate);
-            module.PortMapList.Add(portmap);
-
 
             // Generate signal for function return
             string functionReturnSignalName = ProtoCore.VHDL.Utils.GenerateComponentReturnSignal(functionCallName, core.VhdlCore.ComponentInstanceCountMap[functionCallName]);
             ProtoCore.VHDL.AST.SignalDeclarationNode functionReturnSignal =
                 new ProtoCore.VHDL.AST.SignalDeclarationNode(functionReturnSignalName, 32);
             module.SignalDeclarationList.Add(functionReturnSignal);
+
+            //========================================
+            // Emit portmap
+            //========================================
+            string instanceName = ProtoCore.VHDL.Utils.GeneratePortMapName(functionCallName, core.VhdlCore.ComponentInstanceCountMap[functionCallName]);
+            List<string> signalMap = new List<string>();
+            signalMap.Add(ProtoCore.VHDL.Constants.ResetSignalName);
+            foreach (AssociativeNode assocNode in funcCallNode.FormalArguments)
+            {
+                if (assocNode is IdentifierNode)
+                {
+                    signalMap.Add((assocNode as IdentifierNode).Name);
+                }
+                else
+                {
+                    // Support the rest of arg types here
+                    Validity.Assert(false);
+                }
+            }
+            signalMap.Add(functionReturnSignalName);
+            ProtoCore.VHDL.AST.PortMapNode portmap = new ProtoCore.VHDL.AST.PortMapNode(instanceName, componentToInstantiate, signalMap);
+            module.PortMapList.Add(portmap);
+
 
             //========================================
             // Emit return process
@@ -2196,6 +2212,8 @@ namespace ProtoAssociative
                 enforceTypeCheck = !(paramNode is BinaryExpressionNode);
 
                 DfsTraverse(paramNode, ref paramType, false, graphNode, subPass, bnode);
+
+                // xxxx VHDL store
 
                 emitReplicationGuide = false;
                 enforceTypeCheck = true;
