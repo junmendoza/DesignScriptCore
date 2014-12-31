@@ -74,7 +74,12 @@ namespace ProtoCore.VHDL
 
         public static string GeneratePortMapName(string componentName, int instanceCount)
         {
-            return "call_" + instanceCount.ToString() + "_" + componentName;
+            return "call" + "_" + instanceCount.ToString() + "_" + componentName;
+        }
+
+        public static string GenerateComponentReturnSignal(string componentName, int instanceCount)
+        {
+            return "call" + "_"+ instanceCount.ToString() + "_" + componentName + "_" + "return_val";
         }
 
         public static string GetBinaryOperatorString(VHDL.AST.BinaryExpressionNode.Operator optr)

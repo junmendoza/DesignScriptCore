@@ -99,9 +99,7 @@ namespace ProtoAssociative
         private void VHDL_EmitComponentInstanceFromFunctionCall(string lhs, FunctionCallNode funcCallNode)
         {
             ProtoCore.VHDL.AST.ModuleNode module = VHDL_GetCurrentModule();
-
             string functionCallName = funcCallNode.Function.Name;
-            string functionReturnSignalName = "return_" + functionCallName;
 
             ProtoCore.VHDL.AST.ModuleNode functionModule = core.VhdlCore.GetModule(functionCallName);
             core.VhdlCore.UpdateComponentInstanceCount(functionCallName);
@@ -119,6 +117,13 @@ namespace ProtoAssociative
             string instanceName = ProtoCore.VHDL.Utils.GeneratePortMapName(functionCallName, core.VhdlCore.ComponentInstanceCountMap[functionCallName]);
             ProtoCore.VHDL.AST.PortMapNode portmap = new ProtoCore.VHDL.AST.PortMapNode(instanceName, componentToInstantiate);
             module.PortMapList.Add(portmap);
+
+
+            // Generate signal for function return
+            string functionReturnSignalName = ProtoCore.VHDL.Utils.GenerateComponentReturnSignal(functionCallName, core.VhdlCore.ComponentInstanceCountMap[functionCallName]);
+            ProtoCore.VHDL.AST.SignalDeclarationNode functionReturnSignal =
+                new ProtoCore.VHDL.AST.SignalDeclarationNode(functionReturnSignalName, 32);
+            module.SignalDeclarationList.Add(functionReturnSignal);
 
             //========================================
             // Emit return process
