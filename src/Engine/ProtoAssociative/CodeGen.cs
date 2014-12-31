@@ -31,18 +31,24 @@ namespace ProtoAssociative
     public class CodeGen : ProtoCore.CodeGen
     {
         #region VHDL_CODEGEN
-        
-        private void VHDL_EmitAssignmentStmt(BinaryExpressionNode bnode)
+
+        private ProtoCore.VHDL.AST.ModuleNode VHDL_GetCurrentModule()
         {
             ProtoCore.VHDL.AST.ModuleNode module = null;
             if (localProcedure == null)
             {
-                module = core.VhdlCore.GetCurrentModule();
+                module = core.VhdlCore.GetTopModule();
             }
             else
             {
                 module = core.VhdlCore.GetModule(localProcedure.name);
             }
+            return module;
+        }
+        
+        private void VHDL_EmitAssignmentStmt(BinaryExpressionNode bnode)
+        {
+            ProtoCore.VHDL.AST.ModuleNode module = VHDL_GetCurrentModule();
 
             string lhsName = string.Empty;
             IdentifierNode leftIdentNode = bnode.LeftNode as IdentifierNode;
@@ -92,7 +98,7 @@ namespace ProtoAssociative
         /// <param name="funcCallNode"></param>
         private void VHDL_EmitComponentInstanceFromFunctionCall(string lhs, FunctionCallNode funcCallNode)
         {
-            ProtoCore.VHDL.AST.ModuleNode module = core.VhdlCore.GetCurrentModule();
+            ProtoCore.VHDL.AST.ModuleNode module = VHDL_GetCurrentModule();
 
             string functionCallName = funcCallNode.Function.Name;
             string functionReturnSignalName = "return_" + functionCallName;
@@ -258,7 +264,7 @@ namespace ProtoAssociative
             functionModule.ProcessList.Add(entryProcess);
 
             // After completing a function definition, restore the top module
-            core.VhdlCore.SetTopModule();
+            //core.VhdlCore.SetTopModule();
         }
 
 

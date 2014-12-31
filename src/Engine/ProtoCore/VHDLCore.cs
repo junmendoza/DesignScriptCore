@@ -33,18 +33,18 @@ namespace ProtoCore.VHDL
             return CreateModule(TopLevelModuleName);
         }
 
+        public AST.ModuleNode GetTopModule()
+        {
+            Validity.Assert(ModuleMap.Count > 0);
+            Validity.Assert(ModuleMap[TopLevelModuleName] != null);
+            return ModuleMap[TopLevelModuleName];
+        }
+
         public AST.ModuleNode GetModule(string name)
         {
             Validity.Assert(ModuleMap.Count > 0);
             Validity.Assert(ModuleMap[name] != null);
             return ModuleMap[name];
-        }
-
-        public AST.ModuleNode GetCurrentModule()
-        {
-            Validity.Assert(ModuleMap.Count > 0);
-            Validity.Assert(ModuleMap[ModuleName] != null);
-            return ModuleMap[ModuleName];
         }
 
         public void SetTopModule()
