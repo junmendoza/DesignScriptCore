@@ -13,6 +13,8 @@ end Assign;
 
 architecture Behavioral of Assign is
 
+signal p : std_logic_vector(31 downto 0);
+signal tSSA_0_28a27383f677498180709d5e2830fbc5 : std_logic_vector(31 downto 0);
 
 
 begin
@@ -24,8 +26,8 @@ ResetSync : if reset = '1' then
 
 elsif reset = '0' then
 p <= X"00000064";
-tSSA_0_3111717f2951425799ff62e670b79133 <= p;
-return_Assign <= tSSA_0_3111717f2951425799ff62e670b79133;
+tSSA_0_28a27383f677498180709d5e2830fbc5 <= p;
+return_Assign <= tSSA_0_28a27383f677498180709d5e2830fbc5;
 end if ResetSync;
 
 

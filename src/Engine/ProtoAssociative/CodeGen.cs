@@ -31,6 +31,40 @@ namespace ProtoAssociative
     public class CodeGen : ProtoCore.CodeGen
     {
         #region VHDL_CODEGEN
+        
+
+        /// <summary>
+        /// Get allocated variables and generate their signals in the associated modules
+        /// </summary>
+        private void VHDL_GenerateSignalsForAllocatedVariables()
+        {
+            //topModule.SignalDeclarationList.AddRange(ProtoCore.VHDL.Utils.GenerateSignalsDeclarationList(codeBlock.symbolTable));
+            foreach (KeyValuePair<int, SymbolNode> kvp in codeBlock.symbolTable.symbolList)
+            {
+                SymbolNode symbol = kvp.Value;
+
+                // Filter out function arg symbols
+                bool allocateSymbolAsSignal = symbol.isArgument != true;
+                if (allocateSymbolAsSignal)
+                {
+                    ProtoCore.VHDL.AST.ModuleNode module = null;
+                    ProtoCore.VHDL.AST.SignalDeclarationNode signalDecl = new ProtoCore.VHDL.AST.SignalDeclarationNode(symbol.name, 32);
+                    if (symbol.functionIndex == ProtoCore.DSASM.Constants.kGlobalScope)
+                    {
+                        // Global variable
+                        module = core.VhdlCore.GetTopModule();
+                    }
+                    else
+                    {
+                        // Local variable
+                        ProcedureNode procNode = codeBlock.procedureTable.procList[symbol.functionIndex];
+                        Validity.Assert(procNode != null);
+                        module = core.VhdlCore.GetModule(procNode.name);
+                    }
+                    module.SignalDeclarationList.Add(signalDecl);
+                }
+            }
+        }
 
         private ProtoCore.VHDL.AST.ModuleNode VHDL_GetCurrentModule()
         {
@@ -525,7 +559,8 @@ namespace ProtoAssociative
                 core.AsmOutput.Flush();
             }
 
-            topModule.SignalDeclarationList.AddRange(ProtoCore.VHDL.Utils.GenerateSignalsDeclarationList(codeBlock.symbolTable));
+            VHDL_GenerateSignalsForAllocatedVariables();
+
             core.VhdlCore.EmitModulesToFile();
 
             this.localCodeBlockNode = codeBlockNode;

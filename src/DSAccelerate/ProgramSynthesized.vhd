@@ -14,13 +14,10 @@ architecture Behavioral of ProgramSynthesized is
 
 signal execution_started : std_logic;
 signal call_1_Assign_return_val : std_logic_vector(31 downto 0);
-signal a : std_logic_vector(31 downto 0);
 signal x : std_logic_vector(31 downto 0);
-signal tSSA_1_3111717f2951425799ff62e670b79133 : std_logic_vector(31 downto 0);
-signal tSSA_2_3111717f2951425799ff62e670b79133 : std_logic_vector(31 downto 0);
+signal tSSA_1_28a27383f677498180709d5e2830fbc5 : std_logic_vector(31 downto 0);
+signal tSSA_2_28a27383f677498180709d5e2830fbc5 : std_logic_vector(31 downto 0);
 signal y : std_logic_vector(31 downto 0);
-signal p : std_logic_vector(31 downto 0);
-signal tSSA_0_3111717f2951425799ff62e670b79133 : std_logic_vector(31 downto 0);
 
 component Assign is
 port( 
@@ -34,7 +31,7 @@ begin
 call_1_Assign : Assign port map
 (
 reset => reset,
-a => tSSA_1_3111717f2951425799ff62e670b79133,
+a => tSSA_1_28a27383f677498180709d5e2830fbc5,
 return_Assign => call_1_Assign_return_val
 );
 
@@ -49,7 +46,7 @@ ClockSync : if rising_edge(clock) then
 if execution_started = '0' then
 execution_started <= '1';
 x <= X"00000001";
-tSSA_1_3111717f2951425799ff62e670b79133 <= x;
+tSSA_1_28a27383f677498180709d5e2830fbc5 <= x;
 
 end if ;
 
@@ -65,8 +62,8 @@ begin
 ResetSync : if reset = '1' then
 
 elsif reset = '0' then
-tSSA_2_3111717f2951425799ff62e670b79133 <= call_1_Assign_return_val;
-y <= tSSA_2_3111717f2951425799ff62e670b79133;
+tSSA_2_28a27383f677498180709d5e2830fbc5 <= call_1_Assign_return_val;
+y <= tSSA_2_28a27383f677498180709d5e2830fbc5;
 end if ResetSync;
 
 
