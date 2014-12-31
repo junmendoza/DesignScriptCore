@@ -16,6 +16,7 @@ namespace ProtoCore.VHDL.AST
         public ModuleNode(string moduleName)
         {
             this.Name = moduleName;
+            IsTopModule = false;
 
             // Setup output vhdl file
             string path = @"..\..\..\DSAccelerate\" + this.Name + ".vhd";
@@ -36,6 +37,49 @@ namespace ProtoCore.VHDL.AST
         {
             Validity.Assert(OutputFile != null);
             OutputFile.Write(ToString());
+        }
+
+        private List<VHDLNode> GetCurrentExecutionBody()
+        {
+            // The execution body in the top level module is at the elsif body of the ClockSync
+            ProcessNode procNode = ProcessList[ProcessList.Count - 1];
+            bool isFirstProcessOnTopModule = IsTopModule == true && ProcessList.Count == 1;
+            if (isFirstProcessOnTopModule)
+            {
+                //proc : process(clock)
+                //begin
+                //    ResetSync : if reset = '1' then
+                //        execution_started <= '0';
+                //    elsif reset = '0' then
+                //        ClockSync : if rising_edge(clock) then
+                //            if execution_started = '0' then       <-- Process body
+            }
+
+            // The execution body of a process is the elsif body of the ResetSync
+
+            //proc : process(a)
+            //begin
+            //    ResetSync : if reset = '1' then
+            //
+            //    elsif reset = '0' then
+            //            x <= a                     <-- Process body
+            return procNode.Body;
+        }
+
+        /// <summary>
+        /// The current process instantiates its own copy and contents of the execution body 
+        /// This function must be called before creating a new process
+        /// // The execution body is cleared
+        /// </summary>
+        public void CloseCurrentProcess()
+        {
+            Validity.Assert(ProcessList != null);
+            Validity.Assert(ProcessList.Count > 0);
+          
+            // Create a copy of the current process body
+            List<VHDLNode> execBody = GetCurrentExecutionBody();
+            execBody = new List<VHDLNode>(execBody);
+            ExecutionBody = new List<VHDLNode>();
         }
 
         public int GetProcessCount()
@@ -194,6 +238,7 @@ namespace ProtoCore.VHDL.AST
         }
 
         public string Name { get; private set; }
+        public bool IsTopModule { get; set; }
 
         public List<LibraryNode> LibraryList { get; set; }
         public List<UseNode> UseNodeList { get; set; }
@@ -521,7 +566,7 @@ namespace ProtoCore.VHDL.AST
         public string ProcessName { get; private set; }
         public List<string> SensitivityList { get; private set; }
         public List<VHDLNode> VariableDeclarations { get; private set; }
-        public List<VHDLNode> Body { get; private set; }
+        public List<VHDLNode> Body { get; set; }
     }
     
     public class AssignmentNode : VHDLNode

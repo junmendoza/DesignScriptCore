@@ -35,12 +35,16 @@ namespace ProtoAssociative
         private void VHDL_EmitAssignmentStmt(BinaryExpressionNode bnode)
         {
             ProtoCore.VHDL.AST.ModuleNode module = core.VhdlCore.GetCurrentModule();
-            Validity.Assert(module != null);
+
+            string lhsName = string.Empty;
+            IdentifierNode leftIdentNode = bnode.LeftNode as IdentifierNode;
+            Validity.Assert(leftIdentNode != null);
+            lhsName = leftIdentNode.Value;
 
             ProtoCore.VHDL.AST.VHDLNode rNode = null;
             if (bnode.RightNode is FunctionCallNode)
             {
-                VHDL_EmitComponentInstance(bnode.RightNode as FunctionCallNode);
+                VHDL_EmitComponentInstanceFromFunctionCall(lhsName, bnode.RightNode as FunctionCallNode);
             }
             else
             {
@@ -55,10 +59,6 @@ namespace ProtoAssociative
 
                 if (rNode != null)
                 {
-                    string lhsName = string.Empty;
-                    IdentifierNode leftIdentNode = bnode.LeftNode as IdentifierNode;
-                    Validity.Assert(leftIdentNode != null);
-                    lhsName = leftIdentNode.Value;
                     if (lhsName == ProtoCore.DSDefinitions.Keyword.Return)
                     {
                         Validity.Assert(!string.IsNullOrEmpty(module.ReturnSignalName));
@@ -80,16 +80,77 @@ namespace ProtoAssociative
         ///     Emit portmap
         ///     Close current process
         ///     Emit return process
-        ///     Set return process as current process
         /// </summary>
         /// <param name="funcCallNode"></param>
-        private void VHDL_EmitComponentInstance(FunctionCallNode funcCallNode)
+        private void VHDL_EmitComponentInstanceFromFunctionCall(string lhs, FunctionCallNode funcCallNode)
         {
+            ProtoCore.VHDL.AST.ModuleNode module = core.VhdlCore.GetCurrentModule();
+            string functionCallName = funcCallNode.Function.Name;
+            string functionReturnSignalName = "return_" + functionCallName;
+
+            //========================================
             // Emit component
+            //========================================
+
+            //========================================
             // Emit portmap
-            // Close current process
+            //========================================
+            ProtoCore.VHDL.AST.PortMapNode portmap = new ProtoCore.VHDL.AST.PortMapNode(functionCallName);
+
+
+            //========================================
             // Emit return process
-            // Set return process as current process
+            //========================================
+
+            // Process sensitivity List are the function args
+            List<string> sensitivityList = new List<string>();
+            sensitivityList.Add(functionReturnSignalName);
+
+            // Process variable declaration
+            List<ProtoCore.VHDL.AST.VHDLNode> variableDeclList = new List<ProtoCore.VHDL.AST.VHDLNode>();
+
+            // Close current process
+            // Set execution body to the current process
+            // Succeeding statements will be appended to this new process
+            module.CloseCurrentProcess();
+
+            // Assign the function return to the LHS var
+            ProtoCore.VHDL.AST.AssignmentNode assignFunctionReturn = new ProtoCore.VHDL.AST.AssignmentNode(
+                new ProtoCore.VHDL.AST.IdentifierNode(lhs),
+                new ProtoCore.VHDL.AST.IdentifierNode(functionReturnSignalName)
+                );
+            module.ExecutionBody.Add(assignFunctionReturn);
+
+            // Reset sync ifstmt
+            ProtoCore.VHDL.AST.IfNode resetSyncIf = new ProtoCore.VHDL.AST.IfNode(ProtoCore.VHDL.Constants.ResetSync);
+            resetSyncIf.IfExpr = new ProtoCore.VHDL.AST.BinaryExpressionNode(
+                new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.ResetSignalName),
+                new ProtoCore.VHDL.AST.BitStringNode(1),
+                ProtoCore.VHDL.AST.BinaryExpressionNode.Operator.Eq
+                );
+
+            resetSyncIf.ElsifExpr = new ProtoCore.VHDL.AST.BinaryExpressionNode(
+                new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.ResetSignalName),
+                new ProtoCore.VHDL.AST.BitStringNode(0),
+                ProtoCore.VHDL.AST.BinaryExpressionNode.Operator.Eq
+                );
+
+            // Reset sync elsif body (reset = 0)
+            resetSyncIf.ElsifBody = module.ExecutionBody;
+
+            // Process Body
+            List<ProtoCore.VHDL.AST.VHDLNode> processBody = new List<ProtoCore.VHDL.AST.VHDLNode>();
+            processBody.Add(resetSyncIf);
+
+            // Return process
+            ProtoCore.VHDL.AST.ProcessNode returnProcess = new ProtoCore.VHDL.AST.ProcessNode(
+                functionReturnSignalName,
+                module.GetProcessCount() + 1,
+                sensitivityList,
+                variableDeclList,
+                processBody
+                );
+            module.ProcessList.Add(returnProcess);
         }
 
         private void VHDL_EmitFunctionDefinitonBegin(FunctionDefinitionNode funcDefNode)
@@ -170,7 +231,6 @@ namespace ProtoAssociative
             // Process variable declaration
             List<ProtoCore.VHDL.AST.VHDLNode> variableDeclList = new List<ProtoCore.VHDL.AST.VHDLNode>();
 
-
             // Entry Process
             ProtoCore.VHDL.AST.ProcessNode entryProcess = new ProtoCore.VHDL.AST.ProcessNode(
                 funcName,
@@ -204,6 +264,7 @@ namespace ProtoAssociative
             // Emit Architecture Body
             //=====================================
             ProtoCore.VHDL.AST.ModuleNode topModule = core.VhdlCore.CreateTopModule();
+            topModule.IsTopModule = true;
 
             // Library list
             List<string> libaryNameList = new List<string>();
