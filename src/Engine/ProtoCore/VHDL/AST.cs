@@ -627,7 +627,7 @@ namespace ProtoCore.VHDL.AST
             // Elsif expr
             StringBuilder sbElsifExpr = new StringBuilder();
             StringBuilder sbElsifBody = new StringBuilder();
-            if (ElsifBody.Count > 0)
+            if (ElsifExpr != null)
             {
                 sbElsifExpr.Append(ProtoCore.VHDL.Keyword.Elsif);
                 sbElsifExpr.Append(" ");

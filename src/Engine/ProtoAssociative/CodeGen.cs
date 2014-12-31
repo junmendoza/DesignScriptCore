@@ -30,6 +30,99 @@ namespace ProtoAssociative
 
     public class CodeGen : ProtoCore.CodeGen
     {
+        #region VHDL_CODEGEN
+
+        private void VHDL_EmitFunctionDefiniton(FunctionDefinitionNode funcDefNode)
+        {
+            //=====================================
+            // Emit VHDL Header
+            // Emit SSA
+            // Emit Entity 
+            // Emit Architecture Header
+            // Emit Architecture Body
+            //=====================================
+            ProtoCore.VHDL.AST.ModuleNode functionModule = core.VhdlCore.CreateModule(funcDefNode.Name);
+            string funcName = functionModule.Name;
+
+            // Library list
+            List<string> libaryNameList = new List<string>();
+            libaryNameList.Add("IEEE");
+            functionModule.LibraryList = ProtoCore.VHDL.Utils.GenerateLibraryNodeList(libaryNameList);
+
+            // Module list
+            List<string> moduleNameList = new List<string>();
+            moduleNameList.Add("IEEE.STD_LOGIC_1164.ALL");
+            moduleNameList.Add("IEEE.NUMERIC_STD.ALL");
+            functionModule.UseNodeList = ProtoCore.VHDL.Utils.GenerateUseNodeList(moduleNameList);
+
+            // Port entries
+            ProtoCore.VHDL.AST.PortEntryNode reset = new ProtoCore.VHDL.AST.PortEntryNode("reset", ProtoCore.VHDL.AST.PortEntryNode.Direction.In, 1);
+            List<ProtoCore.VHDL.AST.PortEntryNode> listPortEntry = new List<ProtoCore.VHDL.AST.PortEntryNode>();
+            listPortEntry.Add(reset);
+
+
+            // Process sensitivity List are the function args
+            List<string> sensitivityList = new List<string>();
+
+            // Port entries from args
+            // Append arg symbols
+            if (null != funcDefNode.Signature) 
+            {
+                foreach (VarDeclNode varDeclNode in funcDefNode.Signature.Arguments) 
+                {
+                    listPortEntry.Add(new ProtoCore.VHDL.AST.PortEntryNode(varDeclNode.NameNode.Name, ProtoCore.VHDL.AST.PortEntryNode.Direction.In, 32));
+                    sensitivityList.Add(varDeclNode.NameNode.Name);
+                }
+            }
+
+            // Entity Declaration
+            ProtoCore.VHDL.AST.EntityNode entity = new ProtoCore.VHDL.AST.EntityNode(funcName, listPortEntry);
+            functionModule.Entity = entity;
+
+            // ExecutionLogic body
+            functionModule.ExecutionBody = new List<ProtoCore.VHDL.AST.VHDLNode>();
+            //functionModule.ExecutionBody.Add(execStartFlagSet1);
+
+
+            // Reset sync ifstmt
+            ProtoCore.VHDL.AST.IfNode resetSyncIf = new ProtoCore.VHDL.AST.IfNode(ProtoCore.VHDL.Constants.ResetSync);
+            resetSyncIf.IfExpr = new ProtoCore.VHDL.AST.BinaryExpressionNode(
+                new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.ResetSignalName),
+                new ProtoCore.VHDL.AST.BitStringNode(1),
+                ProtoCore.VHDL.AST.BinaryExpressionNode.Operator.Eq
+                );
+
+            resetSyncIf.ElsifExpr = new ProtoCore.VHDL.AST.BinaryExpressionNode(
+                new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.ResetSignalName),
+                new ProtoCore.VHDL.AST.BitStringNode(0),
+                ProtoCore.VHDL.AST.BinaryExpressionNode.Operator.Eq
+                );
+
+            // Reset sync elsif body (reset = 0)
+            resetSyncIf.ElsifBody = functionModule.ExecutionBody;
+
+            // Process Body
+            List<ProtoCore.VHDL.AST.VHDLNode> processBody = new List<ProtoCore.VHDL.AST.VHDLNode>();
+            processBody.Add(resetSyncIf);
+
+            // Process variable declaration
+            List<ProtoCore.VHDL.AST.VHDLNode> variableDeclList = new List<ProtoCore.VHDL.AST.VHDLNode>();
+
+
+            // Entry Process
+            ProtoCore.VHDL.AST.ProcessNode entryProcess = new ProtoCore.VHDL.AST.ProcessNode(
+                funcName,
+                functionModule.GetProcessCount() + 1,
+                sensitivityList,
+                variableDeclList,
+                processBody
+                );
+            functionModule.ProcessList.Add(entryProcess);
+
+            // After completing a function definition, restore the top module
+            core.VhdlCore.SetTopModule();
+        }
+
         /// <summary>
         /// Emit VHDL top level module
         /// </summary>
@@ -275,7 +368,7 @@ namespace ProtoAssociative
 
             return codeBlock.codeBlockId;
         }
-
+        #endregion
 
         private readonly bool ignoreRankCheck;
 
@@ -1963,7 +2056,7 @@ namespace ProtoAssociative
             {
                 return null;   
             }
-                    
+                   
             int refClassIndex = Constants.kInvalidIndex;
             if (parentNode != null && parentNode is IdentifierListNode)
             {
@@ -6095,8 +6188,6 @@ namespace ProtoAssociative
             codeBlock.blockType = ProtoCore.DSASM.CodeBlockType.kFunction;
             if (IsParsingGlobalFunctionSig() || IsParsingMemberFunctionSig())
             {
-                //VHDL_EmitFunctionSignature(funcDef);
-
                 Validity.Assert(null == localProcedure);
                 localProcedure = new ProtoCore.DSASM.ProcedureNode();
 
@@ -6175,6 +6266,8 @@ namespace ProtoAssociative
                     localProcedure.HashID = functionDescription.GetHashCode();
                     localProcedure.isVarArg = funcDef.Signature.IsVarArg;
                 }
+
+                VHDL_EmitFunctionDefiniton(funcDef);
 
                 if (ProtoCore.DSASM.Constants.kInvalidIndex == globalClassIndex)
                 {

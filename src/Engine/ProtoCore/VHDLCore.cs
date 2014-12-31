@@ -39,6 +39,11 @@ namespace ProtoCore.VHDL
             return ModuleMap[ModuleName];
         }
 
+        public void SetTopModule()
+        {
+            ModuleName = TopLevelModuleName;
+        }
+
         /// <summary>
         /// Emits module to stream and saves to file
         /// </summary>
