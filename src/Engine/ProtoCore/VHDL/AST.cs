@@ -104,6 +104,31 @@ namespace ProtoCore.VHDL.AST
             return ProcessList.Count;
         }
 
+        public ProcessNode GetCurrentProcess()
+        {
+            Validity.Assert(ProcessList != null);
+            Validity.Assert(ProcessList.Count > 0);
+            return ProcessList[ProcessList.Count-1];
+        }
+
+        /// <summary>
+        /// Appends a compiled DS script statment to the execution body
+        /// </summary>
+        /// <param name="executionStmt"></param>
+        public void AppendExecutionStatement(VHDLNode executionStmt)
+        {
+            ExecutionBody.Add(executionStmt);
+
+            // If the stmt is a signal assignment, update the lhs signal
+            AssignmentNode assignNode = executionStmt as AssignmentNode;
+            if (assignNode != null)
+            {
+                ProcessNode process = GetCurrentProcess();
+                Validity.Assert(assignNode.LHS is IdentifierNode);
+                process.AssignedSignals.Add((assignNode.LHS as IdentifierNode).Value);
+            }
+        }
+
         public override string ToString()
         {
             //==============================
@@ -270,7 +295,7 @@ namespace ProtoCore.VHDL.AST
 
         // This list contains the current execution logic of the current process
         // This will be stored within the process 
-        public List<VHDLNode> ExecutionBody { get; set; }
+        public List<VHDLNode> ExecutionBody { get; private set; }
     }
 
     public class LibraryNode : VHDLNode
@@ -549,14 +574,15 @@ namespace ProtoCore.VHDL.AST
 
     public class ProcessNode : VHDLNode
     {
-        public ProcessNode(string description, int processCount, List<string> sensitivityList, List<VHDLNode> varDeclaration, List<VHDLNode> body)
+        public ProcessNode(string name, List<string> sensitivityList, List<VHDLNode> varDeclaration, List<VHDLNode> body)
         {
-            this.ProcessName = ProtoCore.VHDL.Constants.ProcessPrefix + "_" + processCount.ToString() + "_" + description;
+            this.ProcessName = name;  
             this.SensitivityList = new List<string>(sensitivityList);
             this.Body = new List<VHDLNode>(body);
             this.VariableDeclarations = new List<VHDLNode>(varDeclaration);
+            AssignedSignals = new HashSet<string>();
         }
-
+        
         public override string ToString()
         {
             StringBuilder processStart = new StringBuilder();
@@ -630,6 +656,7 @@ namespace ProtoCore.VHDL.AST
 
         public string ProcessName { get; private set; }
         public List<string> SensitivityList { get; private set; }
+        public HashSet<string> AssignedSignals { get; private set; }
         public List<VHDLNode> VariableDeclarations { get; private set; }
         public List<VHDLNode> Body { get; set; }
     }

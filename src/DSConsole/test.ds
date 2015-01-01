@@ -8,14 +8,3 @@ def Assign(a : int)
 x = 1;
 y = Assign(x);
 
-
-/*
-a = 10;
-b = a;
-c = a + b;
-*/
-
-/*
-a = 1;
-b = 2;
-*/

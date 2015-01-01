@@ -89,7 +89,6 @@ namespace ProtoAssociative
             Validity.Assert(leftIdentNode != null);
             lhsName = leftIdentNode.Value;
 
-            ProtoCore.VHDL.AST.VHDLNode rNode = null;
             if (bnode.RightNode is FunctionCallNode)
             {
                 VHDL_EmitComponentInstanceFromFunctionCall(lhsName, bnode.RightNode as FunctionCallNode);
@@ -98,26 +97,42 @@ namespace ProtoAssociative
             {
                 if (bnode.RightNode is IntNode)
                 {
-                    rNode = new ProtoCore.VHDL.AST.HexStringNode((int)(bnode.RightNode as IntNode).Value);
-                }
-                else if (bnode.RightNode is IdentifierNode)
-                {
-                    rNode = new ProtoCore.VHDL.AST.IdentifierNode((bnode.RightNode as IdentifierNode).Name);
-                }
-
-                if (rNode != null)
-                {
-                    if (lhsName == ProtoCore.DSDefinitions.Keyword.Return)
-                    {
-                        Validity.Assert(!string.IsNullOrEmpty(module.ReturnSignalName));
-                        lhsName = module.ReturnSignalName;
-                    }
-
+                    ProtoCore.VHDL.AST.VHDLNode rNode = new ProtoCore.VHDL.AST.HexStringNode((int)(bnode.RightNode as IntNode).Value);
                     ProtoCore.VHDL.AST.AssignmentNode assignNode = new ProtoCore.VHDL.AST.AssignmentNode(
                         new ProtoCore.VHDL.AST.IdentifierNode(lhsName),
                         rNode
                         );
-                    module.ExecutionBody.Add(assignNode);
+                    module.AppendExecutionStatement(assignNode);
+                }
+                else if (bnode.RightNode is IdentifierNode)
+                {
+                    string rhsName = (bnode.RightNode as IdentifierNode).Name;
+                    ProtoCore.VHDL.AST.VHDLNode rNode = new ProtoCore.VHDL.AST.IdentifierNode(rhsName);
+
+                    // Create a new process if the lhs of an assignment has already been assigned to in the current process
+                    ProtoCore.VHDL.AST.ProcessNode process = module.GetCurrentProcess();
+                    bool isRhsAssignedinProcess = process.AssignedSignals.Contains(rhsName);
+                    if (isRhsAssignedinProcess)
+                    {
+                        VHDL_EmitProcessFromAssignment(lhsName, rhsName);
+                    }
+                    else
+                    {
+                        // Update the signals assigned to in this process
+                        process.AssignedSignals.Add(lhsName); 
+                        
+                        if (lhsName == ProtoCore.DSDefinitions.Keyword.Return)
+                        {
+                            Validity.Assert(!string.IsNullOrEmpty(module.ReturnSignalName));
+                            lhsName = module.ReturnSignalName;
+                        }
+
+                        ProtoCore.VHDL.AST.AssignmentNode assignNode = new ProtoCore.VHDL.AST.AssignmentNode(
+                            new ProtoCore.VHDL.AST.IdentifierNode(lhsName),
+                            rNode
+                            );
+                        module.AppendExecutionStatement(assignNode);
+                    }
                 }
             }
         }
@@ -191,13 +206,6 @@ namespace ProtoAssociative
             // Succeeding statements will be appended to this new process
             module.CloseCurrentProcess();
 
-            // Assign the function return to the LHS var
-            ProtoCore.VHDL.AST.AssignmentNode assignFunctionReturn = new ProtoCore.VHDL.AST.AssignmentNode(
-                new ProtoCore.VHDL.AST.IdentifierNode(lhs),
-                new ProtoCore.VHDL.AST.IdentifierNode(functionReturnSignalName)
-                );
-            module.ExecutionBody.Add(assignFunctionReturn);
-
             // Reset sync ifstmt
             ProtoCore.VHDL.AST.IfNode resetSyncIf = new ProtoCore.VHDL.AST.IfNode(ProtoCore.VHDL.Constants.ResetSync);
             resetSyncIf.IfExpr = new ProtoCore.VHDL.AST.BinaryExpressionNode(
@@ -221,16 +229,92 @@ namespace ProtoAssociative
 
             // Return process
             ProtoCore.VHDL.AST.ProcessNode returnProcess = new ProtoCore.VHDL.AST.ProcessNode(
-                functionReturnSignalName,
-                module.GetProcessCount() + 1,
+                ProtoCore.VHDL.Utils.GenerateProcessName(functionReturnSignalName,module.GetProcessCount() + 1),
                 sensitivityList,
                 variableDeclList,
                 processBody
                 );
             module.ProcessList.Add(returnProcess);
+
+            // Assign the function return to the LHS var
+            ProtoCore.VHDL.AST.AssignmentNode assignFunctionReturn = new ProtoCore.VHDL.AST.AssignmentNode(
+                new ProtoCore.VHDL.AST.IdentifierNode(lhs),
+                new ProtoCore.VHDL.AST.IdentifierNode(functionReturnSignalName)
+                );
+            module.AppendExecutionStatement(assignFunctionReturn);
         }
 
-        private void VHDL_EmitFunctionDefiniton(FunctionDefinitionNode funcDefNode)
+        /// <summary>
+        /// Create a new process if the rhs of an assignment has already been assigned to in the current process
+        ///     a = 1
+        ///     b = a <- create a new process as ‘a’ is already assigned to 
+        ///     ================================
+        ///     proc_1_a : process(a)
+        ///         b <= a
+        ///     end
+        ///     
+        /// </summary>
+        /// <param name="bnode"></param>
+        private void VHDL_EmitProcessFromAssignment(string lhsSignal, string rhsSignal)
+        {
+            ProtoCore.VHDL.AST.ModuleNode module = VHDL_GetCurrentModule();
+            
+            // Process sensitivity List is the rhs
+            List<string> sensitivityList = new List<string>();
+            sensitivityList.Add(rhsSignal);
+            
+            // Process variable declaration
+            List<ProtoCore.VHDL.AST.VHDLNode> variableDeclList = new List<ProtoCore.VHDL.AST.VHDLNode>();
+
+            
+            // Close current process
+            // Set execution body to the current process
+            // Succeeding statements will be appended to this new process
+            module.CloseCurrentProcess();
+
+            // Reset sync ifstmt
+            ProtoCore.VHDL.AST.IfNode resetSyncIf = new ProtoCore.VHDL.AST.IfNode(ProtoCore.VHDL.Constants.ResetSync);
+            resetSyncIf.IfExpr = new ProtoCore.VHDL.AST.BinaryExpressionNode(
+                new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.ResetSignalName),
+                new ProtoCore.VHDL.AST.BitStringNode(1),
+                ProtoCore.VHDL.AST.BinaryExpressionNode.Operator.Eq
+                );
+
+            resetSyncIf.ElsifExpr = new ProtoCore.VHDL.AST.BinaryExpressionNode(
+                new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.ResetSignalName),
+                new ProtoCore.VHDL.AST.BitStringNode(0),
+                ProtoCore.VHDL.AST.BinaryExpressionNode.Operator.Eq
+                );
+
+            // Reset sync elsif body (reset = 0)
+            resetSyncIf.ElsifBody = module.ExecutionBody;
+
+            // Process Body
+            List<ProtoCore.VHDL.AST.VHDLNode> processBody = new List<ProtoCore.VHDL.AST.VHDLNode>();
+            processBody.Add(resetSyncIf);
+
+            ProtoCore.VHDL.AST.ProcessNode processNode = new ProtoCore.VHDL.AST.ProcessNode(
+                ProtoCore.VHDL.Utils.GenerateProcessName(rhsSignal, module.GetProcessCount() + 1),
+                sensitivityList,
+                variableDeclList,
+                processBody
+                );
+            module.ProcessList.Add(processNode);
+
+            // The assignment stmt
+            if (lhsSignal == ProtoCore.DSDefinitions.Keyword.Return)
+            {
+                Validity.Assert(!string.IsNullOrEmpty(module.ReturnSignalName));
+                lhsSignal = module.ReturnSignalName;
+            }
+            ProtoCore.VHDL.AST.AssignmentNode assignStmt = new ProtoCore.VHDL.AST.AssignmentNode(
+                new ProtoCore.VHDL.AST.IdentifierNode(lhsSignal),
+                new ProtoCore.VHDL.AST.IdentifierNode(rhsSignal)
+                );
+            module.AppendExecutionStatement(assignStmt);
+        }
+
+        private void VHDL_EmitModuleFromFunctionDefiniton(FunctionDefinitionNode funcDefNode)
         {
             //=====================================
             // Emit VHDL Header
@@ -281,9 +365,6 @@ namespace ProtoAssociative
             ProtoCore.VHDL.AST.EntityNode entity = new ProtoCore.VHDL.AST.EntityNode(funcName, listPortEntry);
             functionModule.Entity = entity;
 
-            // ExecutionLogic body
-            functionModule.ExecutionBody = new List<ProtoCore.VHDL.AST.VHDLNode>(); 
-
             // Reset sync ifstmt
             ProtoCore.VHDL.AST.IfNode resetSyncIf = new ProtoCore.VHDL.AST.IfNode(ProtoCore.VHDL.Constants.ResetSync);
             resetSyncIf.IfExpr = new ProtoCore.VHDL.AST.BinaryExpressionNode(
@@ -310,8 +391,7 @@ namespace ProtoAssociative
 
             // Entry Process
             ProtoCore.VHDL.AST.ProcessNode entryProcess = new ProtoCore.VHDL.AST.ProcessNode(
-                funcName,
-                functionModule.GetProcessCount() + 1,
+                ProtoCore.VHDL.Utils.GenerateProcessName(funcName, functionModule.GetProcessCount() + 1),
                 sensitivityList,
                 variableDeclList,
                 processBody
@@ -381,10 +461,6 @@ namespace ProtoAssociative
                 );
 
 
-            // ExecutionLogic body
-            topModule.ExecutionBody = new List<ProtoCore.VHDL.AST.VHDLNode>();
-            topModule.ExecutionBody.Add(execStartFlagSet1);
-
             // ExecutionLogic ifstmt
             //
             //  if execution_started = '0' then
@@ -452,13 +528,17 @@ namespace ProtoAssociative
 
             // Entry Process
             ProtoCore.VHDL.AST.ProcessNode entryProcess = new ProtoCore.VHDL.AST.ProcessNode(
-                core.VhdlCore.TopLevelModuleName,
-                topModule.GetProcessCount() + 1,
+                ProtoCore.VHDL.Utils.GenerateProcessName(core.VhdlCore.TopLevelModuleName, topModule.GetProcessCount() + 1),
                 sensitivityList,
                 variableDeclList,
                 processBody
                 );
             topModule.ProcessList.Add(entryProcess);
+
+            // ExecutionLogic body
+            // TODO Jun: AppendExecutionStatement depends on the process to have already been created
+            // Refactor AppendExecutionStatement to be a member of ProcessNode
+            topModule.AppendExecutionStatement(execStartFlagSet1);
 
             
             ProtoCore.AssociativeGraph.GraphNode graphNode = null;
@@ -2247,8 +2327,6 @@ namespace ProtoAssociative
                 enforceTypeCheck = !(paramNode is BinaryExpressionNode);
 
                 DfsTraverse(paramNode, ref paramType, false, graphNode, subPass, bnode);
-
-                // xxxx VHDL store
 
                 emitReplicationGuide = false;
                 enforceTypeCheck = true;
@@ -6392,7 +6470,7 @@ namespace ProtoAssociative
             codeBlock.blockType = ProtoCore.DSASM.CodeBlockType.kFunction;
             if (IsParsingGlobalFunctionSig() || IsParsingMemberFunctionSig())
             {
-                VHDL_EmitFunctionDefiniton(funcDef);
+                VHDL_EmitModuleFromFunctionDefiniton(funcDef);
 
                 Validity.Assert(null == localProcedure);
                 localProcedure = new ProtoCore.DSASM.ProcedureNode();

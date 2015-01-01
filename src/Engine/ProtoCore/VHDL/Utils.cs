@@ -82,6 +82,11 @@ namespace ProtoCore.VHDL
             return "call" + "_"+ instanceCount.ToString() + "_" + componentName + "_" + "return_val";
         }
 
+        public static string GenerateProcessName(string description, int processCount)
+        {
+            return ProtoCore.VHDL.Constants.ProcessPrefix + "_" + processCount.ToString() + "_" + description;
+        }
+
         public static string GetBinaryOperatorString(VHDL.AST.BinaryExpressionNode.Operator optr)
         {
             return BinaryExprOperatorTable[optr];
