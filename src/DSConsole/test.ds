@@ -1,10 +1,27 @@
 
 
-def Assign(a : int)
+def Assign(n : int)
 {
 	p = 100;
 	return = p;
 }
+
+def Increment(i : int)
+{
+	val = i + 1;
+	return = val;
+}
+
 x = 1;
-y = Assign(x);
+y = Increment(x); // 2
+
+a = 10; 
+b = 5;
+c = a + b; // 15
+d = a - b; // 5
+e = a * b; // 50
+f = a / b; // 2
+
+
+
 

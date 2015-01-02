@@ -6,7 +6,7 @@ use IEEE.NUMERIC_STD.ALL;
 entity Assign is
 port( 
 	reset : in std_logic;
-	a : in std_logic_vector(31 downto 0);
+	n : in std_logic_vector(31 downto 0);
 	return_Assign : out std_logic_vector(31 downto 0)
 );
 end Assign;
@@ -14,12 +14,12 @@ end Assign;
 architecture Behavioral of Assign is
 
 signal p : std_logic_vector(31 downto 0);
-signal tSSA_0_969ac5ccb9494486bb8d04eb98b96c6e : std_logic_vector(31 downto 0);
+signal tSSA_0_4cc42779139d4e269b03bb7d3686bb3c : std_logic_vector(31 downto 0);
 
 
 begin
 
-proc_1_Assign : process(a)
+proc_1_Assign : process(n)
 
 begin
 ResetSync : if reset = '1' then
@@ -37,23 +37,23 @@ begin
 ResetSync : if reset = '1' then
 
 elsif reset = '0' then
-tSSA_0_969ac5ccb9494486bb8d04eb98b96c6e <= p;
+tSSA_0_4cc42779139d4e269b03bb7d3686bb3c <= p;
 end if ResetSync;
 
 
 end process proc_2_p;
 
-proc_3_tSSA_0_969ac5ccb9494486bb8d04eb98b96c6e : process(tSSA_0_969ac5ccb9494486bb8d04eb98b96c6e)
+proc_3_tSSA_0_4cc42779139d4e269b03bb7d3686bb3c : process(tSSA_0_4cc42779139d4e269b03bb7d3686bb3c)
 
 begin
 ResetSync : if reset = '1' then
 
 elsif reset = '0' then
-return_Assign <= tSSA_0_969ac5ccb9494486bb8d04eb98b96c6e;
+return_Assign <= tSSA_0_4cc42779139d4e269b03bb7d3686bb3c;
 end if ResetSync;
 
 
-end process proc_3_tSSA_0_969ac5ccb9494486bb8d04eb98b96c6e;
+end process proc_3_tSSA_0_4cc42779139d4e269b03bb7d3686bb3c;
 
 
 end Behavioral;
