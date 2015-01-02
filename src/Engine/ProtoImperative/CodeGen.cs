@@ -27,17 +27,6 @@ namespace ProtoImperative
 
     public class CodeGen : ProtoCore.CodeGen
     {
-
-        /// <summary>
-        /// Emit VHDL top level module
-        /// </summary>
-        /// <param name="codeBlockNode"></param>
-        /// <returns></returns>
-        public override int VHDL_Emit(ProtoCore.AST.Node codeBlockNode)
-        {
-            throw new NotImplementedException();
-        }
-
         private List<ImperativeNode> astNodes; 
 
         private ProtoCore.Compiler.Imperative.CompilePass compilePass;

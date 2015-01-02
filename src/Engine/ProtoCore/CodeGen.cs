@@ -44,13 +44,6 @@ namespace ProtoCore
 
     public abstract class CodeGen
     {
-        /// <summary>
-        /// Emit VHDL top level module
-        /// </summary>
-        /// <param name="codeBlockNode"></param>
-        /// <returns></returns>
-        public abstract int VHDL_Emit(ProtoCore.AST.Node codeBlockNode);
-
         protected Core core;
         protected bool emitReplicationGuide;
 

@@ -8,6 +8,7 @@ namespace ProtoCore
         kInvalid = -1,
         kAssociative,
         kImperative,
+        kVHDL,
         kOptions,
         kCount
     }

@@ -69,6 +69,10 @@
       <Project>{a4794476-7d0e-41c0-ad83-4ab929c0a46c}</Project>
       <Name>ProtoScript</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Engine\ProtoVHDL\ProtoVHDL.csproj">
+      <Project>{926c8960-bcbc-488e-beda-c2da2da17718}</Project>
+      <Name>ProtoVHDL</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

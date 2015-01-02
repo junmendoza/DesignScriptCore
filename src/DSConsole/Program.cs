@@ -40,6 +40,7 @@ namespace DSConsole
             ProtoCore.Core core = new Core(opts);
             core.Executives.Add(ProtoCore.Language.kAssociative, new ProtoAssociative.Executive(core));
             core.Executives.Add(ProtoCore.Language.kImperative, new ProtoImperative.Executive(core));
+            core.Executives.Add(ProtoCore.Language.kVHDL, new ProtoVHDL.Executive(core));
 #if DEBUG
             core.Options.DumpByteCode = true;
             core.Options.Verbose = true;

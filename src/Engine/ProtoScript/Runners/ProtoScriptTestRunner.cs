@@ -342,7 +342,7 @@ namespace ProtoScript.Runners
             {
                 //defining the global Assoc block that wraps the entire .ds source file
                 ProtoCore.LanguageCodeBlock globalBlock = new ProtoCore.LanguageCodeBlock();
-                globalBlock.language = ProtoCore.Language.kAssociative;
+                globalBlock.language = ProtoCore.Language.kVHDL;
                 globalBlock.body = strSource;
 
                 //the wrapper block can be given a unique id to identify it as the global scope
@@ -351,7 +351,8 @@ namespace ProtoScript.Runners
                 //passing the global Assoc wrapper block to the compiler
                 ProtoCore.CompileTime.Context context = new ProtoCore.CompileTime.Context();
                 ProtoCore.Language id = globalBlock.language;
-                core.Executives[id].CompileToVHDL(null, globalBlock, context);
+                int blockID = 0;
+                core.Executives[id].Compile(out blockID, null, globalBlock, context);
 
                 core.BuildStatus.ReportBuildResult();
                 buildSucceeded = core.BuildStatus.BuildSucceeded;

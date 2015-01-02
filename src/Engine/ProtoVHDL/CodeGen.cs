@@ -13,7 +13,7 @@ using ProtoCore.AssociativeGraph;
 using ProtoCore.BuildData;
 using System.Linq;
 
-namespace ProtoAssociative
+namespace ProtoVHDL
 {
 
     public class ThisPointerProcOverload
@@ -373,13 +373,12 @@ namespace ProtoAssociative
             functionModule.ProcessList.Add(entryProcess);
         }
 
-
         /// <summary>
         /// Emit VHDL top level module
         /// </summary>
         /// <param name="codeBlockNode"></param>
         /// <returns></returns>
-        public override int VHDL_Emit(ProtoCore.AST.Node codeBlockNode)
+        public override int Emit(ProtoCore.AST.Node codeBlockNode, ProtoCore.AssociativeGraph.GraphNode graphNode = null)
         {
             //=====================================
             // Emit VHDL Header
@@ -489,9 +488,6 @@ namespace ProtoAssociative
             // TODO Jun: AppendExecutionStatement depends on the process to have already been created
             // Refactor AppendExecutionStatement to be a member of ProcessNode
             topModule.AppendExecutionStatement(execStartFlagSet1);
-
-            
-            ProtoCore.AssociativeGraph.GraphNode graphNode = null;
 
             this.localCodeBlockNode = codeBlockNode;
             ProtoCore.AST.AssociativeAST.CodeBlockNode codeblock = codeBlockNode as ProtoCore.AST.AssociativeAST.CodeBlockNode;
@@ -4511,129 +4507,7 @@ namespace ProtoAssociative
                 }
             }
         }
-
-        public override int Emit(ProtoCore.AST.Node codeBlockNode, ProtoCore.AssociativeGraph.GraphNode graphNode = null)
-        {
-            if (core.Options.IsDeltaExecution)
-            {
-                if (context != null && context.symbolTable != null)
-                {
-                    Validity.Assert(context.symbolTable.symbolList != null && context.symbolTable.symbolList.Count > 0);
-                    codeBlock.symbolTable = context.symbolTable;
-                }
-            }
-
-            AllocateContextGlobals();
-
-            core.startPC = this.pc;
-            if (core.ExecMode == ProtoCore.DSASM.InterpreterMode.kExpressionInterpreter)
-            {
-                return EmitExpressionInterpreter(codeBlockNode);
-            }
-
-            this.localCodeBlockNode = codeBlockNode;
-            ProtoCore.AST.AssociativeAST.CodeBlockNode codeblock = codeBlockNode as ProtoCore.AST.AssociativeAST.CodeBlockNode;
-            bool isTopBlock = null == codeBlock.parent;
-            if (!isTopBlock)
-            {
-                // If this is an inner block where there can be no classes, we can start at parsing at the global function state
-                compilePass = ProtoCore.Compiler.Associative.CompilePass.kGlobalFuncSig;
-            }
-
-            codeblock.Body = SplitMulitpleAssignment(codeblock.Body);
-            
-            bool hasReturnStatement = false;
-            ProtoCore.Type inferedType = new ProtoCore.Type();
-            bool ssaTransformed = false;
-            while (ProtoCore.Compiler.Associative.CompilePass.kDone != compilePass)
-            {
-                // Emit SSA only after generating the class definitions
-                if (core.Options.GenerateSSA)
-                {
-                    if (compilePass > ProtoCore.Compiler.Associative.CompilePass.kClassName && !ssaTransformed)
-                    {
-                        if (!core.IsParsingCodeBlockNode && !core.Options.IsDeltaExecution)
-                        {
-                            //Audit class table for multiple symbol definition and emit warning.
-                            this.core.ClassTable.AuditMultipleDefinition(this.core.BuildStatus, graphNode);
-                        }
-                        codeblock.Body = BuildSSA(codeblock.Body, context);
-                        core.CachedSSANodes.Clear();
-                        core.CachedSSANodes.AddRange(codeblock.Body);
-                        ssaTransformed = true;
-                        if (core.Options.DumpIL)
-                        {
-                            CodeGenDS codegenDS = new CodeGenDS(codeblock.Body);
-                            EmitCompileLog(codegenDS.GenerateCode());
-                        }
-                    }
-                }
-
-                foreach (AssociativeNode node in codeblock.Body)
-                {
-                    inferedType = TypeSystem.BuildPrimitiveTypeObject(PrimitiveType.kTypeVar, 0); 
-
-                    //
-                    // TODO Jun:    Handle stand alone language blocks
-                    //              Integrate the subPass into a proper pass
-                    //              
-                    //              **Need to take care of EmitImportNode, in which I used the same code to handle imported language block nodes - Randy
-                    //
-                    if (node is LanguageBlockNode)
-                    {
-                        // Build a binaryn node with a temporary lhs for every stand-alone language block
-                        var iNode = nodeBuilder.BuildIdentfier(core.GenerateTempLangageVar());
-                        var langBlockNode = nodeBuilder.BuildBinaryExpression(iNode, node);
-
-                        DfsTraverse(langBlockNode, ref inferedType, false, graphNode, ProtoCore.Compiler.Associative.SubCompilePass.kUnboundIdentifier);
-                    }
-                    else
-                    {
-                        DfsTraverse(node, ref inferedType, false, graphNode, ProtoCore.Compiler.Associative.SubCompilePass.kUnboundIdentifier);
-                        SetDeltaCompilePC(node);
-                    }
-
-                    if (NodeUtils.IsReturnExpressionNode(node))
-                        hasReturnStatement = true;
-                }
-
-                if (compilePass == ProtoCore.Compiler.Associative.CompilePass.kGlobalScope && !hasReturnStatement)
-                {
-                    EmitReturnNull();
-                }
-
-                compilePass++;
-
-                // We have compiled all classes
-                if (compilePass == ProtoCore.Compiler.Associative.CompilePass.kGlobalScope && isTopBlock)
-                {
-                    EmitFunctionCallToInitStaticProperty(codeblock.Body);
-                }
-
-            }
-
-            ResolveFinalNodeRefs();
-            ResolveSSADependencies();
-
-            if (codeBlock.parent == null)  // top-most langauge block
-            {
-                ResolveFunctionGroups();
-            }
-
-            core.InferedType = inferedType;
-
-            if (core.AsmOutput != Console.Out)
-            {
-                core.AsmOutput.Flush();
-            }
-
-            this.localCodeBlockNode = codeBlockNode;
-
-            // Reset the callsite guids in preparation for the next compilation
-            core.CallsiteGuidMap = new Dictionary<Guid, int>();
-
-            return codeBlock.codeBlockId;
-        }
+      
 
         private void EmitFunctionCallToInitStaticProperty(List<AssociativeNode> codeblock)
         {
