@@ -180,6 +180,12 @@ namespace ProtoAssociative
                 {
                     signalMap.Add((assocNode as IdentifierNode).Name);
                 }
+                else if (assocNode is IntNode)
+                {
+                    int intVal = (int)(assocNode as IntNode).Value;
+                    ProtoCore.VHDL.AST.HexStringNode hexStringNode = new ProtoCore.VHDL.AST.HexStringNode(intVal);
+                    signalMap.Add(hexStringNode.ToString());
+                }
                 else
                 {
                     // Support the rest of arg types here
