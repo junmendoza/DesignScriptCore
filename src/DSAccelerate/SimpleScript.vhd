@@ -47,13 +47,13 @@ end SimpleScript;
 
 architecture Behavioral of SimpleScript is
 
-	component Increment is
+	component IncrementVal is
 		Port( 
 				reset : in STD_LOGIC;
 				a : in STD_LOGIC_VECTOR(31 downto 0);
 				return_val : out STD_LOGIC_VECTOR(31 downto 0)
 			 );
-	end component Increment;
+	end component IncrementVal;
 	
 	component ALU_Add is
 		Port( 
@@ -76,7 +76,7 @@ architecture Behavioral of SimpleScript is
 
 begin
 
-	Increment_call_1 : Increment port map
+	Increment_call_1 : IncrementVal port map
 	(
 		reset => reset,
 		a => x,
