@@ -30,6 +30,38 @@ namespace ProtoCore.VHDL
             return portList.ToString();
         }
 
+        public static void InitTables()
+        {
+            BinaryExprOperatorTable = new Dictionary<AST.BinaryExpressionNode.Operator, string>();
+            BinaryExprOperatorTable.Add(AST.BinaryExpressionNode.Operator.Or, ProtoCore.VHDL.Keyword.Or);
+            BinaryExprOperatorTable.Add(AST.BinaryExpressionNode.Operator.Nor, ProtoCore.VHDL.Keyword.Nor);
+            BinaryExprOperatorTable.Add(AST.BinaryExpressionNode.Operator.Xnor, ProtoCore.VHDL.Keyword.Xnor);
+            BinaryExprOperatorTable.Add(AST.BinaryExpressionNode.Operator.And, ProtoCore.VHDL.Keyword.And);
+            BinaryExprOperatorTable.Add(AST.BinaryExpressionNode.Operator.Not, ProtoCore.VHDL.Keyword.Nor);
+            BinaryExprOperatorTable.Add(AST.BinaryExpressionNode.Operator.Eq, "=");
+        }
+
+        public static string GeneratePortMapName(string componentName, int instanceCount)
+        {
+            return "call" + "_" + instanceCount.ToString() + "_" + componentName;
+        }
+
+        public static string GenerateComponentReturnSignal(string componentName, int instanceCount)
+        {
+            return "call" + "_"+ instanceCount.ToString() + "_" + componentName + "_" + "return_val";
+        }
+
+        public static string GenerateProcessName(string description, int processCount)
+        {
+            return ProtoCore.VHDL.Constants.ProcessPrefix + "_" + processCount.ToString() + "_" + description;
+        }
+
+        public static string GetBinaryOperatorString(VHDL.AST.BinaryExpressionNode.Operator optr)
+        {
+            return BinaryExprOperatorTable[optr];
+        }
+
+        #region AST_UTILS
         public static List<AST.LibraryNode> GenerateLibraryNodeList(List<string> libraryNameList)
         {
             List<AST.LibraryNode> libraryNodes = new List<AST.LibraryNode>();
@@ -61,36 +93,43 @@ namespace ProtoCore.VHDL
             return signalDeclList;
         }
 
-        public static void InitTables()
-        {
-            BinaryExprOperatorTable = new Dictionary<AST.BinaryExpressionNode.Operator, string>();
-            BinaryExprOperatorTable.Add(AST.BinaryExpressionNode.Operator.Or, ProtoCore.VHDL.Keyword.Or);
-            BinaryExprOperatorTable.Add(AST.BinaryExpressionNode.Operator.Nor, ProtoCore.VHDL.Keyword.Nor);
-            BinaryExprOperatorTable.Add(AST.BinaryExpressionNode.Operator.Xnor, ProtoCore.VHDL.Keyword.Xnor);
-            BinaryExprOperatorTable.Add(AST.BinaryExpressionNode.Operator.And, ProtoCore.VHDL.Keyword.And);
-            BinaryExprOperatorTable.Add(AST.BinaryExpressionNode.Operator.Not, ProtoCore.VHDL.Keyword.Nor);
-            BinaryExprOperatorTable.Add(AST.BinaryExpressionNode.Operator.Eq, "=");
+        public static ProtoCore.VHDL.AST.IfNode GenerateResetSyncTemplate()
+        {            
+            // Reset sync ifstmt
+            ProtoCore.VHDL.AST.IfNode resetSyncIf = new ProtoCore.VHDL.AST.IfNode(ProtoCore.VHDL.Constants.ResetSync);
+            resetSyncIf.IfExpr = new ProtoCore.VHDL.AST.BinaryExpressionNode(
+                new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.ResetSignalName),
+                new ProtoCore.VHDL.AST.BitStringNode(1),
+                ProtoCore.VHDL.AST.BinaryExpressionNode.Operator.Eq
+                );
+
+            resetSyncIf.ElsifExpr = new ProtoCore.VHDL.AST.BinaryExpressionNode(
+                new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.ResetSignalName),
+                new ProtoCore.VHDL.AST.BitStringNode(0),
+                ProtoCore.VHDL.AST.BinaryExpressionNode.Operator.Eq
+                );
+
+            return resetSyncIf;
         }
 
-        public static string GeneratePortMapName(string componentName, int instanceCount)
+        public static ProtoCore.VHDL.AST.IfNode GenerateClockSyncTemplate()
         {
-            return "call" + "_" + instanceCount.ToString() + "_" + componentName;
+            // rising_edge call
+            List<ProtoCore.VHDL.AST.VHDLNode> argList = new List<ProtoCore.VHDL.AST.VHDLNode>();
+            argList.Add(new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.ClockSignalName));
+            ProtoCore.VHDL.AST.FunctionCallNode clockedgeCall = new ProtoCore.VHDL.AST.FunctionCallNode(
+                ProtoCore.VHDL.Constants.RisingEdge,
+                argList
+                );
+
+            // clock sync ifstmt
+            ProtoCore.VHDL.AST.IfNode clockIf = new ProtoCore.VHDL.AST.IfNode(ProtoCore.VHDL.Constants.ClockSync);
+            clockIf.IfExpr = clockedgeCall;
+
+            return clockIf;
         }
 
-        public static string GenerateComponentReturnSignal(string componentName, int instanceCount)
-        {
-            return "call" + "_"+ instanceCount.ToString() + "_" + componentName + "_" + "return_val";
-        }
-
-        public static string GenerateProcessName(string description, int processCount)
-        {
-            return ProtoCore.VHDL.Constants.ProcessPrefix + "_" + processCount.ToString() + "_" + description;
-        }
-
-        public static string GetBinaryOperatorString(VHDL.AST.BinaryExpressionNode.Operator optr)
-        {
-            return BinaryExprOperatorTable[optr];
-        }
+        #endregion
 
         public static Dictionary<VHDL.AST.BinaryExpressionNode.Operator, string> BinaryExprOperatorTable = null;
     }

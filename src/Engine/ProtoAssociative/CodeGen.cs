@@ -31,7 +31,7 @@ namespace ProtoAssociative
     public class CodeGen : ProtoCore.CodeGen
     {
         #region VHDL_CODEGEN
-        
+
 
         /// <summary>
         /// Get allocated variables and generate their signals in the associated modules
@@ -207,18 +207,7 @@ namespace ProtoAssociative
             module.CloseCurrentProcess();
 
             // Reset sync ifstmt
-            ProtoCore.VHDL.AST.IfNode resetSyncIf = new ProtoCore.VHDL.AST.IfNode(ProtoCore.VHDL.Constants.ResetSync);
-            resetSyncIf.IfExpr = new ProtoCore.VHDL.AST.BinaryExpressionNode(
-                new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.ResetSignalName),
-                new ProtoCore.VHDL.AST.BitStringNode(1),
-                ProtoCore.VHDL.AST.BinaryExpressionNode.Operator.Eq
-                );
-
-            resetSyncIf.ElsifExpr = new ProtoCore.VHDL.AST.BinaryExpressionNode(
-                new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.ResetSignalName),
-                new ProtoCore.VHDL.AST.BitStringNode(0),
-                ProtoCore.VHDL.AST.BinaryExpressionNode.Operator.Eq
-                );
+            ProtoCore.VHDL.AST.IfNode resetSyncIf = ProtoCore.VHDL.Utils.GenerateResetSyncTemplate();
 
             // Reset sync elsif body (reset = 0)
             resetSyncIf.ElsifBody = module.ExecutionBody;
@@ -273,18 +262,7 @@ namespace ProtoAssociative
             module.CloseCurrentProcess();
 
             // Reset sync ifstmt
-            ProtoCore.VHDL.AST.IfNode resetSyncIf = new ProtoCore.VHDL.AST.IfNode(ProtoCore.VHDL.Constants.ResetSync);
-            resetSyncIf.IfExpr = new ProtoCore.VHDL.AST.BinaryExpressionNode(
-                new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.ResetSignalName),
-                new ProtoCore.VHDL.AST.BitStringNode(1),
-                ProtoCore.VHDL.AST.BinaryExpressionNode.Operator.Eq
-                );
-
-            resetSyncIf.ElsifExpr = new ProtoCore.VHDL.AST.BinaryExpressionNode(
-                new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.ResetSignalName),
-                new ProtoCore.VHDL.AST.BitStringNode(0),
-                ProtoCore.VHDL.AST.BinaryExpressionNode.Operator.Eq
-                );
+            ProtoCore.VHDL.AST.IfNode resetSyncIf = ProtoCore.VHDL.Utils.GenerateResetSyncTemplate();
 
             // Reset sync elsif body (reset = 0)
             resetSyncIf.ElsifBody = module.ExecutionBody;
@@ -366,18 +344,7 @@ namespace ProtoAssociative
             functionModule.Entity = entity;
 
             // Reset sync ifstmt
-            ProtoCore.VHDL.AST.IfNode resetSyncIf = new ProtoCore.VHDL.AST.IfNode(ProtoCore.VHDL.Constants.ResetSync);
-            resetSyncIf.IfExpr = new ProtoCore.VHDL.AST.BinaryExpressionNode(
-                new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.ResetSignalName),
-                new ProtoCore.VHDL.AST.BitStringNode(1),
-                ProtoCore.VHDL.AST.BinaryExpressionNode.Operator.Eq
-                );
-
-            resetSyncIf.ElsifExpr = new ProtoCore.VHDL.AST.BinaryExpressionNode(
-                new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.ResetSignalName),
-                new ProtoCore.VHDL.AST.BitStringNode(0),
-                ProtoCore.VHDL.AST.BinaryExpressionNode.Operator.Eq
-                );
+            ProtoCore.VHDL.AST.IfNode resetSyncIf = ProtoCore.VHDL.Utils.GenerateResetSyncTemplate();
 
             // Reset sync elsif body (reset = 0)
             resetSyncIf.ElsifBody = functionModule.ExecutionBody;
@@ -476,33 +443,12 @@ namespace ProtoAssociative
 
             executionBodyIf.IfBody = topModule.ExecutionBody;
 
-
-            // rising_edge call
-            List<ProtoCore.VHDL.AST.VHDLNode> argList = new List<ProtoCore.VHDL.AST.VHDLNode>();
-            argList.Add(new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.ClockSignalName));
-            ProtoCore.VHDL.AST.FunctionCallNode clockedgeCall = new ProtoCore.VHDL.AST.FunctionCallNode(
-                ProtoCore.VHDL.Constants.RisingEdge,
-                argList
-                );
-                
             // clock sync ifstmt
-            ProtoCore.VHDL.AST.IfNode clockIf = new ProtoCore.VHDL.AST.IfNode(ProtoCore.VHDL.Constants.ClockSync);
-            clockIf.IfExpr = clockedgeCall;
+            ProtoCore.VHDL.AST.IfNode clockIf = ProtoCore.VHDL.Utils.GenerateClockSyncTemplate();
             clockIf.IfBody.Add(executionBodyIf);
 
             // Reset sync ifstmt
-            ProtoCore.VHDL.AST.IfNode resetSyncIf = new ProtoCore.VHDL.AST.IfNode(ProtoCore.VHDL.Constants.ResetSync);
-            resetSyncIf.IfExpr = new ProtoCore.VHDL.AST.BinaryExpressionNode(
-                new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.ResetSignalName),
-                new ProtoCore.VHDL.AST.BitStringNode(1),
-                ProtoCore.VHDL.AST.BinaryExpressionNode.Operator.Eq
-                );
-
-            resetSyncIf.ElsifExpr = new ProtoCore.VHDL.AST.BinaryExpressionNode(
-                new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.ResetSignalName),
-                new ProtoCore.VHDL.AST.BitStringNode(0),
-                ProtoCore.VHDL.AST.BinaryExpressionNode.Operator.Eq
-                );
+            ProtoCore.VHDL.AST.IfNode resetSyncIf = ProtoCore.VHDL.Utils.GenerateResetSyncTemplate();
 
             // Reset sync if body (reset = 1)
             List<ProtoCore.VHDL.AST.VHDLNode> resetBody1 = new List<ProtoCore.VHDL.AST.VHDLNode>();
