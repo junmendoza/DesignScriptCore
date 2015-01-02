@@ -34,15 +34,15 @@ use IEEE.STD_LOGIC_1164.ALL;
 --		t = a + i;
 --		return = t;
 -- }
-entity Increment is
+entity IncrementVal is
 	Port( 
 			reset : in STD_LOGIC;
 			a : in STD_LOGIC_VECTOR(31 downto 0);
 			return_val : out STD_LOGIC_VECTOR(31 downto 0)
 		 );
-end Increment;
+end IncrementVal;
 
-architecture Behavioral of Increment is
+architecture Behavioral of IncrementVal is
 
 	signal ALU1_Add_return : STD_LOGIC_VECTOR(31 downto 0);
 	
