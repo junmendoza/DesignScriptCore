@@ -42,14 +42,17 @@ namespace ProtoCore.VHDL
             
             // ALU sub
             module = CreateModule(ProtoCore.VHDL.ComponentName.ALU.Sub, true);
+            module.Entity = new ProtoCore.VHDL.AST.EntityNode(ProtoCore.VHDL.ComponentName.ALU.Add, listPortEntry);
             ProtoCore.VHDL.Utils.FunctionCallToComponentMap.Add(ProtoCore.DSASM.Op.GetOpFunction(ProtoCore.DSASM.Operator.sub), ProtoCore.VHDL.ComponentName.ALU.Sub);
 
             // ALU mul
             module = CreateModule(ProtoCore.VHDL.ComponentName.ALU.Mul, true);
+            module.Entity = new ProtoCore.VHDL.AST.EntityNode(ProtoCore.VHDL.ComponentName.ALU.Add, listPortEntry);
             ProtoCore.VHDL.Utils.FunctionCallToComponentMap.Add(ProtoCore.DSASM.Op.GetOpFunction(ProtoCore.DSASM.Operator.mul), ProtoCore.VHDL.ComponentName.ALU.Mul);
 
             // ALU div
             module = CreateModule(ProtoCore.VHDL.ComponentName.ALU.Div, true);
+            module.Entity = new ProtoCore.VHDL.AST.EntityNode(ProtoCore.VHDL.ComponentName.ALU.Add, listPortEntry);
             ProtoCore.VHDL.Utils.FunctionCallToComponentMap.Add(ProtoCore.DSASM.Op.GetOpFunction(ProtoCore.DSASM.Operator.div), ProtoCore.VHDL.ComponentName.ALU.Div);
         }
         
