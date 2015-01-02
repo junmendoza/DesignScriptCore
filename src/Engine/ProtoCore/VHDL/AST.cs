@@ -13,30 +13,39 @@ namespace ProtoCore.VHDL.AST
 
     public class ModuleNode : VHDLNode
     {
-        public ModuleNode(string moduleName)
+        public ModuleNode(string moduleName, bool isBuiltIn = false)
         {
             this.Name = moduleName;
             IsTopModule = false;
 
-            // Setup output vhdl file
-            string path = @"..\..\..\DSAccelerate\" + this.Name + ".vhd";
-            OutputFile = new StreamWriter(File.Open(path, FileMode.Create));
+            OutputFile = null;
+            if (!isBuiltIn)
+            {
+                // Setup output vhdl file
+                // A vhd file is generated for user defined components
+                string path = @"..\..\..\DSAccelerate\" + this.Name + ".vhd";
+                OutputFile = new StreamWriter(File.Open(path, FileMode.Create));
+            }
 
-            LibraryList = new List<LibraryNode>();
-            UseNodeList = new List<UseNode>();
-            Entity = null;
-            SignalDeclarationList = new List<SignalDeclarationNode>();
-            ComponentList = new List<ComponentNode>();
-            PortMapList = new List<PortMapNode>();
-            ProcessList = new List<ProcessNode>();
-            ExecutionBody = new List<VHDLNode>();
-            ReturnSignalName = string.Empty;
+            this.LibraryList = new List<LibraryNode>();
+            this.UseNodeList = new List<UseNode>();
+            this.Entity = null;
+            this.SignalDeclarationList = new List<SignalDeclarationNode>();
+            this.ComponentList = new List<ComponentNode>();
+            this.PortMapList = new List<PortMapNode>();
+            this.ProcessList = new List<ProcessNode>();
+            this.ExecutionBody = new List<VHDLNode>();
+            this.ReturnSignalName = string.Empty;
+            this.IsBuiltIn = isBuiltIn;
         }
 
         public void Emit()
         {
-            Validity.Assert(OutputFile != null);
-            OutputFile.Write(ToString());
+            if (OutputFile != null)
+            {
+                OutputFile.Write(ToString());
+                OutputFile.Flush();
+            }
         }
 
         private List<VHDLNode> GetCurrentExecutionBody()
@@ -292,6 +301,7 @@ namespace ProtoCore.VHDL.AST
         public string ReturnSignalName { get; set; }
 
         public TextWriter OutputFile { get; private set; }
+        public bool IsBuiltIn { get; private set; }
 
         // This list contains the current execution logic of the current process
         // This will be stored within the process 

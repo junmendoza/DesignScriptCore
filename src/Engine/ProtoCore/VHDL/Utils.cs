@@ -60,8 +60,29 @@ namespace ProtoCore.VHDL
         {
             return BinaryExprOperatorTable[optr];
         }
+        
+        public static string GenerateReturnSignalName(string funcName)
+        {
+            return "return_" + funcName;
+        }
 
-        #region AST_UTILS
+        /// <summary>
+        /// Get the VHDL component name if the function to be called is mapped to a component
+        /// This is required when DS code is calling a hardware component directly such as an ALU
+        /// </summary>
+        /// <param name="functionCallName"></param>
+        /// <returns></returns>
+        public static string GetComponentMappedFunctionCallName(string functionCallName)
+        {
+            if (FunctionCallToComponentMap.ContainsKey(functionCallName))
+            {
+                return FunctionCallToComponentMap[functionCallName];
+            }
+            return functionCallName;
+        }
+
+#region AST_UTILS
+
         public static List<AST.LibraryNode> GenerateLibraryNodeList(List<string> libraryNameList)
         {
             List<AST.LibraryNode> libraryNodes = new List<AST.LibraryNode>();
@@ -129,8 +150,13 @@ namespace ProtoCore.VHDL
             return clockIf;
         }
 
-        #endregion
+#endregion
 
         public static Dictionary<VHDL.AST.BinaryExpressionNode.Operator, string> BinaryExprOperatorTable = null;
+
+        /// <summary>
+        /// Map of DS function calls to VHDL components
+        /// </summary>
+        public static Dictionary<string, string> FunctionCallToComponentMap = null;
     }
 }

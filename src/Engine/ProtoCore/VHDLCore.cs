@@ -15,14 +15,51 @@ namespace ProtoCore.VHDL
             ModuleMap = new Dictionary<string, AST.ModuleNode>();
             ProtoCore.VHDL.Utils.InitTables();
             ComponentInstanceCountMap = new Dictionary<string, int>();
+            GenerateBuiltInComponents();
+
         }
 
-        public ProtoCore.VHDL.AST.ModuleNode CreateModule(string componentName)
+        private void GenerateBuiltInComponents()
+        {
+            ProtoCore.VHDL.AST.ModuleNode module = null;
+            ProtoCore.VHDL.Utils.FunctionCallToComponentMap = new Dictionary<string, string>();
+
+            // ALU signals
+            
+            // Port entries
+            ProtoCore.VHDL.AST.PortEntryNode reset = new ProtoCore.VHDL.AST.PortEntryNode("reset", ProtoCore.VHDL.AST.PortEntryNode.Direction.In, 1);
+            List<ProtoCore.VHDL.AST.PortEntryNode> listPortEntry = new List<ProtoCore.VHDL.AST.PortEntryNode>();
+            listPortEntry.Add(reset);
+            listPortEntry.Add(new ProtoCore.VHDL.AST.PortEntryNode(ProtoCore.VHDL.ComponentName.ALU.OpSignal1, ProtoCore.VHDL.AST.PortEntryNode.Direction.In, 32));
+            listPortEntry.Add(new ProtoCore.VHDL.AST.PortEntryNode(ProtoCore.VHDL.ComponentName.ALU.OpSignal2, ProtoCore.VHDL.AST.PortEntryNode.Direction.In, 32));
+            listPortEntry.Add(new ProtoCore.VHDL.AST.PortEntryNode(ProtoCore.VHDL.ComponentName.ALU.OpSignalResult, ProtoCore.VHDL.AST.PortEntryNode.Direction.Out, 32));
+            
+
+            // ALU add
+            module = CreateModule(ProtoCore.VHDL.ComponentName.ALU.Add, true);
+            module.Entity = new ProtoCore.VHDL.AST.EntityNode(ProtoCore.VHDL.ComponentName.ALU.Add, listPortEntry);
+            ProtoCore.VHDL.Utils.FunctionCallToComponentMap.Add(ProtoCore.DSASM.Op.GetOpFunction(ProtoCore.DSASM.Operator.add), ProtoCore.VHDL.ComponentName.ALU.Add);
+            
+            // ALU sub
+            module = CreateModule(ProtoCore.VHDL.ComponentName.ALU.Sub, true);
+            ProtoCore.VHDL.Utils.FunctionCallToComponentMap.Add(ProtoCore.DSASM.Op.GetOpFunction(ProtoCore.DSASM.Operator.sub), ProtoCore.VHDL.ComponentName.ALU.Sub);
+
+            // ALU mul
+            module = CreateModule(ProtoCore.VHDL.ComponentName.ALU.Mul, true);
+            ProtoCore.VHDL.Utils.FunctionCallToComponentMap.Add(ProtoCore.DSASM.Op.GetOpFunction(ProtoCore.DSASM.Operator.mul), ProtoCore.VHDL.ComponentName.ALU.Mul);
+
+            // ALU div
+            module = CreateModule(ProtoCore.VHDL.ComponentName.ALU.Div, true);
+            ProtoCore.VHDL.Utils.FunctionCallToComponentMap.Add(ProtoCore.DSASM.Op.GetOpFunction(ProtoCore.DSASM.Operator.div), ProtoCore.VHDL.ComponentName.ALU.Div);
+        }
+        
+
+        public ProtoCore.VHDL.AST.ModuleNode CreateModule(string componentName, bool isBuiltIn = false)
         {
             ModuleName = componentName;
             if (!ModuleMap.ContainsKey(ModuleName))
             {
-                ModuleMap[ModuleName] = new AST.ModuleNode(ModuleName);
+                ModuleMap[ModuleName] = new AST.ModuleNode(ModuleName, isBuiltIn);
                 return ModuleMap[ModuleName];
             }
             return null;
@@ -60,7 +97,6 @@ namespace ProtoCore.VHDL
             foreach (var kvp in ModuleMap)
             {
                 kvp.Value.Emit();
-                kvp.Value.OutputFile.Flush();
             }
         }
 
@@ -78,6 +114,9 @@ namespace ProtoCore.VHDL
             }
         }
 
+        public void GenerateBuiltInModules()
+        {
+        }
 
         public Dictionary<string, AST.ModuleNode> ModuleMap { get; private set; }
         public string TopLevelModuleName { get; private set; }

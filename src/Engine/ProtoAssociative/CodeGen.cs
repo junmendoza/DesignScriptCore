@@ -148,7 +148,8 @@ namespace ProtoAssociative
         private void VHDL_EmitComponentInstanceFromFunctionCall(string lhs, FunctionCallNode funcCallNode)
         {
             ProtoCore.VHDL.AST.ModuleNode module = VHDL_GetCurrentModule();
-            string functionCallName = funcCallNode.Function.Name;
+            string functionCallName = ProtoCore.VHDL.Utils.GetComponentMappedFunctionCallName(funcCallNode.Function.Name);
+
 
             ProtoCore.VHDL.AST.ModuleNode functionModule = core.VhdlCore.GetModule(functionCallName);
             core.VhdlCore.UpdateComponentInstanceCount(functionCallName);
@@ -303,7 +304,7 @@ namespace ProtoAssociative
             //=====================================
             ProtoCore.VHDL.AST.ModuleNode functionModule = core.VhdlCore.CreateModule(funcDefNode.Name);
             string funcName = functionModule.Name;
-            functionModule.ReturnSignalName = "return_" + funcName;
+            functionModule.ReturnSignalName = ProtoCore.VHDL.Utils.GenerateReturnSignalName(funcName);
 
             // Library list
             List<string> libaryNameList = new List<string>();
@@ -364,9 +365,6 @@ namespace ProtoAssociative
                 processBody
                 );
             functionModule.ProcessList.Add(entryProcess);
-
-            // After completing a function definition, restore the top module
-            //core.VhdlCore.SetTopModule();
         }
 
 

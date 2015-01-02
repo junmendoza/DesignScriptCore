@@ -140,4 +140,18 @@ namespace ProtoCore.VHDL
         public const string ProcessPrefix = "proc";
     }
 
+    public struct ComponentName
+    {
+        public struct ALU
+        {
+            public const string Add = "ALU_Add";
+            public const string Sub = "ALU_Sub";
+            public const string Mul = "ALU_Mul";
+            public const string Div = "ALU_Div";
+
+            public const string OpSignal1 = "op1";
+            public const string OpSignal2 = "op2";
+            public const string OpSignalResult = "result";
+        }
+    }
 }
