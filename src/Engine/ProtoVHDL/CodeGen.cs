@@ -48,7 +48,17 @@ namespace ProtoVHDL
                 if (allocateSymbolAsSignal)
                 {
                     ProtoCore.VHDL.AST.ModuleNode module = null;
-                    ProtoCore.VHDL.AST.SignalDeclarationNode signalDecl = new ProtoCore.VHDL.AST.SignalDeclarationNode(symbol);
+                    ProtoCore.VHDL.AST.ArrayTypeDefinitionNode arrayType = null;
+                    string arrayTypeName = null;
+                    if (symbol.size > 1)
+                    {
+                        List<int> dimList = new List<int>();
+                        dimList.Add(symbol.size);
+                        arrayType = new ProtoCore.VHDL.AST.ArrayTypeDefinitionNode(dimList);
+                        arrayTypeName = arrayType.ArrayTypeName;
+                    }
+
+                    ProtoCore.VHDL.AST.SignalDeclarationNode signalDecl = new ProtoCore.VHDL.AST.SignalDeclarationNode(symbol, arrayType, arrayTypeName);
                     if (symbol.functionIndex == ProtoCore.DSASM.Constants.kGlobalScope)
                     {
                         // Global variable
@@ -165,7 +175,7 @@ namespace ProtoVHDL
             // Generate signal for function return
             string functionReturnSignalName = ProtoCore.VHDL.Utils.GenerateComponentReturnSignal(functionCallName, core.VhdlCore.ComponentInstanceCountMap[functionCallName]);
             ProtoCore.VHDL.AST.SignalDeclarationNode functionReturnSignal =
-                new ProtoCore.VHDL.AST.SignalDeclarationNode(functionReturnSignalName, 32);
+                new ProtoCore.VHDL.AST.SignalDeclarationNode(functionReturnSignalName);
             module.SignalDeclarationList.Add(functionReturnSignal);
 
             //========================================
@@ -415,7 +425,7 @@ namespace ProtoVHDL
 
             // Auto generated signals
             ProtoCore.VHDL.AST.SignalDeclarationNode execStartFlagSignal = 
-                new ProtoCore.VHDL.AST.SignalDeclarationNode(ProtoCore.VHDL.Constants.ExecutionStartFlagName, 1);
+                new ProtoCore.VHDL.AST.SignalDeclarationNode(ProtoCore.VHDL.Constants.ExecutionStartFlagName, null, null, 1);
             topModule.SignalDeclarationList.Add(execStartFlagSignal);
 
             // execution_started <= '0'

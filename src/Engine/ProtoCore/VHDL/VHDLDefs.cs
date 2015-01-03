@@ -140,7 +140,7 @@ namespace ProtoCore.VHDL
         public const string ClockSignalName = "clock";
         public const string ResetSignalName = "reset";
         public const string PrefixProcess = "proc";
-        public const string PrefixArrayType = "PrefixArrayType";
+        public const string PrefixArrayType = "t_array";
     }
 
     public struct ComponentName

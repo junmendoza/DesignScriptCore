@@ -65,7 +65,12 @@ namespace ProtoCore.VHDL
         {
             return "return_" + funcName;
         }
-
+        
+        public static string GenerateArrayTypeName(int elements, int elementSize)
+        {
+            return ProtoCore.VHDL.Constants.PrefixArrayType + "_" + elements.ToString() + "_" + elementSize.ToString();
+        }
+            
         /// <summary>
         /// Get the VHDL component name if the function to be called is mapped to a component
         /// This is required when DS code is calling a hardware component directly such as an ALU
@@ -108,7 +113,14 @@ namespace ProtoCore.VHDL
             List<ProtoCore.VHDL.AST.SignalDeclarationNode> signalDeclList = new List<ProtoCore.VHDL.AST.SignalDeclarationNode>();
             foreach (KeyValuePair<int, ProtoCore.DSASM.SymbolNode> kvp in symbolTable.symbolList)
             {
-                ProtoCore.VHDL.AST.SignalDeclarationNode signalDecl = new ProtoCore.VHDL.AST.SignalDeclarationNode(kvp.Value.name, 32);
+                ProtoCore.DSASM.SymbolNode symbol = kvp.Value;
+                ProtoCore.VHDL.AST.ArrayTypeDefinitionNode arrayType = null;
+                if (symbol.size > 1)
+                {
+                    arrayType = new AST.ArrayTypeDefinitionNode(new List<int>(symbol.size));
+                }
+                ProtoCore.VHDL.AST.SignalDeclarationNode signalDecl = new ProtoCore.VHDL.AST.SignalDeclarationNode(symbol, arrayType);
+
                 signalDeclList.Add(signalDecl);
             }
             return signalDeclList;

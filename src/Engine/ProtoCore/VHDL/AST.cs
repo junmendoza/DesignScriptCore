@@ -486,15 +486,17 @@ namespace ProtoCore.VHDL.AST
     {
         public ArrayTypeDefinitionNode(List<int> dimensionList)
         {
+            int elems = dimensionList[0];
+            ArrayTypeName = ProtoCore.VHDL.Utils.GenerateArrayTypeName(elems, ProtoCore.VHDL.Constants.SignalBitCount);
             this.DimensionList = new List<int>(dimensionList);
         }
         public override string ToString()
         {
-	        // type t_array_3_31 is array (0 to 2) of STD_LOGIC_VECTOR(31 downto 0);
+	        // type t_array_3_32 is array (0 to 2) of STD_LOGIC_VECTOR(31 downto 0);
             StringBuilder sbArrayType = new StringBuilder();
             sbArrayType.Append(ProtoCore.VHDL.Keyword.Type);
             sbArrayType.Append(" ");
-            sbArrayType.Append(ProtoCore.VHDL.Constants.PrefixArrayType);
+            sbArrayType.Append(ArrayTypeName);
             sbArrayType.Append(" ");
             sbArrayType.Append(ProtoCore.VHDL.Keyword.Is);
 
@@ -509,7 +511,7 @@ namespace ProtoCore.VHDL.AST
 
             StringBuilder sbElementType = new StringBuilder();
             sbElementType.Append(ProtoCore.VHDL.Keyword.Std_logic_vector);
-            sbElementType.Append("( ");
+            sbElementType.Append("(");
             sbElementType.Append(ProtoCore.VHDL.Constants.SignalBitCount - 1);
             sbElementType.Append(" ");
             sbElementType.Append(ProtoCore.VHDL.Keyword.Downto);
@@ -526,22 +528,30 @@ namespace ProtoCore.VHDL.AST
             sbFormat.Append(";");
             return sbFormat.ToString();
         }
+        public string ArrayTypeName { get; private set; }
         public List<int> DimensionList { get; private set; }
     }
 
     public class SignalDeclarationNode : VHDLNode
     {
-        public SignalDeclarationNode(string signal, int bits = ProtoCore.VHDL.Constants.SignalBitCount)
+        public SignalDeclarationNode(string signal, ArrayTypeDefinitionNode arrayType = null, string arrayTypeName = null, int bits = ProtoCore.VHDL.Constants.SignalBitCount)
         {
             SignalName = signal;
             BitCount = bits;
+            ArrayType = arrayType;
+            ArrayTypeName = arrayTypeName;
         }
 
-        public SignalDeclarationNode(ProtoCore.DSASM.SymbolNode symbol)
+        public SignalDeclarationNode(ProtoCore.DSASM.SymbolNode symbol, ArrayTypeDefinitionNode arrayType = null, string arrayTypeName = null, int bits = ProtoCore.VHDL.Constants.SignalBitCount)
         {
            DSSymbol = symbol;
            SignalName = DSSymbol.name;
            BitCount = ProtoCore.VHDL.Constants.SignalBitCount;
+           ArrayTypeName = arrayTypeName;
+
+           int elements = DSSymbol.size;
+           ArrayType = arrayType;
+
            if (DSSymbol.staticType.UID == (int)ProtoCore.PrimitiveType.kTypeBool)
            {
                BitCount = 1;
@@ -585,13 +595,32 @@ namespace ProtoCore.VHDL.AST
 
         private string GetArraySignalDeclaration()
         {
-            return string.Empty;
+            StringBuilder sbArrayType = new StringBuilder();
+            if (ArrayType != null)
+            {
+                sbArrayType.Append(ArrayType.ToString());
+            }
+
+            StringBuilder sbSignalDecl = new StringBuilder();
+            sbSignalDecl.Append(ProtoCore.VHDL.Keyword.Signal);
+            sbSignalDecl.Append(" ");
+            sbSignalDecl.Append(SignalName);
+            sbSignalDecl.Append(" : ");
+            sbSignalDecl.Append(ArrayTypeName);
+            sbSignalDecl.Append(";");
+
+            StringBuilder sbFormat = new StringBuilder();
+            sbFormat.Append(ArrayType);
+            sbFormat.Append("\n");
+            sbFormat.Append(sbSignalDecl);
+            sbFormat.Append("\n");
+            return sbFormat.ToString();
         }
 
         public override string ToString()
         {
             string signalDecl = string.Empty;
-            bool isArrayDecl = false;
+            bool isArrayDecl = ArrayType != null;
             if (isArrayDecl)
             {
                 signalDecl = GetArraySignalDeclaration();
@@ -606,6 +635,9 @@ namespace ProtoCore.VHDL.AST
         public ProtoCore.DSASM.SymbolNode DSSymbol { get; private set; }
         public string SignalName { get; private set; }
         public int BitCount { get; private set; }
+        public ArrayTypeDefinitionNode ArrayType { get; private set; }
+        public string ArrayTypeName { get; private set; }
+
     }
 
     public class PortMapNode : VHDLNode
