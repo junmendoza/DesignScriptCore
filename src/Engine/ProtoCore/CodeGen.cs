@@ -2578,6 +2578,8 @@ namespace ProtoCore
             EmitInstrConsole(ProtoCore.DSASM.kw.alloca, exprlist.list.Count.ToString());
             EmitPopArray(exprlist.list.Count);
 
+            core.VhdlCore.CurrentDataSize = exprlist.list.Count * core.VhdlCore.ArrayDataSize;
+
             if (exprlist.ArrayDimensions != null)
             {
                 int dimensions = DfsEmitArrayIndexHeap(exprlist.ArrayDimensions, graphNode);

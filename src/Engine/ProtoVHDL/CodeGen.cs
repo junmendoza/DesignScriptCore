@@ -48,7 +48,7 @@ namespace ProtoVHDL
                 if (allocateSymbolAsSignal)
                 {
                     ProtoCore.VHDL.AST.ModuleNode module = null;
-                    ProtoCore.VHDL.AST.SignalDeclarationNode signalDecl = new ProtoCore.VHDL.AST.SignalDeclarationNode(symbol.name, 32);
+                    ProtoCore.VHDL.AST.SignalDeclarationNode signalDecl = new ProtoCore.VHDL.AST.SignalDeclarationNode(symbol);
                     if (symbol.functionIndex == ProtoCore.DSASM.Constants.kGlobalScope)
                     {
                         // Global variable
@@ -5004,6 +5004,8 @@ namespace ProtoVHDL
                 }
                 // We need to get inferedType for boolean variable so that we can perform type check
                 inferedType.UID = (isBooleanOp || (type.UID == (int)PrimitiveType.kTypeBool)) ? (int)PrimitiveType.kTypeBool : inferedType.UID;
+
+                core.VhdlCore.CurrentDataSize = symbolnode.size;
             }
 
         }
@@ -8991,8 +8993,21 @@ namespace ProtoVHDL
                     {
                         if (!isAllocated)
                         {
-                            symbolnode = Allocate(globalClassIndex, globalClassIndex, globalProcIndex, t.Name, inferedType, ProtoCore.DSASM.Constants.kPrimitiveSize,
-                                    false, ProtoCore.Compiler.AccessSpecifier.kPublic, ProtoCore.DSASM.MemoryRegion.kMemStack, bnode.line, bnode.col);
+                            symbolnode = Allocate(
+                                globalClassIndex, 
+                                globalClassIndex,
+                                globalProcIndex, 
+                                t.Name, 
+                                inferedType, 
+                                core.VhdlCore.CurrentDataSize,
+                                false, 
+                                ProtoCore.Compiler.AccessSpecifier.kPublic, 
+                                ProtoCore.DSASM.MemoryRegion.kMemStack, 
+                                bnode.line, 
+                                bnode.col);
+
+                            // Reset the current allocated size in preparation for the next allocation 
+                            core.VhdlCore.ArrayDataSize = 1;
 
                             if (core.ExecMode == ProtoCore.DSASM.InterpreterMode.kExpressionInterpreter)
                             {

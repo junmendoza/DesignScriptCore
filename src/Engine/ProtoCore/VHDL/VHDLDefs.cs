@@ -129,6 +129,8 @@ namespace ProtoCore.VHDL
     public struct Constants
     {
         public const int kInvalidIndex = -1;
+        public const int SignalBitCount = 32;
+
         public const string kSignalAssignSymbol = "<=";
         public const string ExecutionStartFlagName = "execution_started";
 
@@ -137,7 +139,8 @@ namespace ProtoCore.VHDL
         public const string RisingEdge = "rising_edge";
         public const string ClockSignalName = "clock";
         public const string ResetSignalName = "reset";
-        public const string ProcessPrefix = "proc";
+        public const string PrefixProcess = "proc";
+        public const string PrefixArrayType = "PrefixArrayType";
     }
 
     public struct ComponentName

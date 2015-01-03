@@ -477,15 +477,83 @@ namespace ProtoCore.VHDL.AST
         public int BitCount { get; private set; }
     }
 
+    /// <summary>
+    /// This node represents an array type definition
+    /// It needs to be extended to support multiple types
+    /// It currently supports and array of 32bit signals
+    /// </summary>
+    public class ArrayTypeDefinitionNode
+    {
+        public ArrayTypeDefinitionNode(List<int> dimensionList)
+        {
+            this.DimensionList = new List<int>(dimensionList);
+        }
+        public override string ToString()
+        {
+	        // type t_array_3_31 is array (0 to 2) of STD_LOGIC_VECTOR(31 downto 0);
+            StringBuilder sbArrayType = new StringBuilder();
+            sbArrayType.Append(ProtoCore.VHDL.Keyword.Type);
+            sbArrayType.Append(" ");
+            sbArrayType.Append(ProtoCore.VHDL.Constants.PrefixArrayType);
+            sbArrayType.Append(" ");
+            sbArrayType.Append(ProtoCore.VHDL.Keyword.Is);
+
+
+            StringBuilder sbDimension = new StringBuilder();
+            sbDimension.Append(ProtoCore.VHDL.Keyword.Array);
+            sbDimension.Append(" (0 ");
+            sbDimension.Append(ProtoCore.VHDL.Keyword.To);
+            sbDimension.Append(" ");
+            sbDimension.Append(DimensionList[0].ToString());
+            sbDimension.Append(")");
+
+            StringBuilder sbElementType = new StringBuilder();
+            sbElementType.Append(ProtoCore.VHDL.Keyword.Std_logic_vector);
+            sbElementType.Append("( ");
+            sbElementType.Append(ProtoCore.VHDL.Constants.SignalBitCount - 1);
+            sbElementType.Append(" ");
+            sbElementType.Append(ProtoCore.VHDL.Keyword.Downto);
+            sbElementType.Append(" 0)");
+
+            StringBuilder sbFormat = new StringBuilder();
+            sbFormat.Append(sbArrayType);
+            sbFormat.Append(" ");
+            sbFormat.Append(sbDimension);
+            sbFormat.Append(" ");
+            sbFormat.Append(ProtoCore.VHDL.Keyword.Of);
+            sbFormat.Append(" ");
+            sbFormat.Append(sbElementType);
+            sbFormat.Append(";");
+            return sbFormat.ToString();
+        }
+        public List<int> DimensionList { get; private set; }
+    }
+
     public class SignalDeclarationNode : VHDLNode
     {
-        public SignalDeclarationNode(string signal, int bits)
+        public SignalDeclarationNode(string signal, int bits = ProtoCore.VHDL.Constants.SignalBitCount)
         {
-            this.SignalName = signal;
-            this.BitCount = bits;
+            SignalName = signal;
+            BitCount = bits;
         }
 
-        public override string ToString()
+        public SignalDeclarationNode(ProtoCore.DSASM.SymbolNode symbol)
+        {
+           DSSymbol = symbol;
+           SignalName = DSSymbol.name;
+           BitCount = ProtoCore.VHDL.Constants.SignalBitCount;
+           if (DSSymbol.staticType.UID == (int)ProtoCore.PrimitiveType.kTypeBool)
+           {
+               BitCount = 1;
+           }
+           else
+           {
+               // Handle other data type size here
+               BitCount = ProtoCore.VHDL.Constants.SignalBitCount;
+           }
+        }
+
+        private string GetSignalDeclaration()
         {
             string type = string.Empty;
             if (BitCount == 1)
@@ -515,6 +583,27 @@ namespace ProtoCore.VHDL.AST
             return signalDecl;
         }
 
+        private string GetArraySignalDeclaration()
+        {
+            return string.Empty;
+        }
+
+        public override string ToString()
+        {
+            string signalDecl = string.Empty;
+            bool isArrayDecl = false;
+            if (isArrayDecl)
+            {
+                signalDecl = GetArraySignalDeclaration();
+            }
+            else
+            {
+                signalDecl = GetSignalDeclaration();
+            }
+            return signalDecl;
+        }
+
+        public ProtoCore.DSASM.SymbolNode DSSymbol { get; private set; }
         public string SignalName { get; private set; }
         public int BitCount { get; private set; }
     }

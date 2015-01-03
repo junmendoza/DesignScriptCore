@@ -15,8 +15,9 @@ namespace ProtoCore.VHDL
             ModuleMap = new Dictionary<string, AST.ModuleNode>();
             ProtoCore.VHDL.Utils.InitTables();
             ComponentInstanceCountMap = new Dictionary<string, int>();
+            ArrayDataSize = 1;
+            CurrentDataSize = 1;
             GenerateBuiltInComponents();
-
         }
 
         private void GenerateBuiltInComponents()
@@ -124,7 +125,9 @@ namespace ProtoCore.VHDL
         public Dictionary<string, AST.ModuleNode> ModuleMap { get; private set; }
         public string TopLevelModuleName { get; private set; }
         public string ModuleName { get; set; }
-
+        public int ArrayDataSize { get; set; }
+        public int CurrentDataSize { get; set; }
+        
         /// <summary>
         /// Tracks the number of times a component is instantiated
         /// </summary>
