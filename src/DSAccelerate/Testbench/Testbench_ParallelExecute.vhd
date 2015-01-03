@@ -47,9 +47,9 @@ ARCHITECTURE behavior OF Testbench_ParallelExecute IS
     END COMPONENT;
     
 
-   --Inputs
+   -- Inputs
    signal clock : std_logic := '0';
-   signal reset : std_logic := '0';
+   signal reset : std_logic := '1';
 
 	constant clkCycles : integer := 10;
 	
@@ -65,12 +65,11 @@ BEGIN
    stim_proc: process
    begin		
 		
-		clock <= '0';
-		reset <= '0';
+		reset <= '1';
 		wait for 5 ns;
 		
-		clock <= not clock;
 		reset <= '0';
+		wait for 5 ns;
 		
 		for i in 1 to clkCycles loop
 			clock <= not clock;
