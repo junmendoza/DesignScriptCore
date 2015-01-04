@@ -44,6 +44,24 @@ namespace ProtoCore
 
     public abstract class CodeGen
     {
+#region VHDL_CODEGEN
+        private List<ProtoCore.AST.AssociativeAST.AssociativeNode> arrayElementList = new List<ProtoCore.AST.AssociativeAST.AssociativeNode>();
+
+        protected void VHDL_PushNode(ProtoCore.AST.AssociativeAST.AssociativeNode node)
+        {
+            Validity.Assert(arrayElementList != null);
+            arrayElementList.Add(node);
+        }
+
+        protected ProtoCore.AST.AssociativeAST.AssociativeNode VHDL_PopNode()
+        {
+            Validity.Assert(arrayElementList != null);
+            Validity.Assert(arrayElementList.Count > 0);
+            ProtoCore.AST.AssociativeAST.AssociativeNode lastNode = arrayElementList[arrayElementList.Count - 1];
+            arrayElementList.RemoveAt(arrayElementList.Count - 1);
+            return lastNode;
+        }
+#endregion
         protected Core core;
         protected bool emitReplicationGuide;
 
@@ -2167,6 +2185,7 @@ namespace ProtoCore
             {
                 EmitInstrConsole(ProtoCore.DSASM.kw.push, value.ToString());
                 EmitPush(op, node.line, node.col);
+                VHDL_PushNode(node as AST.AssociativeAST.AssociativeNode);
             }
 
             if (IsAssociativeArrayIndexing)

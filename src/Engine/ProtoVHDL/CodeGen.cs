@@ -31,7 +31,7 @@ namespace ProtoVHDL
     public class CodeGen : ProtoCore.CodeGen
     {
         #region VHDL_CODEGEN
-
+       
 
         /// <summary>
         /// Get allocated variables and generate their signals in the associated modules
@@ -147,6 +147,55 @@ namespace ProtoVHDL
 
                         ProtoCore.VHDL.AST.AssignmentNode assignNode = new ProtoCore.VHDL.AST.AssignmentNode(
                             new ProtoCore.VHDL.AST.IdentifierNode(lhsName),
+                            rNode
+                            );
+                        module.AppendExecutionStatement(assignNode);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Emit assignment to array element statements
+        /// </summary>
+        /// <param name="lhsArrayNode"></param>
+        /// <param name="rhsArrayElements"></param>
+        private void VHDL_EmitArrayAssignmentStmts(string lhsArrayName, List<AssociativeNode> rhsArrayElements)
+        {
+            ProtoCore.VHDL.AST.ModuleNode module = VHDL_GetCurrentModule();
+
+            int elemnum = 0;
+            foreach (AssociativeNode arrayElem in rhsArrayElements)
+            {
+                string indexIntoArray = lhsArrayName + "(" + elemnum++ + ")";
+                if (arrayElem is IntNode)
+                {
+                    ProtoCore.VHDL.AST.VHDLNode rNode = new ProtoCore.VHDL.AST.HexStringNode((int)(arrayElem as IntNode).Value);
+                    ProtoCore.VHDL.AST.AssignmentNode assignNode = new ProtoCore.VHDL.AST.AssignmentNode(
+                        new ProtoCore.VHDL.AST.IdentifierNode(indexIntoArray),
+                        rNode
+                        );
+                    module.AppendExecutionStatement(assignNode);
+                }
+                else if (arrayElem is IdentifierNode)
+                {
+                    string rhsName = (arrayElem as IdentifierNode).Name;
+                    ProtoCore.VHDL.AST.VHDLNode rNode = new ProtoCore.VHDL.AST.IdentifierNode(rhsName);
+
+                    // Create a new process if the lhs of an assignment has already been assigned to in the current process
+                    ProtoCore.VHDL.AST.ProcessNode process = module.GetCurrentProcess();
+                    bool isRhsAssignedinProcess = process.AssignedSignals.Contains(rhsName);
+                    if (isRhsAssignedinProcess)
+                    {
+                        VHDL_EmitProcessFromAssignment(indexIntoArray, rhsName);
+                    }
+                    else
+                    {
+                        // Update the signals assigned to in this process
+                        process.AssignedSignals.Add(indexIntoArray);
+
+                        ProtoCore.VHDL.AST.AssignmentNode assignNode = new ProtoCore.VHDL.AST.AssignmentNode(
+                            new ProtoCore.VHDL.AST.IdentifierNode(indexIntoArray),
                             rNode
                             );
                         module.AppendExecutionStatement(assignNode);
@@ -5016,6 +5065,8 @@ namespace ProtoVHDL
                     }
                 }
 
+                VHDL_PushNode(node as ProtoCore.AST.AssociativeAST.AssociativeNode);
+
                 if (ignoreRankCheck || core.TypeSystem.IsHigherRank(type.UID, inferedType.UID))
                 {
                     inferedType = type;
@@ -9065,6 +9116,21 @@ namespace ProtoVHDL
                         {
                             EmitInstrConsole(ProtoCore.DSASM.kw.popw, symbolnode.name);
                             EmitPopForSymbolW(symbolnode, node.line, node.col, node.endLine, node.endCol);                            
+                        }
+
+                        if (symbolnode.size > 1)
+                        {
+                            List<AssociativeNode> rhsArrayElements = new List<AssociativeNode>();
+                            for (int n = 0; n < symbolnode.size; ++n)
+                            {
+                                rhsArrayElements.Add(VHDL_PopNode());
+                            }
+                            rhsArrayElements.Reverse();
+                            VHDL_EmitArrayAssignmentStmts(symbolnode.name, rhsArrayElements);
+                        }
+                        else
+                        {
+                            VHDL_PopNode();
                         }
 
                         AutoGenerateUpdateReference(bnode.LeftNode, graphNode);
