@@ -3477,6 +3477,7 @@ namespace ProtoVHDL
                 {
                     leftNode = astBNode.LeftNode;
                     DFSEmitSSA_AST(astBNode.RightNode, ssaStack, ref astlist);
+
                     AssociativeNode assocNode = ssaStack.Pop();
 
                     if (assocNode is BinaryExpressionNode)
@@ -3521,11 +3522,27 @@ namespace ProtoVHDL
                     isSSAAssignment = true;
                 }
 
-                BinaryExpressionNode bnode = new BinaryExpressionNode(leftNode, rightNode, ProtoCore.DSASM.Operator.assign);
-                bnode.isSSAAssignment = isSSAAssignment;
+                // Comment Jun: 
+                // VHDL intercept: Do not generate an SSA temp firor the final array assignment
+                // Assign the array directly to the lhs
+                string lhsName = string.Empty;
+                IdentifierNode lhsNode = astBNode.LeftNode as IdentifierNode;
+                if (lhsNode != null && !CoreUtils.IsSSATemp(lhsNode.Name) && (astBNode.RightNode is ExprListNode))
+                {
+                    BinaryExpressionNode bnode = astlist[astlist.Count - 1] as BinaryExpressionNode;
+                    bnode.isSSAAssignment = isSSAAssignment;
+                    Validity.Assert(bnode != null);
+                    bnode.LeftNode = leftNode;
+                    ssaStack.Push(bnode);
+                }
+                else
+                {
+                    BinaryExpressionNode bnode = new BinaryExpressionNode(leftNode, rightNode, ProtoCore.DSASM.Operator.assign);
+                    bnode.isSSAAssignment = isSSAAssignment;
 
-                astlist.Add(bnode);
-                ssaStack.Push(bnode);
+                    astlist.Add(bnode);
+                    ssaStack.Push(bnode);
+                }
             }
             else if (node is ArrayNode)
             {
