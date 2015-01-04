@@ -48,17 +48,6 @@ namespace ProtoVHDL
                 if (allocateSymbolAsSignal)
                 {
                     ProtoCore.VHDL.AST.ModuleNode module = null;
-                    ProtoCore.VHDL.AST.ArrayTypeDefinitionNode arrayType = null;
-                    string arrayTypeName = null;
-                    if (symbol.size > 1)
-                    {
-                        List<int> dimList = new List<int>();
-                        dimList.Add(symbol.size);
-                        arrayType = new ProtoCore.VHDL.AST.ArrayTypeDefinitionNode(dimList);
-                        arrayTypeName = arrayType.ArrayTypeName;
-                    }
-
-                    ProtoCore.VHDL.AST.SignalDeclarationNode signalDecl = new ProtoCore.VHDL.AST.SignalDeclarationNode(symbol, arrayType, arrayTypeName);
                     if (symbol.functionIndex == ProtoCore.DSASM.Constants.kGlobalScope)
                     {
                         // Global variable
@@ -71,6 +60,25 @@ namespace ProtoVHDL
                         Validity.Assert(procNode != null);
                         module = core.VhdlCore.GetModule(procNode.name);
                     }
+
+                    // Handle array signal declarations
+                    ProtoCore.VHDL.AST.ArrayTypeDefinitionNode arrayType = null;
+                    string arrayTypeName = null;
+                    if (symbol.size > 1)
+                    {
+                        List<int> dimList = new List<int>();
+                        dimList.Add(symbol.size);
+                        arrayTypeName = ProtoCore.VHDL.Utils.GenerateArrayTypeName(dimList[0], ProtoCore.VHDL.Constants.SignalBitCount);
+                        if (!module.DefinedArrayTypes.ContainsKey(arrayTypeName))
+                        {
+                            // The array type is not yet defined in the module
+                            // Add the definition
+                            arrayType = new ProtoCore.VHDL.AST.ArrayTypeDefinitionNode(dimList);
+                            module.DefinedArrayTypes.Add(arrayTypeName, arrayType);
+                        }
+                    }
+
+                    ProtoCore.VHDL.AST.SignalDeclarationNode signalDecl = new ProtoCore.VHDL.AST.SignalDeclarationNode(symbol, arrayType, arrayTypeName);
                     module.SignalDeclarationList.Add(signalDecl);
                 }
             }

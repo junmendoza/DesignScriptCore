@@ -37,6 +37,7 @@ namespace ProtoCore.VHDL.AST
             this.ExecutionBody = new List<VHDLNode>();
             this.ReturnSignalName = string.Empty;
             this.IsBuiltIn = isBuiltIn;
+            this.DefinedArrayTypes = new Dictionary<string, ArrayTypeDefinitionNode>();
         }
 
         public void Emit()
@@ -299,6 +300,7 @@ namespace ProtoCore.VHDL.AST
         public List<PortMapNode> PortMapList { get; set; }
         public List<ProcessNode> ProcessList { get; set; }
         public string ReturnSignalName { get; set; }
+        public Dictionary<string, ArrayTypeDefinitionNode> DefinedArrayTypes { get; set; }
 
         public TextWriter OutputFile { get; private set; }
         public bool IsBuiltIn { get; private set; }
@@ -620,9 +622,10 @@ namespace ProtoCore.VHDL.AST
         public override string ToString()
         {
             string signalDecl = string.Empty;
-            bool isArrayDecl = ArrayType != null;
+            bool isArrayDecl = ArrayTypeName != null;
             if (isArrayDecl)
             {
+                Validity.Assert(DSSymbol.size > 1);
                 signalDecl = GetArraySignalDeclaration();
             }
             else
