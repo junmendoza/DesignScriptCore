@@ -204,6 +204,11 @@ namespace ProtoVHDL
             }
         }
 
+
+        private void VHDL_EmitReplicatedFunctionCall(string lhs, FunctionCallNode funcCallNode)
+        {
+        }
+
         /// <summary>
         /// Handle DS function call 
         ///     Emit component
@@ -3523,11 +3528,12 @@ namespace ProtoVHDL
                 }
 
                 // Comment Jun: 
-                // VHDL intercept: Do not generate an SSA temp firor the final array assignment
-                // Assign the array directly to the lhs
+                // VHDL intercept: Do not generate an SSA temp for final array assignment or function calls
+                // Assign the result directly to the LHS
                 string lhsName = string.Empty;
                 IdentifierNode lhsNode = astBNode.LeftNode as IdentifierNode;
-                if (lhsNode != null && !CoreUtils.IsSSATemp(lhsNode.Name) && (astBNode.RightNode is ExprListNode))
+                bool isRHSFunctionOrExprList = (astBNode.RightNode is ExprListNode) || (astBNode.RightNode is FunctionCallNode);
+                if (lhsNode != null && !CoreUtils.IsSSATemp(lhsNode.Name) && isRHSFunctionOrExprList)
                 {
                     BinaryExpressionNode bnode = astlist[astlist.Count - 1] as BinaryExpressionNode;
                     bnode.isSSAAssignment = isSSAAssignment;
@@ -3675,23 +3681,38 @@ namespace ProtoVHDL
                     for (int idx = 0; idx < fcNode.FormalArguments.Count; idx++)
                     {
                         AssociativeNode arg = fcNode.FormalArguments[idx];
-                        DFSEmitSSA_AST(arg, ssaStack, ref astlistArgs);
-                        AssociativeNode argNode = ssaStack.Pop();
 
-                        if (argNode is BinaryExpressionNode)
+                        // VHDL intercept:
+                        // Do not generate temps for primitive and identifier
+                        // Pass them directly as arguments
+                        bool isPrimitiveOrIdent =
+                            (arg is IntNode)
+                            || (arg is IntNode)
+                            || (arg is DoubleNode)
+                            || (arg is BooleanNode)
+                            || (arg is StringNode)
+                            || (arg is IdentifierNode);
+
+                        if (!isPrimitiveOrIdent)
                         {
-                            BinaryExpressionNode argBinaryExpr = argNode as BinaryExpressionNode;
-                            //(argBinaryExpr.LeftNode as IdentifierNode).ReplicationGuides = GetReplicationGuidesFromASTNode(argBinaryExpr.RightNode);
-                            (argBinaryExpr.LeftNode as IdentifierNode).ReplicationGuides = GetReplicationGuides(arg);
-                            
-                            fcNode.FormalArguments[idx] = argBinaryExpr.LeftNode;
+                            DFSEmitSSA_AST(arg, ssaStack, ref astlistArgs);
+                            AssociativeNode argNode = ssaStack.Pop();
+
+                            if (argNode is BinaryExpressionNode)
+                            {
+                                BinaryExpressionNode argBinaryExpr = argNode as BinaryExpressionNode;
+                                //(argBinaryExpr.LeftNode as IdentifierNode).ReplicationGuides = GetReplicationGuidesFromASTNode(argBinaryExpr.RightNode);
+                                (argBinaryExpr.LeftNode as IdentifierNode).ReplicationGuides = GetReplicationGuides(arg);
+
+                                fcNode.FormalArguments[idx] = argBinaryExpr.LeftNode;
+                            }
+                            else
+                            {
+                                fcNode.FormalArguments[idx] = argNode;
+                            }
+                            astlist.AddRange(astlistArgs);
+                            astlistArgs.Clear();
                         }
-                        else
-                        {
-                            fcNode.FormalArguments[idx] = argNode;
-                        }
-                        astlist.AddRange(astlistArgs);
-                        astlistArgs.Clear();
                     }
                 }
 
