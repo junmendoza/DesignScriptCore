@@ -819,5 +819,21 @@ namespace ProtoCore.Utils
             }
             return astList;
         }
+
+        public static string GenerateCallsiteID(string callFunctionName, int currentClassScope, int currentFunctionScope, int functionCallInstance, System.Guid programGuid)
+        {
+            string callsiteIdentifier =
+               callFunctionName 
+               + "_InClassDecl" 
+               + currentClassScope.ToString() 
+               + "_InFunctionScope"
+               + currentFunctionScope 
+               + "_Instance"
+               + functionCallInstance.ToString() 
+               + "_"
+               + programGuid.ToString();
+
+            return callsiteIdentifier;
+        }
     }
 }

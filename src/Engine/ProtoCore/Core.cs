@@ -2299,7 +2299,8 @@ namespace ProtoCore
             bool isImperative =  language == Language.kImperative;
             bool isInternalFunction = CoreUtils.IsInternalFunction(methodName);
 
-            if (isInternalFunction || isImperative)
+            //if (isInternalFunction || isImperative)
+            if (isImperative)
             {
                 csInstance = new CallSite(classScope, 
                                           methodName, 

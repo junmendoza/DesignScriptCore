@@ -31,6 +31,22 @@ namespace ProtoCore
         public ReplicationCallType ReplicationType { get; private set;}
 
         /// <summary>
+        /// This function will infer the replication type given the instruction
+        /// </summary>
+        /// <param name="repInstr"></param>
+        /// <returns></returns>
+        ReplicationCallType GetReplicationCallType(List<ReplicationInstruction> repInstrList)
+        {
+            // TODO: this needs the proper adapter
+            // Currently, it just checks for the zipped flag of the first instr
+            if (repInstrList[0].Zipped)
+            {
+                return ReplicationCallType.Zipped;
+            }
+            return ReplicationCallType.None;
+        }
+
+        /// <summary>
         /// Data structure used to carry trace data
         /// </summary>
         public class SingleRunTraceData
@@ -530,7 +546,6 @@ namespace ProtoCore
 
             {
                 log.AppendLine("Case 1: Exact Match");
-
                 FunctionEndPoint fep = Case1GetCompleteMatchFEP(context, arguments, funcGroup, replicationControl,
                                                                 stackFrame,
                                                                 core, log);
@@ -591,6 +606,8 @@ namespace ProtoCore
                     //Otherwise we have a cluster of FEPs that can be used to dispatch the array
                     resolvesFeps = feps;
                     replicationInstructions = rc.Instructions;
+
+                    ReplicationType = GetReplicationCallType(replicationInstructions);
 
                     return;
                 }

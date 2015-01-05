@@ -755,11 +755,13 @@ namespace ProtoCore.AST.AssociativeAST
         public int DynamicTableIndex { get; set; }
         public AssociativeNode Function { get; set; }
         public List<AssociativeNode> FormalArguments { get; set; }
+        public string CallSiteIdentifier { get; set; }
 
         public FunctionCallNode()
         {
             FormalArguments = new List<AssociativeNode>();
             DynamicTableIndex = Constants.kInvalidIndex;
+            CallSiteIdentifier = string.Empty;
         }
 
         public FunctionCallNode(FunctionCallNode rhs)
@@ -768,6 +770,7 @@ namespace ProtoCore.AST.AssociativeAST
             Function = NodeUtils.Clone(rhs.Function);
             FormalArguments = rhs.FormalArguments.Select(NodeUtils.Clone).ToList();
             DynamicTableIndex = rhs.DynamicTableIndex;
+            CallSiteIdentifier = rhs.CallSiteIdentifier;
         }
 
         public override bool Equals(object other)
