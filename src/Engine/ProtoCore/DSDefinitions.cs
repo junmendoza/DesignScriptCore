@@ -1,5 +1,10 @@
 ﻿namespace ProtoCore.DSDefinitions
 {
+    public enum CompileTarget
+    {
+        JIL,
+        VHDL
+    }
     public struct Keyword
     {
         // TODO: Add 

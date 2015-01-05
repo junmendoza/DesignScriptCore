@@ -49,17 +49,24 @@ namespace ProtoCore
 
         protected void VHDL_PushNode(ProtoCore.AST.AssociativeAST.AssociativeNode node)
         {
-            Validity.Assert(arrayElementList != null);
-            arrayElementList.Add(node);
+            if (codeBlock.language == Language.kVHDL)
+            {
+                Validity.Assert(arrayElementList != null);
+                arrayElementList.Add(node);
+            }
         }
 
         protected ProtoCore.AST.AssociativeAST.AssociativeNode VHDL_PopNode()
         {
-            Validity.Assert(arrayElementList != null);
-            Validity.Assert(arrayElementList.Count > 0);
-            ProtoCore.AST.AssociativeAST.AssociativeNode lastNode = arrayElementList[arrayElementList.Count - 1];
-            arrayElementList.RemoveAt(arrayElementList.Count - 1);
-            return lastNode;
+            if (codeBlock.language == Language.kVHDL)
+            {
+                Validity.Assert(arrayElementList != null);
+                Validity.Assert(arrayElementList.Count > 0);
+                ProtoCore.AST.AssociativeAST.AssociativeNode lastNode = arrayElementList[arrayElementList.Count - 1];
+                arrayElementList.RemoveAt(arrayElementList.Count - 1);
+                return lastNode;
+            }
+            return null;
         }
 #endregion
         protected Core core;
@@ -2597,7 +2604,10 @@ namespace ProtoCore
             EmitInstrConsole(ProtoCore.DSASM.kw.alloca, exprlist.list.Count.ToString());
             EmitPopArray(exprlist.list.Count);
 
-            core.VhdlCore.CurrentDataSize = exprlist.list.Count * core.VhdlCore.ArrayDataSize;
+            if (codeBlock.language == Language.kVHDL)
+            {
+                core.VhdlCore.CurrentDataSize = exprlist.list.Count * core.VhdlCore.ArrayDataSize;
+            }
 
             if (exprlist.ArrayDimensions != null)
             {

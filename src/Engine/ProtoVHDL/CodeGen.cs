@@ -15,7 +15,6 @@ using System.Linq;
 
 namespace ProtoVHDL
 {
-
     public class ThisPointerProcOverload
     {
         public int classIndex { get; set; }

@@ -146,6 +146,7 @@ namespace ProtoCore
     {
         public Options()
         {
+            CompilationTarget = DSDefinitions.CompileTarget.JIL;
             ApplyUpdate = false;
 
             DumpByteCode = true;
@@ -197,6 +198,9 @@ namespace ProtoCore
             IsDeltaCompile = false;
 
         }
+
+
+        public ProtoCore.DSDefinitions.CompileTarget CompilationTarget { get; set; }
 
         public bool ApplyUpdate { get; set; }
         public bool DumpByteCode { get; set; }

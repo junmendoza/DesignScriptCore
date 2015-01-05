@@ -316,8 +316,25 @@ namespace ProtoScript.Runners
                 return null;
         }
 
+        /// <summary>
+        /// Execute to gather information about the program
+        /// Data is stored in core
+        /// </summary>
+        /// <param name="filename"></param>
+        /// <param name="core"></param>
+        /// <returns></returns>
+        private bool CompileAndExecutePass(string filename, ProtoCore.Core core)
+        {
+            ProtoFFI.DLLFFIHandler.Register(ProtoFFI.FFILanguage.CSharp, new ProtoFFI.CSModuleHelper());
+            ExecutionMirror mirror = LoadAndExecute(filename, core);
+            return mirror == null ? false : true;
+        }
+
         public bool CompileToVHDL(string topLevelModule, string filename, ProtoCore.Core core)
         {
+            // Execute and gather program data 
+            CompileAndExecutePass(filename, core);
+
             core.VhdlCore = new ProtoCore.VHDL.VHDLCore(topLevelModule);
 
             System.IO.StreamReader reader = null;

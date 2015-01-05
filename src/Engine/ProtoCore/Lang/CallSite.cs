@@ -20,6 +20,16 @@ namespace ProtoCore
 {
     public class CallSite
     {
+        public enum ReplicationCallType
+        {
+            Zipped,     
+            Cartesian,
+            None,       // Normal function call (non-replicating)
+            UnTyped     // Unknown replication
+        }
+
+        public ReplicationCallType ReplicationType { get; private set;}
+
         /// <summary>
         /// Data structure used to carry trace data
         /// </summary>
@@ -338,6 +348,8 @@ namespace ProtoCore
                 LoadSerializedDataIntoTraceCache(serializedTraceData);
                 
             }
+
+            ReplicationType = ReplicationCallType.UnTyped;
         }
 
         /// <summary>
