@@ -206,6 +206,58 @@ namespace ProtoVHDL
 
         private void VHDL_EmitZippedReplicationCall(string lhs, FunctionCallNode funcCallNode, CallSite callsite)
         {
+            /*
+             
+             public class ReplicatedCallNode : VHDLNode
+    {
+        public ReplicatedCallNode(FunctionCallNode callNode, int elements, int batchCount)
+        {
+            // Elements processed per iteration: batchCount = 3
+            // Iterations: i = Elements / batchCount
+            // Elements processed on the last iteration: last = Elements mod batchCount
+            FunctionCall = callNode;
+            Elements = elements;
+            BatchCount = batchCount;
+
+            iterations = Elements / BatchCount;
+            lastBatchCount = Elements % BatchCount;
+        }
+
+        public override string ToString()
+        {
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// The function call to replicate
+        /// </summary>
+        public FunctionCallNode FunctionCall { get; private set; }
+
+        /// <summary>
+        /// The total number of elements function calls
+        /// </summary>
+        public int Elements { get; private set; }
+
+        /// <summary>
+        /// Elements processed per iteration
+        /// This number is given
+        /// </summary>
+        public int BatchCount { get; private set; }
+
+        /// <summary>
+        /// The number of iterations to complete the replicated call
+        /// Iterations: Elements / BatchCount
+        /// </summary>
+        public int iterations { get; private set; }
+
+        /// <summary>
+        /// Elements processed on the last iteration: Elements mod iterations
+        /// </summary>
+        private int lastBatchCount;
+    }
+
+             
+             */
         }
 
         private void VHDL_EmitCartesianReplicationCall(string lhs, FunctionCallNode funcCallNode, CallSite callsite)
