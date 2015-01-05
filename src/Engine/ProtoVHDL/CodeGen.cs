@@ -108,7 +108,7 @@ namespace ProtoVHDL
 
             if (bnode.RightNode is FunctionCallNode)
             {
-                VHDL_EmitComponentInstanceFromFunctionCall(lhsName, bnode.RightNode as FunctionCallNode);
+                VHDL_EmitFunctionCall(lhsName, bnode.RightNode as FunctionCallNode);
             }
             else
             {
@@ -204,9 +204,40 @@ namespace ProtoVHDL
         }
 
 
-        private void VHDL_EmitReplicatedFunctionCall(string lhs, FunctionCallNode funcCallNode)
+        private void VHDL_EmitZippedReplicationCall(string lhs, FunctionCallNode funcCallNode, CallSite callsite)
         {
         }
+
+        private void VHDL_EmitCartesianReplicationCall(string lhs, FunctionCallNode funcCallNode, CallSite callsite)
+        {
+        }
+
+        private void VHDL_EmitFunctionCall(string lhs, FunctionCallNode funcCallNode)
+        {
+            ProtoCore.CallSite callsite = null;
+
+            // Ensure that the callsite info exists for this function call
+            Validity.Assert(core.CallsiteCache.ContainsKey(funcCallNode.CallSiteIdentifier));
+
+            callsite = core.CallsiteCache[funcCallNode.CallSiteIdentifier];
+            if (callsite.ReplicationType == CallSite.ReplicationCallType.None)
+            {
+                VHDL_EmitComponentInstanceFromFunctionCall(lhs, funcCallNode);
+            }
+            else if (callsite.ReplicationType == CallSite.ReplicationCallType.Zipped)
+            {
+                VHDL_EmitZippedReplicationCall(lhs, funcCallNode, callsite);
+            }
+            else if (callsite.ReplicationType == CallSite.ReplicationCallType.Cartesian)
+            {
+                VHDL_EmitCartesianReplicationCall(lhs, funcCallNode, callsite);
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
+        }
+
 
         /// <summary>
         /// Handle DS function call 
@@ -372,6 +403,12 @@ namespace ProtoVHDL
 
         private void VHDL_EmitModuleFromFunctionDefiniton(FunctionDefinitionNode funcDefNode)
         {
+            // Builtin functions are not emitted to VHDL
+            if (funcDefNode.IsBuiltIn)
+            {
+                return;
+            }
+
             //=====================================
             // Emit VHDL Header
             // Emit SSA
@@ -6600,41 +6637,45 @@ namespace ProtoVHDL
                     }
                     emitDebugInfo = true;
 
-                    EmitCompileLogFunctionStart(GetFunctionSignatureString(funcDef.Name, funcDef.ReturnType, funcDef.Signature));
-
-                    // Traverse definition
-                    foreach (AssociativeNode bnode in funcDef.FunctionBody.Body)
+                    // Builtin functions are not emitted to VHDL
+                    if (!funcDef.IsBuiltIn)
                     {
+                        EmitCompileLogFunctionStart(GetFunctionSignatureString(funcDef.Name, funcDef.ReturnType, funcDef.Signature));
 
-                        //
-                        // TODO Jun:    Handle stand alone language blocks
-                        //              Integrate the subPass into a proper pass
-                        //
-
-                        ProtoCore.Type itype = new ProtoCore.Type();
-                        itype.UID = (int)PrimitiveType.kTypeVar;
-
-                        if (bnode is LanguageBlockNode)
+                        // Traverse definition
+                        foreach (AssociativeNode bnode in funcDef.FunctionBody.Body)
                         {
-                            // Build a binaryn node with a temporary lhs for every stand-alone language block
-                            BinaryExpressionNode langBlockNode = new BinaryExpressionNode();
-                            langBlockNode.LeftNode = nodeBuilder.BuildIdentfier(core.GenerateTempLangageVar());
-                            langBlockNode.Optr = ProtoCore.DSASM.Operator.assign;
-                            langBlockNode.RightNode = bnode;
-                            langBlockNode.IsProcedureOwned = true;
-                            DfsTraverse(langBlockNode, ref itype, false, null, subPass);
-                        }
-                        else
-                        {
-                            bnode.IsProcedureOwned = true;
-                            DfsTraverse(bnode, ref itype, false, null, subPass);
+
+                            //
+                            // TODO Jun:    Handle stand alone language blocks
+                            //              Integrate the subPass into a proper pass
+                            //
+
+                            ProtoCore.Type itype = new ProtoCore.Type();
+                            itype.UID = (int)PrimitiveType.kTypeVar;
+
+                            if (bnode is LanguageBlockNode)
+                            {
+                                // Build a binaryn node with a temporary lhs for every stand-alone language block
+                                BinaryExpressionNode langBlockNode = new BinaryExpressionNode();
+                                langBlockNode.LeftNode = nodeBuilder.BuildIdentfier(core.GenerateTempLangageVar());
+                                langBlockNode.Optr = ProtoCore.DSASM.Operator.assign;
+                                langBlockNode.RightNode = bnode;
+                                langBlockNode.IsProcedureOwned = true;
+                                DfsTraverse(langBlockNode, ref itype, false, null, subPass);
+                            }
+                            else
+                            {
+                                bnode.IsProcedureOwned = true;
+                                DfsTraverse(bnode, ref itype, false, null, subPass);
+                            }
+
+                            if (NodeUtils.IsReturnExpressionNode(bnode))
+                                hasReturnStatement = true;
                         }
 
-                        if (NodeUtils.IsReturnExpressionNode(bnode))
-                            hasReturnStatement = true;
+                        EmitCompileLogFunctionEnd();
                     }
-
-                    EmitCompileLogFunctionEnd();
 
                     // All locals have been stack allocated, update the local count of this function
                     localProcedure.localCount = core.BaseOffset;
@@ -6842,7 +6883,7 @@ namespace ProtoVHDL
             ProtoCore.Compiler.Associative.SubCompilePass subPass = ProtoCore.Compiler.Associative.SubCompilePass.kNone, ProtoCore.AST.AssociativeAST.BinaryExpressionNode parentNode = null)
         {
             FunctionCallNode fnode = node as FunctionCallNode;
-           
+
             bool dependentState = false;
             if (null != graphNode)
             {
@@ -6876,6 +6917,7 @@ namespace ProtoVHDL
             }
 
             ProtoCore.DSASM.ProcedureNode procNode = TraverseFunctionCall(node, null, ProtoCore.DSASM.Constants.kInvalidIndex, 0, ref inferedType, graphNode, subPass, parentNode);
+            fnode.CallSiteIdentifier = graphNode.CallsiteIdentifier;
 
             emitReplicationGuide = emitReplicationGuideFlag;
             if (graphNode != null)
