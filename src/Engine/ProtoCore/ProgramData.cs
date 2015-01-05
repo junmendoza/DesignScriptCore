@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace ProtoAssociative.ProgramData
+namespace ProtoCore.CompileAndExecutePass
 {
     /// <summary>
     /// Compile time data is determined at the following stages:
@@ -23,7 +23,14 @@ namespace ProtoAssociative.ProgramData
     /// <summary>
     /// Program data gathered during compilation
     /// </summary>
-    public class CompileTime
+    public struct CompileTime
     {
     }
+
+    public class ProgramData
+    {
+        public Runtime runtime;
+        public CompileTime compileTime;
+    }
+
 }

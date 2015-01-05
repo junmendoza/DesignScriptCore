@@ -318,22 +318,48 @@ namespace ProtoScript.Runners
 
         /// <summary>
         /// Execute to gather information about the program
-        /// Data is stored in core
+        /// Data is stored in ProtoCore.CompileAndExecutePass.ProgramData
         /// </summary>
         /// <param name="filename"></param>
-        /// <param name="core"></param>
+        /// <param name="programData"></param>
         /// <returns></returns>
-        private bool CompileAndExecutePass(string filename, ProtoCore.Core core)
+        private bool CompileAndExecutePass(string filename, ProtoCore.CompileAndExecutePass.ProgramData programData)
         {
+            ProtoCore.Options options = new ProtoCore.Options();
+            ProtoCore.Core core = new ProtoCore.Core(options);
+            options.ExecutionMode = ProtoCore.ExecutionMode.Serial;
+            core.Executives.Add(ProtoCore.Language.kAssociative, new ProtoAssociative.Executive(core));
+            core.Executives.Add(ProtoCore.Language.kImperative, new ProtoImperative.Executive(core));
+            core.Options.DumpByteCode = true;
+            core.Options.Verbose = true;
+
             ProtoFFI.DLLFFIHandler.Register(ProtoFFI.FFILanguage.CSharp, new ProtoFFI.CSModuleHelper());
             ExecutionMirror mirror = LoadAndExecute(filename, core);
+            programData = core.CompileAndExecutePassData;
             return mirror == null ? false : true;
         }
 
-        public bool CompileToVHDL(string topLevelModule, string filename, ProtoCore.Core core)
+        public bool CompileToVHDL(string topLevelModule, string filename)
         {
             // Execute and gather program data 
-            CompileAndExecutePass(filename, core);
+            ProtoCore.CompileAndExecutePass.ProgramData programData = null;
+            bool compileAndExecuteSuceeded = CompileAndExecutePass(filename, programData);
+            Validity.Assert(compileAndExecuteSuceeded == true);
+            Validity.Assert(programData != null);
+
+            ProtoCore.Options options = new ProtoCore.Options();
+            options.CompilationTarget = ProtoCore.DSDefinitions.CompileTarget.VHDL;
+
+            // Generate a new core and pass it the data gathered from the previous pass
+            ProtoCore.Core core = new ProtoCore.Core(options);
+            core.CompileAndExecutePassData = programData;
+
+            options.ExecutionMode = ProtoCore.ExecutionMode.Serial;
+            core.Executives.Add(ProtoCore.Language.kAssociative, new ProtoAssociative.Executive(core));
+            core.Executives.Add(ProtoCore.Language.kImperative, new ProtoImperative.Executive(core));
+            core.Executives.Add(ProtoCore.Language.kVHDL, new ProtoVHDL.Executive(core));
+            core.Options.DumpByteCode = true;
+            core.Options.Verbose = true;
 
             core.VhdlCore = new ProtoCore.VHDL.VHDLCore(topLevelModule);
 

@@ -95,6 +95,7 @@
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
     <Compile Include="AssociativeGraph.cs" />
+    <Compile Include="ProgramData.cs" />
     <Compile Include="Utils\ASTCompilerUtils.cs" />
     <Compile Include="AttributeEntry.cs" />
     <Compile Include="BuildStatus.cs" />

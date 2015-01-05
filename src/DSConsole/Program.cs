@@ -35,24 +35,11 @@ namespace DSConsole
             sw.Start();
 
 
-            var opts = new Options();
-            opts.ExecutionMode = ExecutionMode.Serial;
-            ProtoCore.Core core = new Core(opts);
-            core.Executives.Add(ProtoCore.Language.kAssociative, new ProtoAssociative.Executive(core));
-            core.Executives.Add(ProtoCore.Language.kImperative, new ProtoImperative.Executive(core));
-            core.Executives.Add(ProtoCore.Language.kVHDL, new ProtoVHDL.Executive(core));
-#if DEBUG
-            core.Options.DumpByteCode = true;
-            core.Options.Verbose = true;
-#else
-            core.Options.DumpByteCode = false;
-            core.Options.Verbose = false;
-#endif
             ProtoFFI.DLLFFIHandler.Register(ProtoFFI.FFILanguage.CSharp, new ProtoFFI.CSModuleHelper());
             ProtoScriptTestRunner runner = new ProtoScriptTestRunner();
 
             string vhdlTopLevelModuleName = "ProgramSynthesized";
-            runner.CompileToVHDL(vhdlTopLevelModuleName, @"..\..\test.ds", core);
+            runner.CompileToVHDL(vhdlTopLevelModuleName, @"..\..\test.ds");
 
             long ms = sw.ElapsedMilliseconds;
             sw.Stop();

@@ -928,6 +928,7 @@ namespace ProtoCore
 
     public class Core
     {
+        public ProtoCore.CompileAndExecutePass.ProgramData CompileAndExecutePassData { get; set; }
         public ProtoCore.VHDL.VHDLCore VhdlCore { get; set; }
 
         #region RUNTIME_PROPERTIES

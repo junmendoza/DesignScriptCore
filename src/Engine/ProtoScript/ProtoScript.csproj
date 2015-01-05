@@ -117,6 +117,10 @@
       <Project>{0D3D43DC-BD7E-46F0-93F7-1C6A6CC79948}</Project>
       <Name>ProtoImperative</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ProtoVHDL\ProtoVHDL.csproj">
+      <Project>{926c8960-bcbc-488e-beda-c2da2da17718}</Project>
+      <Name>ProtoVHDL</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup />
 </Project>
