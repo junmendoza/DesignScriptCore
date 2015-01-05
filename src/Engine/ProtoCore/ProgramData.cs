@@ -15,22 +15,34 @@ namespace ProtoCore.CompileAndExecutePass
     /// <summary>
     /// Program data gathered at runtime
     /// </summary>
-    public struct Runtime
+    public class Runtime
     {
+        public Runtime()
+        {
+            CallsiteCache = new Dictionary<string,CallSite>();
+        }
         public Dictionary<string, ProtoCore.CallSite> CallsiteCache;
     }
 
     /// <summary>
     /// Program data gathered during compilation
     /// </summary>
-    public struct CompileTime
+    public class CompileTime
     {
+        public CompileTime()
+        {
+        }
     }
 
     public class ProgramData
     {
-        public Runtime runtime;
-        public CompileTime compileTime;
+        public ProgramData()
+        {
+            RuntimData = new Runtime();
+            CompileTimeData = new CompileTime();
+        }
+        public Runtime RuntimData;
+        public CompileTime CompileTimeData;
     }
 
 }

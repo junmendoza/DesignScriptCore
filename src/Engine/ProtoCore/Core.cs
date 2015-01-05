@@ -928,7 +928,6 @@ namespace ProtoCore
 
     public class Core
     {
-        public ProtoCore.CompileAndExecutePass.ProgramData CompileAndExecutePassData { get; set; }
         public ProtoCore.VHDL.VHDLCore VhdlCore { get; set; }
 
         #region RUNTIME_PROPERTIES
@@ -2075,6 +2074,27 @@ namespace ProtoCore
                     BfsBuildInstructionStreams(child, istreamList);
                 }
             }
+        }
+
+        /// <summary>
+        /// Store and return program information from core to ProgramData
+        /// </summary>
+        /// <returns></returns>
+        public CompileAndExecutePass.ProgramData GetProgramData()
+        {
+            CompileAndExecutePass.ProgramData programData = new CompileAndExecutePass.ProgramData();
+            programData.RuntimData.CallsiteCache = new Dictionary<string, CallSite>(CallsiteCache);
+            return programData;
+        }
+
+        /// <summary>
+        /// Sets the relevant core properties given the ProgramData 
+        /// </summary>
+        /// <param name="programData"></param>
+        public void SetProgramData(CompileAndExecutePass.ProgramData programData)
+        {
+            Validity.Assert(programData != null);
+            CallsiteCache = new Dictionary<string, CallSite>(programData.RuntimData.CallsiteCache);
         }
 
 

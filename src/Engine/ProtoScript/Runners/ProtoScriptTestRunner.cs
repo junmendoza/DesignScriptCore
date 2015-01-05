@@ -323,7 +323,7 @@ namespace ProtoScript.Runners
         /// <param name="filename"></param>
         /// <param name="programData"></param>
         /// <returns></returns>
-        private bool CompileAndExecutePass(string filename, ProtoCore.CompileAndExecutePass.ProgramData programData)
+        private bool CompileAndExecutePass(string filename, out ProtoCore.CompileAndExecutePass.ProgramData programData)
         {
             ProtoCore.Options options = new ProtoCore.Options();
             ProtoCore.Core core = new ProtoCore.Core(options);
@@ -335,7 +335,9 @@ namespace ProtoScript.Runners
 
             ProtoFFI.DLLFFIHandler.Register(ProtoFFI.FFILanguage.CSharp, new ProtoFFI.CSModuleHelper());
             ExecutionMirror mirror = LoadAndExecute(filename, core);
-            programData = core.CompileAndExecutePassData;
+
+            programData = core.GetProgramData();
+
             return mirror == null ? false : true;
         }
 
@@ -343,7 +345,7 @@ namespace ProtoScript.Runners
         {
             // Execute and gather program data 
             ProtoCore.CompileAndExecutePass.ProgramData programData = null;
-            bool compileAndExecuteSuceeded = CompileAndExecutePass(filename, programData);
+            bool compileAndExecuteSuceeded = CompileAndExecutePass(filename, out programData);
             Validity.Assert(compileAndExecuteSuceeded == true);
             Validity.Assert(programData != null);
 
@@ -352,7 +354,7 @@ namespace ProtoScript.Runners
 
             // Generate a new core and pass it the data gathered from the previous pass
             ProtoCore.Core core = new ProtoCore.Core(options);
-            core.CompileAndExecutePassData = programData;
+            core.SetProgramData(programData);
 
             options.ExecutionMode = ProtoCore.ExecutionMode.Serial;
             core.Executives.Add(ProtoCore.Language.kAssociative, new ProtoAssociative.Executive(core));
