@@ -204,7 +204,7 @@ namespace ProtoVHDL
         }
 
 
-        private void VHDL_EmitZippedReplicationCall(string lhs, FunctionCallNode funcCallNode, CallSite callsite)
+        private void VHDL_EmitComponentInstanceParallel(string lhs, FunctionCallNode funcCallNode, CallSite callsite)
         {
             /*
              
@@ -260,7 +260,7 @@ namespace ProtoVHDL
              */
         }
 
-        private void VHDL_EmitCartesianReplicationCall(string lhs, FunctionCallNode funcCallNode, CallSite callsite)
+        private void VHDL_EmitComponentInstanceCartesian(string lhs, FunctionCallNode funcCallNode, CallSite callsite)
         {
         }
 
@@ -274,15 +274,15 @@ namespace ProtoVHDL
             callsite = core.CallsiteCache[funcCallNode.CallSiteIdentifier];
             if (callsite.ReplicationType == CallSite.ReplicationCallType.None)
             {
-                VHDL_EmitComponentInstanceFromFunctionCall(lhs, funcCallNode);
+                VHDL_EmitComponentInstance(lhs, funcCallNode);
             }
             else if (callsite.ReplicationType == CallSite.ReplicationCallType.Zipped)
             {
-                VHDL_EmitZippedReplicationCall(lhs, funcCallNode, callsite);
+                VHDL_EmitComponentInstanceParallel(lhs, funcCallNode, callsite);
             }
             else if (callsite.ReplicationType == CallSite.ReplicationCallType.Cartesian)
             {
-                VHDL_EmitCartesianReplicationCall(lhs, funcCallNode, callsite);
+                VHDL_EmitComponentInstanceCartesian(lhs, funcCallNode, callsite);
             }
             else
             {
@@ -299,7 +299,7 @@ namespace ProtoVHDL
         ///     Emit return process
         /// </summary>
         /// <param name="funcCallNode"></param>
-        private void VHDL_EmitComponentInstanceFromFunctionCall(string lhs, FunctionCallNode funcCallNode)
+        private void VHDL_EmitComponentInstance(string lhs, FunctionCallNode funcCallNode)
         {
             ProtoCore.VHDL.AST.ModuleNode module = VHDL_GetCurrentModule();
             string functionCallName = ProtoCore.VHDL.Utils.GetComponentMappedFunctionCallName(funcCallNode.Function.Name);
