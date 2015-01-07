@@ -216,11 +216,11 @@ namespace ProtoVHDL
             // Elements processed on the last iteration: last = Elements mod batchCount
             
             // Elements processed per iteration
-            // This number is determined by
-            int BatchCount = 0;
+            // This number is determined by heuristics given hardware data and program data
+            int BatchCount = callsite.ReturnSize / 2; 
             
             // The total number of function calls
-            int Elements = 0;
+            int Elements = callsite.ReturnSize;
 
             // The number of iterations to complete the replicated call
             // Iterations: Elements / BatchCount
@@ -230,14 +230,91 @@ namespace ProtoVHDL
             int lastBatchCount = Elements % BatchCount;
 
 
+
             //-- BEGIN emit VHDL
 
             //=============================================
             // Create module for argument multiplexer
             //=============================================
-            string entityName = string.Empty;
 
+            //  entity Mux31_ALU_In is
+            //      Port( 
+            //              reset : in STD_LOGIC;
+            //              select_index : in STD_LOGIC_VECTOR (7 downto 0);
+	    		
+            //              -- Inputs to ALU op1
+            //              op11 : in STD_LOGIC_VECTOR (31 downto 0);
+            //              op21 : in STD_LOGIC_VECTOR (31 downto 0);
+            //              op31 : in STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
+	    		
+            //              -- Inputs to ALU op2
+            //              op12 : in STD_LOGIC_VECTOR (31 downto 0);
+            //              op22 : in STD_LOGIC_VECTOR (31 downto 0);
+            //              op32 : in STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
+	    		
+            //              -- Mux result
+            //              -- Multiplxed component input signals
+            //              -- These outputs will be the signals passed into the component instance of the function call
+            //              op1 : out STD_LOGIC_VECTOR (31 downto 0);
+            //              op2 : out STD_LOGIC_VECTOR (31 downto 0)
+            //           );
+            //  end Mux31_ALU_In;
+
+            string multiplexerName = string.Empty;
+            ProtoCore.VHDL.AST.ModuleNode moduleInputMux = core.VhdlCore.CreateAndAppendDefaultModule(multiplexerName);
+
+
+            // Port entries
+            ProtoCore.VHDL.AST.PortEntryNode reset = new ProtoCore.VHDL.AST.PortEntryNode(ProtoCore.VHDL.Constants.ResetSignalName, ProtoCore.VHDL.AST.PortEntryNode.Direction.In, 1);
+            ProtoCore.VHDL.AST.PortEntryNode sel_IterationIndex = new ProtoCore.VHDL.AST.PortEntryNode(ProtoCore.VHDL.Constants.SelectIndexSignalName, ProtoCore.VHDL.AST.PortEntryNode.Direction.In, 8);
+
+            List<ProtoCore.VHDL.AST.PortEntryNode> listPortEntry = new List<ProtoCore.VHDL.AST.PortEntryNode>();
+            listPortEntry.Add(reset);
+
+
+            // Entity Declaration
+            ProtoCore.VHDL.AST.EntityNode entity = new ProtoCore.VHDL.AST.EntityNode(multiplexerName, listPortEntry);
+            moduleInputMux.Entity = entity;
+
+            // Reset sync ifstmt
+            ProtoCore.VHDL.AST.IfNode resetSyncIf = ProtoCore.VHDL.Utils.GenerateResetSyncTemplate();
+
+            // Reset sync elsif body (reset = 0)
+            resetSyncIf.ElsifBody = moduleInputMux.ExecutionBody;
+
+            // Process sensitivity List 
+            List<string> sensitivityList = new List<string>();
+
+            // Process Body
+            List<ProtoCore.VHDL.AST.VHDLNode> processBody = new List<ProtoCore.VHDL.AST.VHDLNode>();
+            processBody.Add(resetSyncIf);
+
+            // Process variable declaration
+            List<ProtoCore.VHDL.AST.VHDLNode> variableDeclList = new List<ProtoCore.VHDL.AST.VHDLNode>();
+
+
+
+            //=============================================
+            // 
+            //=============================================
+
+
+
+            //=============================================
             //
+            //=============================================
+
+
+
+            //=============================================
+            //
+            //=============================================
+
+
+
+            //=============================================
+            //
+            //=============================================
 
             //-- END emit VHDL
         }

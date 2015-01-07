@@ -20,6 +20,7 @@ namespace ProtoCore
 {
     public class CallSite
     {
+#region RUNTIME_PROGRAM_DATA
         public enum ReplicationCallType
         {
             Zipped,     
@@ -28,8 +29,9 @@ namespace ProtoCore
             UnTyped     // Unknown replication
         }
 
-        public ReplicationCallType ReplicationType { get; private set;}
-
+        public int ReturnSize { get; private set; }
+        public ReplicationCallType ReplicationType { get; private set; }
+#endregion
         /// <summary>
         /// This function will infer the replication type given the instruction
         /// </summary>
@@ -366,6 +368,7 @@ namespace ProtoCore
             }
 
             ReplicationType = ReplicationCallType.UnTyped;
+            ReturnSize = ProtoCore.DSASM.Constants.kInvalidIndex;
         }
 
         /// <summary>
@@ -1285,7 +1288,7 @@ namespace ProtoCore
             if (replicationInstructions.Count == 0)
             {
                 c.IsReplicating = false;
-
+                ReturnSize = 1;
 
                 SingleRunTraceData singleRunTraceData;
                 //READ TRACE FOR NON-REPLICATED CALL
@@ -1472,8 +1475,9 @@ namespace ProtoCore
                 //Populate out the size of the list with default values
                 //@TODO:Luke perf optimisation here
                 for (int i = 0; i < retSize; i++)
+                {
                     retTrace.NestedData.Add(new SingleRunTraceData());
-
+                }
 
                 for (int i = 0; i < retSize; i++)
                 {
@@ -1542,6 +1546,8 @@ namespace ProtoCore
 
                 StackValue ret = core.Heap.AllocateArray(retSVs, null);
                 GCUtils.GCRetain(ret, core);
+
+                ReturnSize = retSVs.Length;
                 return ret;
             }
             else

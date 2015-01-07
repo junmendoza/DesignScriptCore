@@ -139,6 +139,7 @@ namespace ProtoCore.VHDL
         public const string RisingEdge = "rising_edge";
         public const string ClockSignalName = "clock";
         public const string ResetSignalName = "reset";
+        public const string SelectIndexSignalName = "select_index";
         public const string PrefixProcess = "proc";
         public const string PrefixArrayType = "t_array";
     }
