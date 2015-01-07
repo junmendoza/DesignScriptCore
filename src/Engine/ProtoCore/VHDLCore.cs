@@ -58,7 +58,7 @@ namespace ProtoCore.VHDL
         }
         
 
-        public ProtoCore.VHDL.AST.ModuleNode CreateModule(string componentName, bool isBuiltIn = false)
+        private ProtoCore.VHDL.AST.ModuleNode CreateModule(string componentName, bool isBuiltIn = false)
         {
             ModuleName = componentName;
             if (!ModuleMap.ContainsKey(ModuleName))
@@ -69,9 +69,42 @@ namespace ProtoCore.VHDL
             return null;
         }
 
-        public ProtoCore.VHDL.AST.ModuleNode CreateTopModule()
+        /// <summary>
+        /// A default module contains only the following:
+        ///     1. Default library list (IEEE)
+        ///     2. Default use module list (IEEE numeric)
+        ///     3. Reset signal
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public ProtoCore.VHDL.AST.ModuleNode CreateAndAppendDefaultModule(string name, bool isBuiltIn = false)
         {
-            return CreateModule(TopLevelModuleName);
+            ModuleName = name;
+            Validity.Assert(!ModuleMap.ContainsKey(ModuleName));
+
+            ProtoCore.VHDL.AST.ModuleNode module = new AST.ModuleNode(ModuleName, isBuiltIn);
+            ModuleMap[ModuleName] = module;
+
+
+            // Library list
+            List<string> libaryNameList = new List<string>();
+            libaryNameList.Add("IEEE");
+            module.LibraryList = ProtoCore.VHDL.Utils.GenerateLibraryNodeList(libaryNameList);
+
+            // Module list
+            List<string> moduleNameList = new List<string>();
+            moduleNameList.Add("IEEE.STD_LOGIC_1164.ALL");
+            moduleNameList.Add("IEEE.NUMERIC_STD.ALL");
+            module.UseNodeList = ProtoCore.VHDL.Utils.GenerateUseNodeList(moduleNameList);
+
+            return module;
+        }
+
+        public ProtoCore.VHDL.AST.ModuleNode CreateAndAppendTopModule()
+        {
+            ProtoCore.VHDL.AST.ModuleNode module = CreateAndAppendDefaultModule(TopLevelModuleName);
+            module.IsTopModule = true;
+            return module;
         }
 
         public AST.ModuleNode GetTopModule()

@@ -228,6 +228,18 @@ namespace ProtoVHDL
 
             // Elements processed on the last iteration: Elements mod iterations
             int lastBatchCount = Elements % BatchCount;
+
+
+            //-- BEGIN emit VHDL
+
+            //=============================================
+            // Create module for argument multiplexer
+            //=============================================
+            string entityName = string.Empty;
+
+            //
+
+            //-- END emit VHDL
         }
 
         private void VHDL_EmitComponentInstanceCartesian(string lhs, FunctionCallNode funcCallNode, CallSite callsite)
@@ -438,20 +450,10 @@ namespace ProtoVHDL
             // Emit Architecture Header
             // Emit Architecture Body
             //=====================================
-            ProtoCore.VHDL.AST.ModuleNode functionModule = core.VhdlCore.CreateModule(funcDefNode.Name);
+            ProtoCore.VHDL.AST.ModuleNode functionModule = core.VhdlCore.CreateAndAppendDefaultModule(funcDefNode.Name);
+
             string funcName = functionModule.Name;
             functionModule.ReturnSignalName = ProtoCore.VHDL.Utils.GenerateReturnSignalName(funcName);
-
-            // Library list
-            List<string> libaryNameList = new List<string>();
-            libaryNameList.Add("IEEE");
-            functionModule.LibraryList = ProtoCore.VHDL.Utils.GenerateLibraryNodeList(libaryNameList);
-
-            // Module list
-            List<string> moduleNameList = new List<string>();
-            moduleNameList.Add("IEEE.STD_LOGIC_1164.ALL");
-            moduleNameList.Add("IEEE.NUMERIC_STD.ALL");
-            functionModule.UseNodeList = ProtoCore.VHDL.Utils.GenerateUseNodeList(moduleNameList);
 
             // Port entries
             ProtoCore.VHDL.AST.PortEntryNode reset = new ProtoCore.VHDL.AST.PortEntryNode("reset", ProtoCore.VHDL.AST.PortEntryNode.Direction.In, 1);
@@ -517,19 +519,7 @@ namespace ProtoVHDL
             // Emit Architecture Header
             // Emit Architecture Body
             //=====================================
-            ProtoCore.VHDL.AST.ModuleNode topModule = core.VhdlCore.CreateTopModule();
-            topModule.IsTopModule = true;
-
-            // Library list
-            List<string> libaryNameList = new List<string>();
-            libaryNameList.Add("IEEE");
-            topModule.LibraryList = ProtoCore.VHDL.Utils.GenerateLibraryNodeList(libaryNameList);
-
-            // Module list
-            List<string> moduleNameList = new List<string>();
-            moduleNameList.Add("IEEE.STD_LOGIC_1164.ALL");
-            moduleNameList.Add("IEEE.NUMERIC_STD.ALL");
-            topModule.UseNodeList = ProtoCore.VHDL.Utils.GenerateUseNodeList(moduleNameList);
+            ProtoCore.VHDL.AST.ModuleNode topModule = core.VhdlCore.CreateAndAppendTopModule();
 
             // Port entries
             ProtoCore.VHDL.AST.PortEntryNode clock = new ProtoCore.VHDL.AST.PortEntryNode("clock", ProtoCore.VHDL.AST.PortEntryNode.Direction.In, 1);
