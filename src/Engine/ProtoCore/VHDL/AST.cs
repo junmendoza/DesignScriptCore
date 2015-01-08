@@ -70,7 +70,7 @@ namespace ProtoCore.VHDL.AST
                 resetSync = procNode.Body[0] as IfNode;
                 Validity.Assert(resetSync != null);
 
-                clockSync = resetSync.ElsifBody[0] as IfNode;
+                clockSync = resetSync.ElsifBodyList[0][0] as IfNode;
                 Validity.Assert(clockSync != null);
 
                 executionStartFlagIf = clockSync.IfBody[0] as IfNode;
@@ -90,7 +90,7 @@ namespace ProtoCore.VHDL.AST
             resetSync = procNode.Body[0] as IfNode;
             Validity.Assert(resetSync != null);
 
-            return resetSync.ElsifBody;
+            return resetSync.ElsifBodyList[0];
         }
 
         /// <summary>
@@ -858,8 +858,8 @@ namespace ProtoCore.VHDL.AST
             IfExpr = null;
             IfBody = new List<VHDLNode>();
 
-            ElsifExpr = null;
-            ElsifBody = new List<VHDLNode>();
+            ElsifExprList = new List<VHDLNode>();
+            ElsifBodyList = new List<List<VHDLNode>>();
 
             ElseBody = new List<VHDLNode>();
         }
@@ -900,20 +900,24 @@ namespace ProtoCore.VHDL.AST
             // Elsif expr
             StringBuilder sbElsifExpr = new StringBuilder();
             StringBuilder sbElsifBody = new StringBuilder();
-            if (ElsifExpr != null)
+            if (ElsifExprList.Count > 0)
             {
-                sbElsifExpr.Append(ProtoCore.VHDL.Keyword.Elsif);
-                sbElsifExpr.Append(" ");
-                sbElsifExpr.Append(ElsifExpr.ToString());
-                sbElsifExpr.Append(" ");
-                sbElsifExpr.Append(ProtoCore.VHDL.Keyword.Then);
-                sbElsifExpr.Append("\n");
-
-                // Elsif body
-                foreach (AST.VHDLNode node in ElsifBody)
+                for (int i = 0; i < ElsifExprList.Count; ++i)
                 {
-                    sbElsifBody.Append(node.ToString());
-                    sbElsifBody.Append("\n");
+                    VHDLNode exprNode = ElsifExprList[i];
+                    sbElsifExpr.Append(ProtoCore.VHDL.Keyword.Elsif);
+                    sbElsifExpr.Append(" ");
+                    sbElsifExpr.Append(exprNode.ToString());
+                    sbElsifExpr.Append(" ");
+                    sbElsifExpr.Append(ProtoCore.VHDL.Keyword.Then);
+                    sbElsifExpr.Append("\n");
+
+                    // Elsif body
+                    foreach (VHDLNode node in ElsifBodyList[i])
+                    {
+                        sbElsifBody.Append(node.ToString());
+                        sbElsifBody.Append("\n");
+                    }
                 }
             }
 
@@ -959,8 +963,8 @@ namespace ProtoCore.VHDL.AST
         public VHDLNode IfExpr { get; set; }
         public List<VHDLNode> IfBody { get; set; }
 
-        public VHDLNode ElsifExpr { get; set; }
-        public List<VHDLNode> ElsifBody { get; set; }
+        public List<VHDLNode> ElsifExprList { get; set; }
+        public List<List<VHDLNode>> ElsifBodyList { get; set; }
 
         public List<VHDLNode> ElseBody { get; set; }
     }

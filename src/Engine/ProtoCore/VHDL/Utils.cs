@@ -70,6 +70,13 @@ namespace ProtoCore.VHDL
         {
             return ProtoCore.VHDL.Constants.PrefixArrayType + "_" + elements.ToString() + "_" + elementSize.ToString();
         }
+
+
+        public static string GenerateNameMultiplexerInputToParallelComponent(int elements)
+        {
+            // Mux31_ALU_In
+            return ProtoCore.VHDL.Constants.PrefixMultiplexer + "_" + elements.ToString() + "1" + ProtoCore.VHDL.Constants.PrefixALUInput;
+        }
             
         /// <summary>
         /// Get the VHDL component name if the function to be called is mapped to a component
@@ -136,11 +143,11 @@ namespace ProtoCore.VHDL
                 ProtoCore.VHDL.AST.BinaryExpressionNode.Operator.Eq
                 );
 
-            resetSyncIf.ElsifExpr = new ProtoCore.VHDL.AST.BinaryExpressionNode(
+            resetSyncIf.ElsifExprList.Add(new ProtoCore.VHDL.AST.BinaryExpressionNode(
                 new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.ResetSignalName),
                 new ProtoCore.VHDL.AST.BitStringNode(0),
                 ProtoCore.VHDL.AST.BinaryExpressionNode.Operator.Eq
-                );
+                ));
 
             return resetSyncIf;
         }
