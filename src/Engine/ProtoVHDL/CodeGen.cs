@@ -432,9 +432,9 @@ namespace ProtoVHDL
 
             const int selecIndexSignalSize = 8;
             VHDL_EmitParallelComponentMultiplexer(lhs, funcCallNode, callsite, componentInstanceCount, selecIndexSignalSize);
-            VHDL_CreateProcessParallelComponentWriteback
-                (ProtoCore.VHDL.Constants.WriteBackControlUnit, lhs, componentInstanceCount, writeBackSensitivityList, selecIndexSignalSize, lastBatchCount);
+            VHDL_CreateProcessParallelComponentWriteback(ProtoCore.VHDL.Constants.WriteBackControlUnit, lhs, componentInstanceCount, writeBackSensitivityList, selecIndexSignalSize, lastBatchCount);
 
+            VHDL_CreateProcessParallelComponentIterationControl(ProtoCore.VHDL.Constants.IterationControlUnit, strParallelExecComplete, componentInstanceCount, selecIndexSignalSize);
 
             //=============================================
             //
@@ -576,6 +576,101 @@ namespace ProtoVHDL
                 );
             module.AppendExecutionStatement(assignFunctionReturn);
         }
+
+        
+       private void VHDL_CreateProcessParallelComponentIterationControl(
+           string description, 
+           string flagName,
+           int parallelComponentCount,
+           int selecIndexSignalSize)
+       {
+            //  IterationControlUnit : process(reset, select_index)
+            //  begin
+            //      ResetSync : if reset = '1' then
+            //          loop_complete <= '0';
+            //      elsif reset = '0' then
+            //          IsExecutionDone : if loop_complete = '0' then
+            //              if select_index = X"03" then
+            //                  loop_complete <= '1';
+            //              end if;
+            //          end if IsExecutionDone;
+            //      end if ResetSync;
+            //  end process IterationControlUnit;
+
+            ProtoCore.VHDL.AST.ModuleNode module = VHDL_GetCurrentModule();
+
+            // Process sensitivity List is the rhs
+            List<string> sensitivityList = new List<string>();
+            sensitivityList.Add(ProtoCore.VHDL.Constants.ResetSignalName);
+            sensitivityList.Add(ProtoCore.VHDL.Constants.SelectIndexSignalName);
+
+            // Process variable declaration
+            List<ProtoCore.VHDL.AST.VariableDeclarationNode> variableDeclList = new List<ProtoCore.VHDL.AST.VariableDeclarationNode>();
+
+            // Close current process
+            // Set execution body to the current process
+            // Succeeding statements will be appended to this new process
+            module.CloseCurrentProcess();
+
+            // Reset sync ifstmt
+            ProtoCore.VHDL.AST.IfNode resetSyncIf = ProtoCore.VHDL.Utils.GenerateResetSyncTemplate();
+            resetSyncIf.IfBody.Add(new ProtoCore.VHDL.AST.AssignmentNode(
+                new ProtoCore.VHDL.AST.IdentifierNode(flagName),
+                new ProtoCore.VHDL.AST.BitStringNode(0)));
+
+            // Reset sync elsif body (reset = 0)
+            resetSyncIf.ElsifBodyList.Add(module.ExecutionBody);
+
+            //==============================
+            // Execution Body
+            //==============================
+
+
+
+            // if select_index = X"03" then
+            //      loop_complete <= '1';
+            // end if;
+            ProtoCore.VHDL.AST.IfNode selIndexIf = new ProtoCore.VHDL.AST.IfNode();
+            ProtoCore.VHDL.AST.BinaryExpressionNode ifExpr = new ProtoCore.VHDL.AST.BinaryExpressionNode(
+                new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.SelectIndexSignalName),
+                new ProtoCore.VHDL.AST.HexStringNode(parallelComponentCount, selecIndexSignalSize),
+                    ProtoCore.VHDL.AST.BinaryExpressionNode.Operator.Eq);
+            selIndexIf.IfExpr = ifExpr;
+            selIndexIf.IfBody.Add(new ProtoCore.VHDL.AST.AssignmentNode(
+                new ProtoCore.VHDL.AST.IdentifierNode(flagName),
+                new ProtoCore.VHDL.AST.BitStringNode(1)));
+
+
+            //          IsExecutionDone : if loop_complete = '0' then
+            //              if select_index = X"03" then
+            //                  loop_complete <= '1';
+            //              end if;
+            //          end if IsExecutionDone;
+            ProtoCore.VHDL.AST.IfNode execBodyIf = new ProtoCore.VHDL.AST.IfNode();
+           
+            ProtoCore.VHDL.AST.BinaryExpressionNode execifExpr = new ProtoCore.VHDL.AST.BinaryExpressionNode(
+                new ProtoCore.VHDL.AST.IdentifierNode(flagName),
+                new ProtoCore.VHDL.AST.BitStringNode(0),
+                    ProtoCore.VHDL.AST.BinaryExpressionNode.Operator.Eq);
+            execBodyIf.IfExpr = execifExpr;
+            execBodyIf.IfBody.Add(selIndexIf);
+
+            module.AppendExecutionStatement(execBodyIf);
+
+
+            // Process Body
+            List<ProtoCore.VHDL.AST.VHDLNode> processBody = new List<ProtoCore.VHDL.AST.VHDLNode>();
+            processBody.Add(resetSyncIf);
+
+            ProtoCore.VHDL.AST.ProcessNode processNode = new ProtoCore.VHDL.AST.ProcessNode(
+                ProtoCore.VHDL.Utils.GenerateProcessName(description, module.GetProcessCount() + 1),
+                sensitivityList,
+                variableDeclList,
+                processBody
+                );
+            module.ProcessList.Add(processNode);
+
+       }
 
         private void VHDL_CreateProcessParallelComponentWriteback(
             string description,
