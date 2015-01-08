@@ -272,7 +272,8 @@ namespace ProtoVHDL
                     string inSignalName = operandPrefix + j.ToString() + i.ToString();
                     sensitivityList.Add(inSignalName);
                     ProtoCore.VHDL.AST.PortEntryNode opInput =
-                        new ProtoCore.VHDL.AST.PortEntryNode(inSignalName, ProtoCore.VHDL.AST.PortEntryNode.Direction.In, ProtoCore.VHDL.Constants.SignalBitCount);
+                        new ProtoCore.VHDL.AST.PortEntryNode(
+                            inSignalName, ProtoCore.VHDL.AST.PortEntryNode.Direction.In, ProtoCore.VHDL.Constants.SignalBitCount, true);
                     listPortEntry.Add(opInput);
                 }
             }
@@ -448,7 +449,7 @@ namespace ProtoVHDL
             VHDL_CreateProcessParallelComponentWriteback(ProtoCore.VHDL.Constants.WriteBackControlUnit, lhs, componentInstanceCount, writeBackSensitivityList, selecIndexSignalSize, lastBatchCount);
 
             VHDL_CreateProcessParallelComponentIterationControl(ProtoCore.VHDL.Constants.IterationControlUnit, strParallelExecComplete, componentInstanceCount, selecIndexSignalSize);
-            VHDL_EmitParallelComponentInstance(lhs, funcCallNode, componentInstanceCount, componentInputList, writeBackSensitivityList);
+            VHDL_EmitParallelComponentInstance(lhs, funcCallNode, componentInstanceCount, componentInputList, writeBackSensitivityList, elements);
 
 
             //-- END emit VHDL
@@ -489,7 +490,8 @@ namespace ProtoVHDL
             FunctionCallNode funcCallNode, 
             int parallelComponentInstance, 
             List<string> componentInputList,
-            List<string> componentOutList)
+            List<string> componentOutList,
+            int maxElements)
         {
             ProtoCore.VHDL.AST.ModuleNode module = VHDL_GetCurrentModule();
 
@@ -532,10 +534,14 @@ namespace ProtoVHDL
                 {
                     if (assocNode is IdentifierNode)
                     {
-                        int arrayIndex = 0;
+                        int arrayIndex = i;
                         for (int j = 0; j < parallelComponentInstance; ++j)
                         {
-                            string signalName = (assocNode as IdentifierNode).Name + "(" + arrayIndex.ToString() + ")";
+                            string signalName = ProtoCore.VHDL.Keyword.Open;
+                            if (arrayIndex < maxElements)
+                            {
+                                signalName = (assocNode as IdentifierNode).Name + "(" + arrayIndex.ToString() + ")";
+                            }
                             signalMap.Add(signalName);
                             arrayIndex += parallelComponentInstance;
                         }

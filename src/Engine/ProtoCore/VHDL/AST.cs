@@ -429,11 +429,12 @@ namespace ProtoCore.VHDL.AST
             InOut
         }
 
-        public PortEntryNode(string signal, Direction direction, int bits)
+        public PortEntryNode(string signal, Direction direction, int bits, bool setDefault = false)
         {
             this.SignalName = signal;
             this.EntryDirection = direction;
             this.BitCount = bits;
+            this.generateDefault = setDefault;
         }
 
         public override string ToString()
@@ -468,6 +469,21 @@ namespace ProtoCore.VHDL.AST
                     + " "
                     + "0"
                     + ")";
+                if (generateDefault)
+                {
+                    // := (others => '0')
+                    type +=
+                        " "
+                        + ProtoCore.VHDL.Constants.kVariableAssignSymbol
+                        + " "
+                        + "("
+                        + ProtoCore.VHDL.Keyword.Others
+                        + " "
+                        + ProtoCore.VHDL.Constants.kDefaultAssignSymbol
+                        + " "
+                        + "'0'"
+                        + ")";
+                }
             }
 
             string entry = SignalName + " : " + dir + " " + type;
@@ -477,6 +493,7 @@ namespace ProtoCore.VHDL.AST
         public string SignalName { get; private set; }
         public Direction EntryDirection { get; private set; }
         public int BitCount { get; private set; }
+        private bool generateDefault;
     }
 
     /// <summary>

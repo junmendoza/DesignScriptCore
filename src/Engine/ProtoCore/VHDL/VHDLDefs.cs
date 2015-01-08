@@ -132,6 +132,7 @@ namespace ProtoCore.VHDL
         public const int SignalBitCount = 32;
 
         public const string kSignalAssignSymbol = "<=";
+        public const string kDefaultAssignSymbol = "=>";
         public const string kVariableAssignSymbol = ":=";
         public const string ExecutionStartFlagName = "execution_started";
 
