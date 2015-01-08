@@ -51,3 +51,9 @@ src/DSAccelerate/isim/Testbench_ProgramSynthesized_isim_beh.exe.sim/tmp_save/_1
 *.ini
 *.wdb
 *.projectmgr
+*.bld
+*.map
+*.ngd
+*.mrp
+*.xbcd
+*.lst
