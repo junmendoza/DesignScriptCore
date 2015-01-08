@@ -540,6 +540,9 @@ namespace ProtoVHDL
             module.AppendExecutionStatement(assignFunctionReturn);
         }
 
+        
+        //private ProtoCore.VHDL.AST.ProcessNode VHDL_CreateProcess(string description, )
+
         /// <summary>
         /// Create a new process if the rhs of an assignment has already been assigned to in the current process
         ///     a = 1

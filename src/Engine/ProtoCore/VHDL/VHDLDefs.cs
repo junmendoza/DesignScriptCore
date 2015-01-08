@@ -144,6 +144,10 @@ namespace ProtoCore.VHDL
         public const string PrefixArrayType = "t_array";
         public const string PrefixMultiplexer = "Mux";
         public const string PrefixComponentInput = "Component_In";
+
+        public const string IterationControlUnit = "IterationControlUnit";
+        public const string ExecutionControlUnit = "ExecutionControlUnit";
+        public const string WriteBackControlUnit = "WriteBackControlUnit";
     }
 
     public struct ComponentName
