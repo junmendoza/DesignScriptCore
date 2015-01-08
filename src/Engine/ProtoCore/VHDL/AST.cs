@@ -492,6 +492,7 @@ namespace ProtoCore.VHDL.AST
             ArrayTypeName = ProtoCore.VHDL.Utils.GenerateArrayTypeName(elems, ProtoCore.VHDL.Constants.SignalBitCount);
             this.DimensionList = new List<int>(dimensionList);
         }
+
         public override string ToString()
         {
 	        // type t_array_3_32 is array (0 to 2) of STD_LOGIC_VECTOR(31 downto 0);
@@ -532,6 +533,23 @@ namespace ProtoCore.VHDL.AST
         }
         public string ArrayTypeName { get; private set; }
         public List<int> DimensionList { get; private set; }
+    }
+
+    public class VariableDeclarationNode : VHDLNode
+    {
+        public VariableDeclarationNode(string name, string type)
+        {
+            this.Name = name;
+            this.Type = type;
+        }
+
+        public override string ToString()
+        {
+            return ProtoCore.VHDL.Keyword.Variable + " " + Name + ":" + " " + Type + ";"; 
+        }
+
+        public string Name { get; private set; }
+        public string Type { get; private set; }
     }
 
     public class SignalDeclarationNode : VHDLNode
@@ -708,12 +726,12 @@ namespace ProtoCore.VHDL.AST
 
     public class ProcessNode : VHDLNode
     {
-        public ProcessNode(string name, List<string> sensitivityList, List<VHDLNode> varDeclaration, List<VHDLNode> body)
+        public ProcessNode(string name, List<string> sensitivityList, List<VariableDeclarationNode> varDeclaration, List<VHDLNode> body)
         {
             this.ProcessName = name;  
             this.SensitivityList = new List<string>(sensitivityList);
             this.Body = new List<VHDLNode>(body);
-            this.VariableDeclarations = new List<VHDLNode>(varDeclaration);
+            this.VariableDeclarations = new List<VariableDeclarationNode>(varDeclaration);
             AssignedSignals = new HashSet<string>();
         }
         
@@ -791,7 +809,7 @@ namespace ProtoCore.VHDL.AST
         public string ProcessName { get; private set; }
         public List<string> SensitivityList { get; private set; }
         public HashSet<string> AssignedSignals { get; private set; }
-        public List<VHDLNode> VariableDeclarations { get; private set; }
+        public List<VariableDeclarationNode> VariableDeclarations { get; private set; }
         public List<VHDLNode> Body { get; set; }
     }
     

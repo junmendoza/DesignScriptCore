@@ -202,6 +202,7 @@ namespace ProtoVHDL
                 }
             }
         }
+        
 
         /// <summary>
         /// Emit the parallel components setup for zipped replication
@@ -377,7 +378,7 @@ namespace ProtoVHDL
             sensitivityList.Add(ProtoCore.VHDL.Constants.SelectIndexSignalName);
 
             // Process variable declaration
-            List<ProtoCore.VHDL.AST.VHDLNode> variableDeclList = new List<ProtoCore.VHDL.AST.VHDLNode>();
+            List<ProtoCore.VHDL.AST.VariableDeclarationNode> variableDeclList = new List<ProtoCore.VHDL.AST.VariableDeclarationNode>();
 
             // Process Body
             List<ProtoCore.VHDL.AST.VHDLNode> processBody = new List<ProtoCore.VHDL.AST.VHDLNode>();
@@ -506,7 +507,7 @@ namespace ProtoVHDL
             sensitivityList.Add(functionReturnSignalName);
 
             // Process variable declaration
-            List<ProtoCore.VHDL.AST.VHDLNode> variableDeclList = new List<ProtoCore.VHDL.AST.VHDLNode>();
+            List<ProtoCore.VHDL.AST.VariableDeclarationNode> variableDeclList = new List<ProtoCore.VHDL.AST.VariableDeclarationNode>();
 
             // Close current process
             // Set execution body to the current process
@@ -541,10 +542,15 @@ namespace ProtoVHDL
         }
 
 
-        private ProtoCore.VHDL.AST.ProcessNode VHDL_CreateProcess(string description)
+        private ProtoCore.VHDL.AST.ProcessNode VHDL_CreateProcessParallelComponentWriteback(
+            string description,
+            ProtoCore.VHDL.AST.IdentifierNode arrayDest,
+            int batchCount,
+            int lastBatchCount)
         {
             return null;
         }
+
 
         /// <summary>
         /// Create a new process if the rhs of an assignment has already been assigned to in the current process
@@ -566,7 +572,7 @@ namespace ProtoVHDL
             sensitivityList.Add(rhsSignal);
             
             // Process variable declaration
-            List<ProtoCore.VHDL.AST.VHDLNode> variableDeclList = new List<ProtoCore.VHDL.AST.VHDLNode>();
+            List<ProtoCore.VHDL.AST.VariableDeclarationNode> variableDeclList = new List<ProtoCore.VHDL.AST.VariableDeclarationNode>();
 
             
             // Close current process
@@ -663,7 +669,7 @@ namespace ProtoVHDL
             processBody.Add(resetSyncIf);
 
             // Process variable declaration
-            List<ProtoCore.VHDL.AST.VHDLNode> variableDeclList = new List<ProtoCore.VHDL.AST.VHDLNode>();
+            List<ProtoCore.VHDL.AST.VariableDeclarationNode> variableDeclList = new List<ProtoCore.VHDL.AST.VariableDeclarationNode>();
 
             // Entry Process
             ProtoCore.VHDL.AST.ProcessNode entryProcess = new ProtoCore.VHDL.AST.ProcessNode(
@@ -759,7 +765,7 @@ namespace ProtoVHDL
             processBody.Add(resetSyncIf);
 
             // Process variable declaration
-            List<ProtoCore.VHDL.AST.VHDLNode> variableDeclList = new List<ProtoCore.VHDL.AST.VHDLNode>();
+            List<ProtoCore.VHDL.AST.VariableDeclarationNode> variableDeclList = new List<ProtoCore.VHDL.AST.VariableDeclarationNode>();
 
             // Sensitivity
             List<string> sensitivityList = new List<string>();
