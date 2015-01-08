@@ -1038,19 +1038,22 @@ namespace ProtoCore.VHDL.AST
 
     public class HexStringNode : VHDLNode
     {
-        public HexStringNode(int value)
+        public HexStringNode(int value, int bits)
         {
             this.Value = value;
+            this.bitCount = bits;
         }
 
         public override string ToString()
         {
             StringBuilder sbFormat = new StringBuilder();
-            string hexString = Value.ToString("X8");
+            int nibbles = (bitCount / 4) + (bitCount % 4);
+            string hexString = Value.ToString("X" + nibbles.ToString());
             sbFormat.Append("X" + '"' + hexString + '"');
             return sbFormat.ToString();
         }
         public int Value { get; private set; }
+        private int bitCount;
         public string StringFormat { get; private set; }
     }
 }

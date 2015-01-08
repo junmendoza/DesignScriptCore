@@ -114,7 +114,7 @@ namespace ProtoVHDL
             {
                 if (bnode.RightNode is IntNode)
                 {
-                    ProtoCore.VHDL.AST.VHDLNode rNode = new ProtoCore.VHDL.AST.HexStringNode((int)(bnode.RightNode as IntNode).Value);
+                    ProtoCore.VHDL.AST.VHDLNode rNode = new ProtoCore.VHDL.AST.HexStringNode((int)(bnode.RightNode as IntNode).Value, ProtoCore.VHDL.Constants.SignalBitCount);
                     ProtoCore.VHDL.AST.AssignmentNode assignNode = new ProtoCore.VHDL.AST.AssignmentNode(
                         new ProtoCore.VHDL.AST.IdentifierNode(lhsName),
                         rNode
@@ -169,7 +169,7 @@ namespace ProtoVHDL
                 string indexIntoArray = lhsArrayName + "(" + elemnum++ + ")";
                 if (arrayElem is IntNode)
                 {
-                    ProtoCore.VHDL.AST.VHDLNode rNode = new ProtoCore.VHDL.AST.HexStringNode((int)(arrayElem as IntNode).Value);
+                    ProtoCore.VHDL.AST.VHDLNode rNode = new ProtoCore.VHDL.AST.HexStringNode((int)(arrayElem as IntNode).Value, ProtoCore.VHDL.Constants.SignalBitCount);
                     ProtoCore.VHDL.AST.AssignmentNode assignNode = new ProtoCore.VHDL.AST.AssignmentNode(
                         new ProtoCore.VHDL.AST.IdentifierNode(indexIntoArray),
                         rNode
@@ -267,7 +267,8 @@ namespace ProtoVHDL
 
             // Port entries
             ProtoCore.VHDL.AST.PortEntryNode reset = new ProtoCore.VHDL.AST.PortEntryNode(ProtoCore.VHDL.Constants.ResetSignalName, ProtoCore.VHDL.AST.PortEntryNode.Direction.In, 1);
-            ProtoCore.VHDL.AST.PortEntryNode sel_IterationIndex = new ProtoCore.VHDL.AST.PortEntryNode(ProtoCore.VHDL.Constants.SelectIndexSignalName, ProtoCore.VHDL.AST.PortEntryNode.Direction.In, 8);
+            const int selecIndexSignalSize = 8;
+            ProtoCore.VHDL.AST.PortEntryNode sel_IterationIndex = new ProtoCore.VHDL.AST.PortEntryNode(ProtoCore.VHDL.Constants.SelectIndexSignalName, ProtoCore.VHDL.AST.PortEntryNode.Direction.In, selecIndexSignalSize);
 
             List<ProtoCore.VHDL.AST.PortEntryNode> listPortEntry = new List<ProtoCore.VHDL.AST.PortEntryNode>();
             listPortEntry.Add(reset);
@@ -347,7 +348,7 @@ namespace ProtoVHDL
                     // Setup if
                     ifExpr = new ProtoCore.VHDL.AST.BinaryExpressionNode(
                         new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.SelectIndexSignalName),
-                        new ProtoCore.VHDL.AST.HexStringNode(i - 1),
+                        new ProtoCore.VHDL.AST.HexStringNode(i - 1, selecIndexSignalSize),
                          ProtoCore.VHDL.AST.BinaryExpressionNode.Operator.Eq);
                     execBodyIf.IfExpr = ifExpr; 
                     execBodyIf.IfBody = codeBodyList;
@@ -358,7 +359,7 @@ namespace ProtoVHDL
                     // Setup elseif
                     ifExpr = new ProtoCore.VHDL.AST.BinaryExpressionNode(
                         new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.SelectIndexSignalName),
-                        new ProtoCore.VHDL.AST.HexStringNode(i - 1),
+                        new ProtoCore.VHDL.AST.HexStringNode(i - 1, selecIndexSignalSize),
                          ProtoCore.VHDL.AST.BinaryExpressionNode.Operator.Eq);
                     execBodyIf.ElsifExprList.Add(ifExpr);
                     execBodyIf.ElsifBodyList.Add(codeBodyList);
@@ -482,7 +483,7 @@ namespace ProtoVHDL
                 else if (assocNode is IntNode)
                 {
                     int intVal = (int)(assocNode as IntNode).Value;
-                    ProtoCore.VHDL.AST.HexStringNode hexStringNode = new ProtoCore.VHDL.AST.HexStringNode(intVal);
+                    ProtoCore.VHDL.AST.HexStringNode hexStringNode = new ProtoCore.VHDL.AST.HexStringNode(intVal, ProtoCore.VHDL.Constants.SignalBitCount);
                     signalMap.Add(hexStringNode.ToString());
                 }
                 else
