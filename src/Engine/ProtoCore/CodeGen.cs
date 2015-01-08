@@ -61,10 +61,13 @@ namespace ProtoCore
             if (core.Options.CompilationTarget == DSDefinitions.CompileTarget.VHDL)
             {
                 Validity.Assert(arrayElementList != null);
-                Validity.Assert(arrayElementList.Count > 0);
-                ProtoCore.AST.AssociativeAST.AssociativeNode lastNode = arrayElementList[arrayElementList.Count - 1];
-                arrayElementList.RemoveAt(arrayElementList.Count - 1);
-                return lastNode;
+                //Validity.Assert(arrayElementList.Count > 0);
+                if (arrayElementList.Count > 0)
+                {
+                    ProtoCore.AST.AssociativeAST.AssociativeNode lastNode = arrayElementList[arrayElementList.Count - 1];
+                    arrayElementList.RemoveAt(arrayElementList.Count - 1);
+                    return lastNode;
+                }
             }
             return null;
         }
@@ -2188,7 +2191,6 @@ namespace ProtoCore
             {
                 EmitInstrConsole(ProtoCore.DSASM.kw.push, value.ToString());
                 EmitPush(op, node.line, node.col);
-                VHDL_PushNode(node as AST.AssociativeAST.AssociativeNode);
             }
 
             if (IsAssociativeArrayIndexing)
@@ -2583,6 +2585,15 @@ namespace ProtoCore
                     if (inferedType.UID != commonType)
                     {
                         commonType = (int)PrimitiveType.kTypeVar;
+                    }
+                }
+
+                // This push is temporarily here
+                if (core.Options.CompilationTarget == DSDefinitions.CompileTarget.VHDL)
+                {
+                    if (subPass != ProtoCore.Compiler.Associative.SubCompilePass.kUnboundIdentifier)
+                    {
+                        VHDL_PushNode(listNode as ProtoCore.AST.AssociativeAST.AssociativeNode);
                     }
                 }
 

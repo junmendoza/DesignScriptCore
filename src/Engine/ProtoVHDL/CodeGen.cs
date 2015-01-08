@@ -540,8 +540,11 @@ namespace ProtoVHDL
             module.AppendExecutionStatement(assignFunctionReturn);
         }
 
-        
-        //private ProtoCore.VHDL.AST.ProcessNode VHDL_CreateProcess(string description, )
+
+        private ProtoCore.VHDL.AST.ProcessNode VHDL_CreateProcess(string description)
+        {
+            return null;
+        }
 
         /// <summary>
         /// Create a new process if the rhs of an assignment has already been assigned to in the current process
@@ -5318,16 +5321,12 @@ namespace ProtoVHDL
                     }
                 }
 
-                VHDL_PushNode(node as ProtoCore.AST.AssociativeAST.AssociativeNode);
-
                 if (ignoreRankCheck || core.TypeSystem.IsHigherRank(type.UID, inferedType.UID))
                 {
                     inferedType = type;
                 }
                 // We need to get inferedType for boolean variable so that we can perform type check
                 inferedType.UID = (isBooleanOp || (type.UID == (int)PrimitiveType.kTypeBool)) ? (int)PrimitiveType.kTypeBool : inferedType.UID;
-
-                core.VhdlCore.CurrentDataSize = symbolnode.size;
             }
 
         }
@@ -9309,6 +9308,7 @@ namespace ProtoVHDL
                         // Dependency
                         if (!isTempExpression)
                         {
+
                             // Dependency graph top level symbol 
                             graphNode.PushSymbolReference(symbolnode);
                             EmitDependency(bnode.exprUID, bnode.modBlkUID, bnode.isSSAAssignment);
@@ -9377,13 +9377,23 @@ namespace ProtoVHDL
 
                         if (symbolnode.size > 1)
                         {
+                            // TODO Jun: This need re-implementing
+                            // Derive a general solution for propagating array size
                             List<AssociativeNode> rhsArrayElements = new List<AssociativeNode>();
                             for (int n = 0; n < symbolnode.size; ++n)
                             {
-                                rhsArrayElements.Add(VHDL_PopNode());
+                                AssociativeNode assocNode = VHDL_PopNode();
+                                if (assocNode != null)
+                                {
+                                    rhsArrayElements.Add(assocNode);
+                                }
                             }
-                            rhsArrayElements.Reverse();
-                            VHDL_EmitArrayAssignmentStmts(symbolnode.name, rhsArrayElements);
+
+                            if (rhsArrayElements.Count > 0)
+                            {
+                                rhsArrayElements.Reverse();
+                                VHDL_EmitArrayAssignmentStmts(symbolnode.name, rhsArrayElements);
+                            }
                         }
                         else
                         {
