@@ -443,7 +443,7 @@ namespace ProtoVHDL
             VHDL_CreateProcessParallelComponentWriteback(ProtoCore.VHDL.Constants.WriteBackControlUnit, lhs, componentInstanceCount, writeBackSensitivityList, selecIndexSignalSize, lastBatchCount);
 
             VHDL_CreateProcessParallelComponentIterationControl(ProtoCore.VHDL.Constants.IterationControlUnit, strParallelExecComplete, componentInstanceCount, selecIndexSignalSize);
-            VHDL_EmitParallelComponentInstance(lhs, funcCallNode, componentInstanceCount, componentInputList);
+            VHDL_EmitParallelComponentInstance(lhs, funcCallNode, componentInstanceCount, componentInputList, writeBackSensitivityList);
 
 
             //-- END emit VHDL
@@ -479,7 +479,12 @@ namespace ProtoVHDL
             }
         } 
 
-        private void VHDL_EmitParallelComponentInstance(string lhs, FunctionCallNode funcCallNode, int parallelComponentInstance, List<string> componentInputList)
+        private void VHDL_EmitParallelComponentInstance(
+            string lhs, 
+            FunctionCallNode funcCallNode, 
+            int parallelComponentInstance, 
+            List<string> componentInputList,
+            List<string> componentOutList)
         {
             ProtoCore.VHDL.AST.ModuleNode module = VHDL_GetCurrentModule();
 
@@ -490,7 +495,6 @@ namespace ProtoVHDL
             string multiplexerName = ProtoCore.VHDL.Utils.GenerateNameMultiplexerInputToParallelComponent(functionCallName, parallelComponentInstance);
 
             ProtoCore.VHDL.AST.ModuleNode muxFunctionModule = core.VhdlCore.GetModule(multiplexerName);
-            core.VhdlCore.UpdateComponentInstanceCount(multiplexerName);
 
             // Emit component
             ProtoCore.VHDL.AST.ComponentNode muxComponent =
@@ -514,6 +518,7 @@ namespace ProtoVHDL
                 //      op1 	=> ALU1_op1,
                 //      op2 	=> ALU1_op2
                 //  );
+                core.VhdlCore.UpdateComponentInstanceCount(multiplexerName);
                 string instanceName = ProtoCore.VHDL.Utils.GeneratePortMapName(multiplexerName, core.VhdlCore.ComponentInstanceCountMap[multiplexerName]);
                 List<string> signalMap = new List<string>();
                 signalMap.Add(ProtoCore.VHDL.Constants.ResetSignalName);
@@ -548,16 +553,38 @@ namespace ProtoVHDL
             //================================ 
 
             ProtoCore.VHDL.AST.ModuleNode functionModule = core.VhdlCore.GetModule(functionCallName);
-            core.VhdlCore.UpdateComponentInstanceCount(functionCallName);
 
             // Emit component
-            ProtoCore.VHDL.AST.ComponentNode componentToInstantiate =
+            ProtoCore.VHDL.AST.ComponentNode functionComponent =
                 new ProtoCore.VHDL.AST.ComponentNode(functionCallName, functionModule.Entity.PortEntryList);
-            module.ComponentList.Add(componentToInstantiate);
+            module.ComponentList.Add(functionComponent);
 
 
             // Emit portmap
+            
+            outputIndex = 0;
+            for (int i = 0; i < parallelComponentInstance; ++i)
+            {
+                //  ALU1_Add : ALU_Add port map
+                //  (
+                //      reset => reset,
+                //      op1 => ALU1_op1,
+                //      op2 => ALU1_op2,
+                //      result => ALU1_result
+                //  );
+                core.VhdlCore.UpdateComponentInstanceCount(functionCallName);
+                string instanceName = ProtoCore.VHDL.Utils.GeneratePortMapName(functionCallName, core.VhdlCore.ComponentInstanceCountMap[functionCallName]);
+                List<string> signalMap = new List<string>();
+                signalMap.Add(ProtoCore.VHDL.Constants.ResetSignalName);
+                for (int j = 0; j < funcCallNode.FormalArguments.Count; ++j)
+                {
+                    signalMap.Add(componentInputList[outputIndex++]);
+                }
+                signalMap.Add(componentOutList[i]);
+                ProtoCore.VHDL.AST.PortMapNode portmap = new ProtoCore.VHDL.AST.PortMapNode(instanceName, functionComponent, signalMap);
+                module.PortMapList.Add(portmap);
 
+            }
         }
 
         /// <summary>
