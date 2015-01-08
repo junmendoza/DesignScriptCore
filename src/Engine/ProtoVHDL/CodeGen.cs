@@ -255,6 +255,13 @@ namespace ProtoVHDL
             listPortEntry.Add(reset);
             listPortEntry.Add(sel_IterationIndex);
 
+
+
+            // Process sensitivity List 
+            List<string> sensitivityList = new List<string>();
+            sensitivityList.Add(ProtoCore.VHDL.Constants.ResetSignalName);
+            sensitivityList.Add(ProtoCore.VHDL.Constants.SelectIndexSignalName);
+
             const string operandPrefix = "op";
 
             // Generate input signals
@@ -263,11 +270,13 @@ namespace ProtoVHDL
                 for (int j = 1; j <= parallelInstanceCount; ++j)
                 {
                     string inSignalName = operandPrefix + j.ToString() + i.ToString();
+                    sensitivityList.Add(inSignalName);
                     ProtoCore.VHDL.AST.PortEntryNode opInput =
                         new ProtoCore.VHDL.AST.PortEntryNode(inSignalName, ProtoCore.VHDL.AST.PortEntryNode.Direction.In, ProtoCore.VHDL.Constants.SignalBitCount);
                     listPortEntry.Add(opInput);
                 }
             }
+
 
             // Generate output signals
             for (int i = 1; i <= muxOutput; ++i)
@@ -351,10 +360,6 @@ namespace ProtoVHDL
             // Mux Process
             //=============================================
 
-            // Process sensitivity List 
-            List<string> sensitivityList = new List<string>();
-            sensitivityList.Add(ProtoCore.VHDL.Constants.ResetSignalName);
-            sensitivityList.Add(ProtoCore.VHDL.Constants.SelectIndexSignalName);
 
             // Process variable declaration
             List<ProtoCore.VHDL.AST.VariableDeclarationNode> variableDeclList = new List<ProtoCore.VHDL.AST.VariableDeclarationNode>();
