@@ -24,14 +24,14 @@ signal ALU_Add3_op2 : std_logic_vector(31 downto 0);
 signal ALU_Add1_result : std_logic_vector(31 downto 0);
 signal ALU_Add2_result : std_logic_vector(31 downto 0);
 signal ALU_Add3_result : std_logic_vector(31 downto 0);
-type t_array_7_32 is array (0 to 7) of std_logic_vector(31 downto 0);
-signal a : t_array_7_32;
+type t_array_9_32 is array (0 to 9) of std_logic_vector(31 downto 0);
+signal a : t_array_9_32;
 
 
-signal b : t_array_7_32;
+signal b : t_array_9_32;
 
 
-signal c : t_array_7_32;
+signal c : t_array_9_32;
 
 
 component Mux_31_Component_In_ALU_Add is
@@ -79,10 +79,10 @@ reset => reset,
 select_index => select_index,
 op11 => a(1),
 op21 => a(4),
-op31 => open,
+op31 => a(7),
 op12 => b(1),
 op22 => b(4),
-op32 => open,
+op32 => b(7),
 op1 => ALU_Add2_op1,
 op2 => ALU_Add2_op2
 );
@@ -92,10 +92,10 @@ reset => reset,
 select_index => select_index,
 op11 => a(2),
 op21 => a(5),
-op31 => open,
+op31 => a(8),
 op12 => b(2),
 op22 => b(5),
-op32 => open,
+op32 => b(8),
 op1 => ALU_Add3_op1,
 op2 => ALU_Add3_op2
 );
@@ -138,6 +138,8 @@ a(3) <= X"00000004";
 a(4) <= X"00000005";
 a(5) <= X"00000006";
 a(6) <= X"00000007";
+a(7) <= X"00000008";
+a(8) <= X"00000009";
 b(0) <= X"0000000A";
 b(1) <= X"00000014";
 b(2) <= X"0000001E";
@@ -145,6 +147,8 @@ b(3) <= X"00000028";
 b(4) <= X"00000032";
 b(5) <= X"0000003C";
 b(6) <= X"00000046";
+b(7) <= X"00000050";
+b(8) <= X"0000005A";
 
 end if ;
 
@@ -178,6 +182,8 @@ c(5) <= ALU_Add3_result;
 
 elsif select_index = X"02" then
 c(6) <= ALU_Add1_result;
+c(7) <= ALU_Add2_result;
+c(8) <= ALU_Add3_result;
 
 end if ;
 
