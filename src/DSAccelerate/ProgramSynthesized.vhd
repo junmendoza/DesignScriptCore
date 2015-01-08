@@ -38,12 +38,12 @@ component Mux_31_Component_In_ALU_Add is
 port( 
 	reset : in std_logic;
 	select_index : in std_logic_vector(7 downto 0);
-	op11 : in std_logic_vector(31 downto 0);
-	op21 : in std_logic_vector(31 downto 0);
-	op31 : in std_logic_vector(31 downto 0);
-	op12 : in std_logic_vector(31 downto 0);
-	op22 : in std_logic_vector(31 downto 0);
-	op32 : in std_logic_vector(31 downto 0);
+	op11 : in std_logic_vector(31 downto 0) := (others => '0');
+	op21 : in std_logic_vector(31 downto 0) := (others => '0');
+	op31 : in std_logic_vector(31 downto 0) := (others => '0');
+	op12 : in std_logic_vector(31 downto 0) := (others => '0');
+	op22 : in std_logic_vector(31 downto 0) := (others => '0');
+	op32 : in std_logic_vector(31 downto 0) := (others => '0');
 	op1 : out std_logic_vector(31 downto 0);
 	op2 : out std_logic_vector(31 downto 0)
 );
@@ -77,12 +77,12 @@ call_2_Mux_31_Component_In_ALU_Add : Mux_31_Component_In_ALU_Add port map
 (
 reset => reset,
 select_index => select_index,
-op11 => a(0),
-op21 => a(3),
-op31 => a(6),
-op12 => b(0),
-op22 => b(3),
-op32 => b(6),
+op11 => a(1),
+op21 => a(4),
+op31 => open,
+op12 => b(1),
+op22 => b(4),
+op32 => open,
 op1 => ALU_Add2_op1,
 op2 => ALU_Add2_op2
 );
@@ -90,12 +90,12 @@ call_3_Mux_31_Component_In_ALU_Add : Mux_31_Component_In_ALU_Add port map
 (
 reset => reset,
 select_index => select_index,
-op11 => a(0),
-op21 => a(3),
-op31 => a(6),
-op12 => b(0),
-op22 => b(3),
-op32 => b(6),
+op11 => a(2),
+op21 => a(5),
+op31 => open,
+op12 => b(2),
+op22 => b(5),
+op32 => open,
 op1 => ALU_Add3_op1,
 op2 => ALU_Add3_op2
 );
@@ -155,7 +155,7 @@ end if ResetSync;
 
 end process proc_1_ProgramSynthesized;
 
-proc_2_WriteBackControlUnit : process(reset, ALU_Add1_result, ALU_Add2_result, ALU_Add3_result)
+proc_2_WriteBackControlUnit : process(ALU_Add1_result, ALU_Add2_result, ALU_Add3_result)
 variable iterationCount: integer;
 
 begin

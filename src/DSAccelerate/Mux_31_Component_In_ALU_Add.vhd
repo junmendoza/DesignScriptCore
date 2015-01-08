@@ -7,12 +7,12 @@ entity Mux_31_Component_In_ALU_Add is
 port( 
 	reset : in std_logic;
 	select_index : in std_logic_vector(7 downto 0);
-	op11 : in std_logic_vector(31 downto 0);
-	op21 : in std_logic_vector(31 downto 0);
-	op31 : in std_logic_vector(31 downto 0);
-	op12 : in std_logic_vector(31 downto 0);
-	op22 : in std_logic_vector(31 downto 0);
-	op32 : in std_logic_vector(31 downto 0);
+	op11 : in std_logic_vector(31 downto 0) := (others => '0');
+	op21 : in std_logic_vector(31 downto 0) := (others => '0');
+	op31 : in std_logic_vector(31 downto 0) := (others => '0');
+	op12 : in std_logic_vector(31 downto 0) := (others => '0');
+	op22 : in std_logic_vector(31 downto 0) := (others => '0');
+	op32 : in std_logic_vector(31 downto 0) := (others => '0');
 	op1 : out std_logic_vector(31 downto 0);
 	op2 : out std_logic_vector(31 downto 0)
 );
@@ -24,7 +24,7 @@ architecture Behavioral of Mux_31_Component_In_ALU_Add is
 
 begin
 
-proc_1_Mux_31_Component_In_ALU_Add : process(reset, select_index)
+proc_1_Mux_31_Component_In_ALU_Add : process(reset, select_index, op11, op21, op31, op12, op22, op32)
 
 begin
 ResetSync : if reset = '1' then
