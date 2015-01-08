@@ -397,8 +397,10 @@ namespace ProtoVHDL
             // This number is determined by heuristics given hardware data and program data
             int componentInstanceCount = 3;
 
+
             // The total number of function calls
             int elements = callsite.ReturnSize;
+            int iterationCount = elements / componentInstanceCount;
 
             // Elements processed on last batch
             int lastBatchCount = elements % componentInstanceCount; 
@@ -448,7 +450,7 @@ namespace ProtoVHDL
             VHDL_EmitParallelComponentMultiplexer(lhs, funcCallNode, callsite, componentInstanceCount, selecIndexSignalSize);
             VHDL_CreateProcessParallelComponentWriteback(ProtoCore.VHDL.Constants.WriteBackControlUnit, lhs, componentInstanceCount, writeBackSensitivityList, selecIndexSignalSize, lastBatchCount);
 
-            VHDL_CreateProcessParallelComponentIterationControl(ProtoCore.VHDL.Constants.IterationControlUnit, strParallelExecComplete, componentInstanceCount, selecIndexSignalSize);
+            VHDL_CreateProcessParallelComponentIterationControl(ProtoCore.VHDL.Constants.IterationControlUnit, strParallelExecComplete, iterationCount+lastBatchCount, selecIndexSignalSize);
             VHDL_EmitParallelComponentInstance(lhs, funcCallNode, componentInstanceCount, componentInputList, writeBackSensitivityList, elements);
 
 
@@ -705,7 +707,7 @@ namespace ProtoVHDL
        private void VHDL_CreateProcessParallelComponentIterationControl(
            string description, 
            string flagName,
-           int parallelComponentCount,
+           int iterationCount,
            int selecIndexSignalSize)
        {
             //  IterationControlUnit : process(reset, select_index)
@@ -757,7 +759,7 @@ namespace ProtoVHDL
             ProtoCore.VHDL.AST.IfNode selIndexIf = new ProtoCore.VHDL.AST.IfNode();
             ProtoCore.VHDL.AST.BinaryExpressionNode ifExpr = new ProtoCore.VHDL.AST.BinaryExpressionNode(
                 new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.SelectIndexSignalName),
-                new ProtoCore.VHDL.AST.HexStringNode(parallelComponentCount, selecIndexSignalSize),
+                new ProtoCore.VHDL.AST.HexStringNode(iterationCount, selecIndexSignalSize),
                     ProtoCore.VHDL.AST.BinaryExpressionNode.Operator.Eq);
             selIndexIf.IfExpr = ifExpr;
             selIndexIf.IfBody.Add(new ProtoCore.VHDL.AST.AssignmentNode(
@@ -930,7 +932,7 @@ namespace ProtoVHDL
                 // Handle the last batch count
                 if (i == parallelComponentCount - 1)
                 {
-                    if (lastBatchCount < parallelComponentCount)
+                    if (lastBatchCount != 0)
                     {
                         batchProcessed = lastBatchCount;
                     }
