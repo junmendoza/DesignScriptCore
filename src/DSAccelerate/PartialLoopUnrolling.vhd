@@ -105,52 +105,52 @@ architecture Behavioral of PartialLoopUnrolling is
 
 	type t_static_array_decl is array (0 to 6) of STD_LOGIC_VECTOR(31 downto 0);
 
--- Array contents 
---	signal array_a : t_static_array_decl :=
---	(
---		X"00000001", 	-- 1
---		X"00000002", 	-- 2
---		X"00000003", 	-- 3
---		X"00000004", 	-- 4
---		X"00000005", 	-- 5
---		X"00000006", 	-- 6
---		X"00000007"  	-- 7
---	);
---	
---	signal array_b : t_static_array_decl :=
---	(
---		X"0000000A",	-- 10 
---		X"00000014",	-- 20 
---		X"0000001E",	-- 30
---		X"00000028", 	-- 40
---		X"00000032", 	-- 50
---		X"0000003C",	-- 60
---		X"00000046"		-- 70
---	);
-
--- Array contents
--- Testing process execution for unmodified operands
+ --Array contents 
 	signal array_a : t_static_array_decl :=
 	(
 		X"00000001", 	-- 1
-		X"00000001", 	-- 1
-		X"00000001", 	-- 1
-		X"00000001", 	-- 1
-		X"00000001", 	-- 1
-		X"00000001", 	-- 1
-		X"00000001"  	-- 1
+		X"00000002", 	-- 2
+		X"00000003", 	-- 3
+		X"00000004", 	-- 4
+		X"00000005", 	-- 5
+		X"00000006", 	-- 6
+		X"00000007"  	-- 7
 	);
 	
 	signal array_b : t_static_array_decl :=
 	(
-		X"00000001",	-- 1 
-		X"00000001",	-- 1
-		X"00000001",	-- 1
-		X"00000001", 	-- 1
-		X"00000001", 	-- 1
-		X"00000001",	-- 1
-		X"00000001"		-- 1
+		X"0000000A",	-- 10 
+		X"00000014",	-- 20 
+		X"0000001E",	-- 30
+		X"00000028", 	-- 40
+		X"00000032", 	-- 50
+		X"0000003C",	-- 60
+		X"00000046"		-- 70
 	);
+
+---- Array contents
+---- Testing process execution for unmodified operands
+--	signal array_a : t_static_array_decl :=
+--	(
+--		X"00000001", 	-- 1
+--		X"00000001", 	-- 1
+--		X"00000001", 	-- 1
+--		X"00000001", 	-- 1
+--		X"00000001", 	-- 1
+--		X"00000001", 	-- 1
+--		X"00000001"  	-- 1
+--	);
+--	
+--	signal array_b : t_static_array_decl :=
+--	(
+--		X"00000001",	-- 1 
+--		X"00000001",	-- 1
+--		X"00000001",	-- 1
+--		X"00000001", 	-- 1
+--		X"00000001", 	-- 1
+--		X"00000001",	-- 1
+--		X"00000001"		-- 1
+--	);
 	
 	signal array_c : t_static_array_decl :=
 	(
