@@ -142,6 +142,8 @@ namespace ProtoCore.VHDL
         public const string SelectIndexSignalName = "select_index";
         public const string PrefixProcess = "proc";
         public const string PrefixArrayType = "t_array";
+        public const string PrefixMultiplexer = "Mux";
+        public const string PrefixALUInput = "ALU_In";
     }
 
     public struct ComponentName

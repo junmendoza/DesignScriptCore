@@ -214,22 +214,23 @@ namespace ProtoVHDL
             // Elements processed per iteration: batchCount = 3
             // Iterations: i = Elements / batchCount
             // Elements processed on the last iteration: last = Elements mod batchCount
-            
-            // Elements processed per iteration
-            // This number is determined by heuristics given hardware data and program data
-            int BatchCount = callsite.ReturnSize / 2; 
-            
-            // The total number of function calls
-            int Elements = callsite.ReturnSize;
 
             // The number of iterations to complete the replicated call
-            // Iterations: Elements / BatchCount
-            int iterations = Elements / BatchCount;
+            // This number is determined by heuristics given hardware data and program data
+            int iterations = 2;
+
+            // Elements processed per iteration
+            int batchCount = callsite.ReturnSize / iterations; 
+
+            // The total number of function calls
+            int elements = callsite.ReturnSize;
 
             // Elements processed on the last iteration: Elements mod iterations
-            int lastBatchCount = Elements % BatchCount;
+            int lastBatchCount = elements % batchCount;
 
-
+            Validity.Assert(funcCallNode.FormalArguments != null);
+            Validity.Assert(funcCallNode.FormalArguments.Count > 0);
+            int muxOutput = funcCallNode.FormalArguments.Count;
 
             //-- BEGIN emit VHDL
 
@@ -260,7 +261,7 @@ namespace ProtoVHDL
             //           );
             //  end Mux31_ALU_In;
 
-            string multiplexerName = string.Empty;
+            string multiplexerName = ProtoCore.VHDL.Utils.GenerateNameMultiplexerInputToParallelComponent(batchCount);
             ProtoCore.VHDL.AST.ModuleNode moduleInputMux = core.VhdlCore.CreateAndAppendDefaultModule(multiplexerName);
 
 
@@ -270,6 +271,30 @@ namespace ProtoVHDL
 
             List<ProtoCore.VHDL.AST.PortEntryNode> listPortEntry = new List<ProtoCore.VHDL.AST.PortEntryNode>();
             listPortEntry.Add(reset);
+            listPortEntry.Add(sel_IterationIndex);
+
+            const string operandPrefix = "op";
+
+            // Generate input signals
+            for (int i = 1; i <= iterations; ++i)
+            {
+                for (int j = 1; j <= batchCount; ++j)
+                {
+                    string inSignalName = operandPrefix + j.ToString() + i.ToString();
+                    ProtoCore.VHDL.AST.PortEntryNode opInput = 
+                        new ProtoCore.VHDL.AST.PortEntryNode(inSignalName, ProtoCore.VHDL.AST.PortEntryNode.Direction.In, ProtoCore.VHDL.Constants.SignalBitCount);
+                    listPortEntry.Add(opInput);
+                }
+            }
+
+            // Generate output signals
+            for (int i = 1; i <= muxOutput; ++i)
+            {
+                string outSignalName = operandPrefix + i.ToString();
+                ProtoCore.VHDL.AST.PortEntryNode opInput =
+                    new ProtoCore.VHDL.AST.PortEntryNode(outSignalName, ProtoCore.VHDL.AST.PortEntryNode.Direction.Out, ProtoCore.VHDL.Constants.SignalBitCount);
+                listPortEntry.Add(opInput);
+            }
 
 
             // Entity Declaration
@@ -280,7 +305,7 @@ namespace ProtoVHDL
             ProtoCore.VHDL.AST.IfNode resetSyncIf = ProtoCore.VHDL.Utils.GenerateResetSyncTemplate();
 
             // Reset sync elsif body (reset = 0)
-            resetSyncIf.ElsifBody = moduleInputMux.ExecutionBody;
+            resetSyncIf.ElsifBodyList.Add(moduleInputMux.ExecutionBody);
 
             // Process sensitivity List 
             List<string> sensitivityList = new List<string>();
@@ -295,10 +320,61 @@ namespace ProtoVHDL
 
 
             //=============================================
-            // 
+            // Execution body
             //=============================================
+            
+            //  if select_index = X"00" then
+            //       op1 <= op11;
+            //       op2 <= op12;
+            //   elsif select_index = X"01" then
+            //       op1 <= op21;
+            //       op2 <= op22;
+            //   elsif select_index = X"02" then
+            //       op1 <= op31;
+            //       op2 <= op32;
+            //   end if;
 
+            // Reset sync ifstmt
+            ProtoCore.VHDL.AST.IfNode execBodyIf = new ProtoCore.VHDL.AST.IfNode();
+            bool ifBodySet = false;
+            int totalIterations = iterations + lastBatchCount;
+            for (int i = 1; i <= totalIterations; ++i)
+            {
+                List<ProtoCore.VHDL.AST.VHDLNode> codeBodyList = new List<ProtoCore.VHDL.AST.VHDLNode>();
+                for (int j = 1; j <= muxOutput; ++j)
+                {
+                    string opLHS = operandPrefix + j.ToString();
+                    string opRHS = operandPrefix + i.ToString() + j.ToString();
+                    ProtoCore.VHDL.AST.AssignmentNode assignNode = new ProtoCore.VHDL.AST.AssignmentNode(
+                        new ProtoCore.VHDL.AST.IdentifierNode(opLHS),
+                        new ProtoCore.VHDL.AST.IdentifierNode(opRHS));
+                    codeBodyList.Add(assignNode);
+                }
 
+                // Append to the ifNode
+                ProtoCore.VHDL.AST.BinaryExpressionNode ifExpr = null;
+                if (!ifBodySet)
+                {
+                    // Setup if
+                    ifExpr = new ProtoCore.VHDL.AST.BinaryExpressionNode(
+                        new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.SelectIndexSignalName),
+                        new ProtoCore.VHDL.AST.HexStringNode(i - 1),
+                         ProtoCore.VHDL.AST.BinaryExpressionNode.Operator.Eq);
+                    execBodyIf.IfExpr = ifExpr; 
+                    execBodyIf.IfBody = codeBodyList;
+                    ifBodySet = true;
+                }
+                else
+                {
+                    // Setup elseif
+                    ifExpr = new ProtoCore.VHDL.AST.BinaryExpressionNode(
+                        new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.SelectIndexSignalName),
+                        new ProtoCore.VHDL.AST.HexStringNode(i - 1),
+                         ProtoCore.VHDL.AST.BinaryExpressionNode.Operator.Eq);
+                    //execBodyIf.el = ifExpr;
+                    //execBodyIf.IfBody = codeBodyList;
+                }
+            }
 
             //=============================================
             //
@@ -430,7 +506,7 @@ namespace ProtoVHDL
             ProtoCore.VHDL.AST.IfNode resetSyncIf = ProtoCore.VHDL.Utils.GenerateResetSyncTemplate();
 
             // Reset sync elsif body (reset = 0)
-            resetSyncIf.ElsifBody = module.ExecutionBody;
+            resetSyncIf.ElsifBodyList.Add(module.ExecutionBody);
 
             // Process Body
             List<ProtoCore.VHDL.AST.VHDLNode> processBody = new List<ProtoCore.VHDL.AST.VHDLNode>();
@@ -485,7 +561,7 @@ namespace ProtoVHDL
             ProtoCore.VHDL.AST.IfNode resetSyncIf = ProtoCore.VHDL.Utils.GenerateResetSyncTemplate();
 
             // Reset sync elsif body (reset = 0)
-            resetSyncIf.ElsifBody = module.ExecutionBody;
+            resetSyncIf.ElsifBodyList.Add(module.ExecutionBody);
 
             // Process Body
             List<ProtoCore.VHDL.AST.VHDLNode> processBody = new List<ProtoCore.VHDL.AST.VHDLNode>();
@@ -563,7 +639,7 @@ namespace ProtoVHDL
             ProtoCore.VHDL.AST.IfNode resetSyncIf = ProtoCore.VHDL.Utils.GenerateResetSyncTemplate();
 
             // Reset sync elsif body (reset = 0)
-            resetSyncIf.ElsifBody = functionModule.ExecutionBody;
+            resetSyncIf.ElsifBodyList.Add(functionModule.ExecutionBody);
 
             // Process Body
             List<ProtoCore.VHDL.AST.VHDLNode> processBody = new List<ProtoCore.VHDL.AST.VHDLNode>();
@@ -658,7 +734,7 @@ namespace ProtoVHDL
             // Reset sync elsif body (reset = 0)
             List<ProtoCore.VHDL.AST.VHDLNode> resetBody0 = new List<ProtoCore.VHDL.AST.VHDLNode>();
             resetBody0.Add(clockIf);
-            resetSyncIf.ElsifBody = resetBody0;
+            resetSyncIf.ElsifBodyList.Add(resetBody0);
 
 
             // Process Body
@@ -8647,7 +8723,6 @@ namespace ProtoVHDL
 
             DebugProperties.BreakpointOptions oldOptions = core.DebugProps.breakOptions;
 
-            VHDL_EmitAssignmentStmt(bnode);
 
             /*
             proc emitbinaryexpression(node)
@@ -9443,6 +9518,8 @@ namespace ProtoVHDL
                 throw new BuildHaltException(message);
             }
             core.DebugProps.breakOptions = oldOptions;
+
+            VHDL_EmitAssignmentStmt(bnode);
 
             //if post fix, now traverse the post fix
 #if ENABLE_INC_DEC_FIX
