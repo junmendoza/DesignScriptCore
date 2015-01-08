@@ -212,7 +212,7 @@ namespace ProtoCore.VHDL.AST
                 foreach (ComponentNode node in ComponentList)
                 {
                     sbComponents.Append(node.ToString());
-                    sbComponents.Append("\n");
+                    sbComponents.Append("\n\n");
                 }
             }
 

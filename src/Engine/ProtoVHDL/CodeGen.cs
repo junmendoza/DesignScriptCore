@@ -242,7 +242,8 @@ namespace ProtoVHDL
             //           );
             //  end Mux31_ALU_In;
 
-            string multiplexerName = ProtoCore.VHDL.Utils.GenerateNameMultiplexerInputToParallelComponent(parallelInstanceCount);
+            string funcName = ProtoCore.VHDL.Utils.GetComponentMappedFunctionCallName(funcCallNode.Function.Name);
+            string multiplexerName = ProtoCore.VHDL.Utils.GenerateNameMultiplexerInputToParallelComponent(funcName, parallelInstanceCount);
             ProtoCore.VHDL.AST.ModuleNode moduleInputMux = core.VhdlCore.CreateAndAppendDefaultModule(multiplexerName);
 
 
@@ -400,6 +401,7 @@ namespace ProtoVHDL
             //=============================================
             // Generate local signals
             //=============================================
+            const int selecIndexSignalSize = 8;
             string funcName = ProtoCore.VHDL.Utils.GetComponentMappedFunctionCallName(funcCallNode.Function.Name);
 
             string strParallelExecComplete = ProtoCore.VHDL.Constants.SignalNameParallelExecutionComplete + "_" + funcName;
@@ -407,12 +409,19 @@ namespace ProtoVHDL
                 new ProtoCore.VHDL.AST.SignalDeclarationNode(strParallelExecComplete, null, null, 1);
             module.SignalDeclarationList.Add(signalParallelExecDoneFlag);
 
+
+            ProtoCore.VHDL.AST.SignalDeclarationNode signalSelectIndex =
+                new ProtoCore.VHDL.AST.SignalDeclarationNode(ProtoCore.VHDL.Constants.SelectIndexSignalName, null, null, selecIndexSignalSize);
+            module.SignalDeclarationList.Add(signalSelectIndex);
+
             // Generate parallel component inputs
+            List<string> componentInputList = new List<string>();
             for (int i = 1; i <= componentInstanceCount; ++i)
             {
                 for (int j = 1; j <= funcCallNode.FormalArguments.Count; ++j)
                 {
                     string signalComponentInputName = funcName + i.ToString() + "_" + "op" + j.ToString();
+                    componentInputList.Add(signalComponentInputName);
                     ProtoCore.VHDL.AST.SignalDeclarationNode signalInput =
                         new ProtoCore.VHDL.AST.SignalDeclarationNode(signalComponentInputName, null, null);
                     module.SignalDeclarationList.Add(signalInput);
@@ -430,15 +439,12 @@ namespace ProtoVHDL
                 module.SignalDeclarationList.Add(signalInput);
             }
 
-            const int selecIndexSignalSize = 8;
             VHDL_EmitParallelComponentMultiplexer(lhs, funcCallNode, callsite, componentInstanceCount, selecIndexSignalSize);
             VHDL_CreateProcessParallelComponentWriteback(ProtoCore.VHDL.Constants.WriteBackControlUnit, lhs, componentInstanceCount, writeBackSensitivityList, selecIndexSignalSize, lastBatchCount);
 
             VHDL_CreateProcessParallelComponentIterationControl(ProtoCore.VHDL.Constants.IterationControlUnit, strParallelExecComplete, componentInstanceCount, selecIndexSignalSize);
+            VHDL_EmitParallelComponentInstance(lhs, funcCallNode, componentInstanceCount, componentInputList);
 
-            //=============================================
-            //
-            //=============================================
 
             //-- END emit VHDL
         }
@@ -471,8 +477,88 @@ namespace ProtoVHDL
             {
                 throw new NotImplementedException();
             }
-        }
+        } 
 
+        private void VHDL_EmitParallelComponentInstance(string lhs, FunctionCallNode funcCallNode, int parallelComponentInstance, List<string> componentInputList)
+        {
+            ProtoCore.VHDL.AST.ModuleNode module = VHDL_GetCurrentModule();
+
+            //================================
+            // Emit component multiplexers
+            //================================
+            string functionCallName = ProtoCore.VHDL.Utils.GetComponentMappedFunctionCallName(funcCallNode.Function.Name);
+            string multiplexerName = ProtoCore.VHDL.Utils.GenerateNameMultiplexerInputToParallelComponent(functionCallName, parallelComponentInstance);
+
+            ProtoCore.VHDL.AST.ModuleNode muxFunctionModule = core.VhdlCore.GetModule(multiplexerName);
+            core.VhdlCore.UpdateComponentInstanceCount(multiplexerName);
+
+            // Emit component
+            ProtoCore.VHDL.AST.ComponentNode muxComponent =
+                new ProtoCore.VHDL.AST.ComponentNode(multiplexerName, muxFunctionModule.Entity.PortEntryList);
+            module.ComponentList.Add(muxComponent);
+
+            // Emit portmap
+            int outputIndex = 0;
+            for (int i = 0; i < parallelComponentInstance; ++i)
+            {
+                //  Mux_ALU1_in : Mux31_ALU_In port map
+                //  (
+                //      reset => reset,
+                //      select_index => select_index,
+                //      op11	=> array_a(0),
+                //      op21	=> array_a(3),
+                //      op31	=> array_a(6),
+                //      op12	=> array_b(0),
+                //      op22	=> array_b(3),
+                //      op32	=> array_b(6),
+                //      op1 	=> ALU1_op1,
+                //      op2 	=> ALU1_op2
+                //  );
+                string instanceName = ProtoCore.VHDL.Utils.GeneratePortMapName(multiplexerName, core.VhdlCore.ComponentInstanceCountMap[multiplexerName]);
+                List<string> signalMap = new List<string>();
+                signalMap.Add(ProtoCore.VHDL.Constants.ResetSignalName);
+                signalMap.Add(ProtoCore.VHDL.Constants.SelectIndexSignalName);
+                foreach (AssociativeNode assocNode in funcCallNode.FormalArguments)
+                {
+                    if (assocNode is IdentifierNode)
+                    {
+                        int arrayIndex = 0;
+                        for (int j = 0; j < parallelComponentInstance; ++j)
+                        {
+                            string signalName = (assocNode as IdentifierNode).Name + "(" + arrayIndex.ToString() + ")";
+                            signalMap.Add(signalName);
+                            arrayIndex += parallelComponentInstance;
+                        }
+                    }
+                    else
+                    {
+                        // Support the rest of arg types here
+                        Validity.Assert(false);
+                    }
+                }
+                signalMap.Add(componentInputList[outputIndex++]);
+                signalMap.Add(componentInputList[outputIndex++]);
+                ProtoCore.VHDL.AST.PortMapNode portmap = new ProtoCore.VHDL.AST.PortMapNode(instanceName, muxComponent, signalMap);
+                module.PortMapList.Add(portmap);
+            }
+
+
+            //================================
+            // Emit component instance
+            //================================ 
+
+            ProtoCore.VHDL.AST.ModuleNode functionModule = core.VhdlCore.GetModule(functionCallName);
+            core.VhdlCore.UpdateComponentInstanceCount(functionCallName);
+
+            // Emit component
+            ProtoCore.VHDL.AST.ComponentNode componentToInstantiate =
+                new ProtoCore.VHDL.AST.ComponentNode(functionCallName, functionModule.Entity.PortEntryList);
+            module.ComponentList.Add(componentToInstantiate);
+
+
+            // Emit portmap
+
+        }
 
         /// <summary>
         /// Handle DS function call 
