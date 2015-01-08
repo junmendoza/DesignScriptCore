@@ -49,7 +49,7 @@ namespace ProtoCore
 
         protected void VHDL_PushNode(ProtoCore.AST.AssociativeAST.AssociativeNode node)
         {
-            if (codeBlock.language == Language.kVHDL)
+            if (core.Options.CompilationTarget == DSDefinitions.CompileTarget.VHDL)
             {
                 Validity.Assert(arrayElementList != null);
                 arrayElementList.Add(node);
@@ -58,7 +58,7 @@ namespace ProtoCore
 
         protected ProtoCore.AST.AssociativeAST.AssociativeNode VHDL_PopNode()
         {
-            if (codeBlock.language == Language.kVHDL)
+            if (core.Options.CompilationTarget == DSDefinitions.CompileTarget.VHDL)
             {
                 Validity.Assert(arrayElementList != null);
                 Validity.Assert(arrayElementList.Count > 0);
@@ -2600,7 +2600,7 @@ namespace ProtoCore
             EmitInstrConsole(ProtoCore.DSASM.kw.alloca, exprlist.list.Count.ToString());
             EmitPopArray(exprlist.list.Count);
 
-            if (codeBlock.language == Language.kVHDL)
+            if(core.Options.CompilationTarget == DSDefinitions.CompileTarget.VHDL)
             {
                 core.VhdlCore.CurrentDataSize = exprlist.list.Count * core.VhdlCore.ArrayDataSize;
             }
