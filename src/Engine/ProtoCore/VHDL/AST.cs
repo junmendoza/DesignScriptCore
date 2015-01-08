@@ -898,26 +898,26 @@ namespace ProtoCore.VHDL.AST
             sbIfBody.Append("\n");
 
             // Elsif expr
-            StringBuilder sbElsifExpr = new StringBuilder();
-            StringBuilder sbElsifBody = new StringBuilder();
+            StringBuilder sbElsifStmt = new StringBuilder();
             if (ElsifExprList.Count > 0)
             {
                 for (int i = 0; i < ElsifExprList.Count; ++i)
                 {
                     VHDLNode exprNode = ElsifExprList[i];
-                    sbElsifExpr.Append(ProtoCore.VHDL.Keyword.Elsif);
-                    sbElsifExpr.Append(" ");
-                    sbElsifExpr.Append(exprNode.ToString());
-                    sbElsifExpr.Append(" ");
-                    sbElsifExpr.Append(ProtoCore.VHDL.Keyword.Then);
-                    sbElsifExpr.Append("\n");
+                    sbElsifStmt.Append(ProtoCore.VHDL.Keyword.Elsif);
+                    sbElsifStmt.Append(" ");
+                    sbElsifStmt.Append(exprNode.ToString());
+                    sbElsifStmt.Append(" ");
+                    sbElsifStmt.Append(ProtoCore.VHDL.Keyword.Then);
+                    sbElsifStmt.Append("\n");
 
                     // Elsif body
                     foreach (VHDLNode node in ElsifBodyList[i])
                     {
-                        sbElsifBody.Append(node.ToString());
-                        sbElsifBody.Append("\n");
+                        sbElsifStmt.Append(node.ToString());
+                        sbElsifStmt.Append("\n");
                     }
+                    sbElsifStmt.Append("\n");
                 }
             }
 
@@ -950,8 +950,7 @@ namespace ProtoCore.VHDL.AST
             StringBuilder sbFormat = new StringBuilder();
             sbFormat.Append(sbIfExpr);
             sbFormat.Append(sbIfBody);
-            sbFormat.Append(sbElsifExpr);
-            sbFormat.Append(sbElsifBody);
+            sbFormat.Append(sbElsifStmt);
             sbFormat.Append(sbElse);
             sbFormat.Append(sbElseBody);
             sbFormat.Append(sbEndIf);

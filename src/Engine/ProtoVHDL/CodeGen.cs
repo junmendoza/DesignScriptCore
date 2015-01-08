@@ -307,17 +307,6 @@ namespace ProtoVHDL
             // Reset sync elsif body (reset = 0)
             resetSyncIf.ElsifBodyList.Add(moduleInputMux.ExecutionBody);
 
-            // Process sensitivity List 
-            List<string> sensitivityList = new List<string>();
-
-            // Process Body
-            List<ProtoCore.VHDL.AST.VHDLNode> processBody = new List<ProtoCore.VHDL.AST.VHDLNode>();
-            processBody.Add(resetSyncIf);
-
-            // Process variable declaration
-            List<ProtoCore.VHDL.AST.VHDLNode> variableDeclList = new List<ProtoCore.VHDL.AST.VHDLNode>();
-
-
 
             //=============================================
             // Execution body
@@ -371,15 +360,36 @@ namespace ProtoVHDL
                         new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.SelectIndexSignalName),
                         new ProtoCore.VHDL.AST.HexStringNode(i - 1),
                          ProtoCore.VHDL.AST.BinaryExpressionNode.Operator.Eq);
-                    //execBodyIf.el = ifExpr;
-                    //execBodyIf.IfBody = codeBodyList;
+                    execBodyIf.ElsifExprList.Add(ifExpr);
+                    execBodyIf.ElsifBodyList.Add(codeBodyList);
                 }
             }
+            moduleInputMux.AppendExecutionStatement(execBodyIf);
 
             //=============================================
-            //
+            // Mux Process
             //=============================================
 
+            // Process sensitivity List 
+            List<string> sensitivityList = new List<string>();
+            sensitivityList.Add(ProtoCore.VHDL.Constants.ResetSignalName);
+            sensitivityList.Add(ProtoCore.VHDL.Constants.SelectIndexSignalName);
+
+            // Process variable declaration
+            List<ProtoCore.VHDL.AST.VHDLNode> variableDeclList = new List<ProtoCore.VHDL.AST.VHDLNode>();
+
+            // Process Body
+            List<ProtoCore.VHDL.AST.VHDLNode> processBody = new List<ProtoCore.VHDL.AST.VHDLNode>();
+            processBody.Add(resetSyncIf);
+
+            // Process node
+            ProtoCore.VHDL.AST.ProcessNode processNode = new ProtoCore.VHDL.AST.ProcessNode(
+            ProtoCore.VHDL.Utils.GenerateProcessName(multiplexerName, moduleInputMux.GetProcessCount() + 1),
+            sensitivityList,
+            variableDeclList,
+            processBody
+            );
+            moduleInputMux.ProcessList.Add(processNode);
 
 
             //=============================================

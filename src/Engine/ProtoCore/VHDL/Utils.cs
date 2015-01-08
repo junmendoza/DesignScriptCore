@@ -75,7 +75,7 @@ namespace ProtoCore.VHDL
         public static string GenerateNameMultiplexerInputToParallelComponent(int elements)
         {
             // Mux31_ALU_In
-            return ProtoCore.VHDL.Constants.PrefixMultiplexer + "_" + elements.ToString() + "1" + ProtoCore.VHDL.Constants.PrefixALUInput;
+            return ProtoCore.VHDL.Constants.PrefixMultiplexer + "_" + elements.ToString() + "1" + "_" + ProtoCore.VHDL.Constants.PrefixComponentInput;
         }
             
         /// <summary>
