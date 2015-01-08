@@ -167,7 +167,6 @@ architecture Behavioral of PartialLoopUnrolling is
 	signal exec_complete : STD_LOGIC := '0'; 
 	signal loop_complete : STD_LOGIC := '0'; 
 	
-	constant i : integer := 1;
 	signal select_index : STD_LOGIC_VECTOR(7 downto 0); 
 	
 	-- ALU in
