@@ -826,7 +826,6 @@ namespace ProtoVHDL
 
             // Process sensitivity List is the rhs
             List<string> sensitivityList = new List<string>();
-            sensitivityList.Add(ProtoCore.VHDL.Constants.ResetSignalName);
             sensitivityList.AddRange(procSensitivityList);
 
             // Process variable declaration
