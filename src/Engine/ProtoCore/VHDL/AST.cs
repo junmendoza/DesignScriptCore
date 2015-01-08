@@ -815,10 +815,11 @@ namespace ProtoCore.VHDL.AST
     
     public class AssignmentNode : VHDLNode
     {
-        public AssignmentNode(VHDLNode lhs, VHDLNode rhs)
+        public AssignmentNode(VHDLNode lhs, VHDLNode rhs, bool isSignal = true)
         {
             LHS = lhs;
             RHS = rhs;
+            IsSignalAssignment = isSignal;
         }
 
         public override string ToString()
@@ -826,7 +827,14 @@ namespace ProtoCore.VHDL.AST
             StringBuilder sbFormat = new StringBuilder();
             sbFormat.Append(LHS.ToString());
             sbFormat.Append(" ");
-            sbFormat.Append(ProtoCore.VHDL.Constants.kSignalAssignSymbol);
+            if (IsSignalAssignment)
+            {
+                sbFormat.Append(ProtoCore.VHDL.Constants.kSignalAssignSymbol);
+            }
+            else
+            {
+                sbFormat.Append(ProtoCore.VHDL.Constants.kVariableAssignSymbol);
+            }
             sbFormat.Append(" ");
             sbFormat.Append(RHS.ToString());
             sbFormat.Append(";");
@@ -835,13 +843,14 @@ namespace ProtoCore.VHDL.AST
 
         public VHDLNode LHS { get; private set; }
         public VHDLNode RHS { get; private set; }
+        public bool IsSignalAssignment { get; private set; }
     }
 
     public class BinaryExpressionNode : VHDLNode
     {
         public enum Operator
         {
-            Or, Nor, Xnor, And, Not, Eq
+            Or, Nor, Xnor, And, Not, Eq, Add, Sub, Mul, Div
         }
 
         public BinaryExpressionNode(VHDLNode lhs, VHDLNode rhs, Operator optr)

@@ -132,6 +132,7 @@ namespace ProtoCore.VHDL
         public const int SignalBitCount = 32;
 
         public const string kSignalAssignSymbol = "<=";
+        public const string kVariableAssignSymbol = ":=";
         public const string ExecutionStartFlagName = "execution_started";
 
         public const string ClockSync = "ClockSync";
@@ -148,6 +149,12 @@ namespace ProtoCore.VHDL
         public const string IterationControlUnit = "IterationControlUnit";
         public const string ExecutionControlUnit = "ExecutionControlUnit";
         public const string WriteBackControlUnit = "WriteBackControlUnit";
+    }
+
+    public struct FunctionCallName
+    {
+        public const string ToInteger = "to_integer";
+        public const string ToSigned = "to_signed";
     }
 
     public struct ComponentName

@@ -202,37 +202,19 @@ namespace ProtoVHDL
                 }
             }
         }
-        
 
-        /// <summary>
-        /// Emit the parallel components setup for zipped replication
-        /// </summary>
-        /// <param name="lhs"></param>
-        /// <param name="funcCallNode"></param>
-        /// <param name="callsite"></param>
-        private void VHDL_EmitComponentInstanceParallel(string lhs, FunctionCallNode funcCallNode, CallSite callsite)
+        private void VHDL_EmitParallelComponentMultiplexer(
+            string lhs, 
+            FunctionCallNode funcCallNode, 
+            CallSite callsite, 
+            int iterations,
+            int batchCount,
+            int elements,
+            int lastBatchCount)
         {
-            // Elements processed per iteration: batchCount = 3
-            // Iterations: i = Elements / batchCount
-            // Elements processed on the last iteration: last = Elements mod batchCount
-
-            // The number of iterations to complete the replicated call
-            // This number is determined by heuristics given hardware data and program data
-            int iterations = 2;
-
-            // Elements processed per iteration
-            int batchCount = callsite.ReturnSize / iterations; 
-
-            // The total number of function calls
-            int elements = callsite.ReturnSize;
-
-            // Elements processed on the last iteration: Elements mod iterations
-            int lastBatchCount = elements % batchCount;
-
             Validity.Assert(funcCallNode.FormalArguments != null);
             Validity.Assert(funcCallNode.FormalArguments.Count > 0);
             int muxOutput = funcCallNode.FormalArguments.Count;
-
             //-- BEGIN emit VHDL
 
             //=============================================
@@ -243,17 +225,17 @@ namespace ProtoVHDL
             //      Port( 
             //              reset : in STD_LOGIC;
             //              select_index : in STD_LOGIC_VECTOR (7 downto 0);
-	    		
+
             //              -- Inputs to ALU op1
             //              op11 : in STD_LOGIC_VECTOR (31 downto 0);
             //              op21 : in STD_LOGIC_VECTOR (31 downto 0);
             //              op31 : in STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
-	    		
+
             //              -- Inputs to ALU op2
             //              op12 : in STD_LOGIC_VECTOR (31 downto 0);
             //              op22 : in STD_LOGIC_VECTOR (31 downto 0);
             //              op32 : in STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
-	    		
+
             //              -- Mux result
             //              -- Multiplxed component input signals
             //              -- These outputs will be the signals passed into the component instance of the function call
@@ -283,7 +265,7 @@ namespace ProtoVHDL
                 for (int j = 1; j <= batchCount; ++j)
                 {
                     string inSignalName = operandPrefix + j.ToString() + i.ToString();
-                    ProtoCore.VHDL.AST.PortEntryNode opInput = 
+                    ProtoCore.VHDL.AST.PortEntryNode opInput =
                         new ProtoCore.VHDL.AST.PortEntryNode(inSignalName, ProtoCore.VHDL.AST.PortEntryNode.Direction.In, ProtoCore.VHDL.Constants.SignalBitCount);
                     listPortEntry.Add(opInput);
                 }
@@ -313,7 +295,7 @@ namespace ProtoVHDL
             //=============================================
             // Execution body
             //=============================================
-            
+
             //  if select_index = X"00" then
             //       op1 <= op11;
             //       op2 <= op12;
@@ -351,7 +333,7 @@ namespace ProtoVHDL
                         new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.SelectIndexSignalName),
                         new ProtoCore.VHDL.AST.HexStringNode(i - 1, selecIndexSignalSize),
                          ProtoCore.VHDL.AST.BinaryExpressionNode.Operator.Eq);
-                    execBodyIf.IfExpr = ifExpr; 
+                    execBodyIf.IfExpr = ifExpr;
                     execBodyIf.IfBody = codeBodyList;
                     ifBodySet = true;
                 }
@@ -392,12 +374,41 @@ namespace ProtoVHDL
             processBody
             );
             moduleInputMux.ProcessList.Add(processNode);
+        }
+
+        /// <summary>
+        /// Emit the parallel components setup for zipped replication
+        /// </summary>
+        /// <param name="lhs"></param>
+        /// <param name="funcCallNode"></param>
+        /// <param name="callsite"></param>
+        private void VHDL_EmitComponentInstanceParallel(string lhs, FunctionCallNode funcCallNode, CallSite callsite)
+        {
+            // Elements processed per iteration: batchCount = 3
+            // Iterations: i = Elements / batchCount
+            // Elements processed on the last iteration: last = Elements mod batchCount
+
+            // The number of iterations to complete the replicated call
+            // This number is determined by heuristics given hardware data and program data
+            int iterations = 2;
+
+            // Elements processed per iteration
+            int batchCount = callsite.ReturnSize / iterations; 
+
+            // The total number of function calls
+            int elements = callsite.ReturnSize;
+
+            // Elements processed on the last iteration: Elements mod iterations
+            int lastBatchCount = elements % batchCount;
 
 
             //=============================================
-            //
+            // Generate local signals
             //=============================================
 
+
+            VHDL_EmitParallelComponentMultiplexer(lhs, funcCallNode, callsite, iterations, batchCount, elements, lastBatchCount);
+            //VHDL_CreateProcessParallelComponentWriteback(ProtoCore.VHDL.Constants.WriteBackControlUnit, null, batchCount, lastBatchCount, null);
 
 
             //=============================================
@@ -541,14 +552,133 @@ namespace ProtoVHDL
             module.AppendExecutionStatement(assignFunctionReturn);
         }
 
-
-        private ProtoCore.VHDL.AST.ProcessNode VHDL_CreateProcessParallelComponentWriteback(
+        private void VHDL_CreateProcessParallelComponentWriteback(
             string description,
             ProtoCore.VHDL.AST.IdentifierNode arrayDest,
             int batchCount,
-            int lastBatchCount)
+            int lastBatchCount,
+            List<string> procSensitivityList)
         {
-            return null;
+            //  Writeback_ALU_result : process(ALU1_result, ALU2_result, ALU3_result)
+            //      variable iterationCount : integer;
+            //  begin
+            //      ResetSync : if reset = '1' then
+            //          select_index <= X"00";
+		    	
+            //      elsif reset = '0' then
+            //          -- Update ther iteration index
+            //          iterationCount := to_integer(signed(select_index));
+            //          iterationCount := iterationCount + 1;
+            //          select_index <= std_logic_vector(to_signed(iterationCount, 8));
+		    	
+            //          -- Writeback to array
+            //          if select_index = X"00" then
+            //              array_c(0) <= ALU1_result;
+            //              array_c(1) <= ALU2_result;
+            //              array_c(2) <= ALU3_result;
+            //          elsif select_index = X"01" then
+            //              array_c(3) <= ALU1_result;
+            //              array_c(4) <= ALU2_result;
+            //              array_c(5) <= ALU3_result;
+            //          elsif select_index = X"02" then
+            //              array_c(5) <= ALU1_result;
+            //          end if;
+            //      end if ResetSync;
+            //  end process Writeback_ALU_result;
+
+            int componentResultCount = batchCount + lastBatchCount;
+            Validity.Assert(componentResultCount == procSensitivityList.Count);
+
+            ProtoCore.VHDL.AST.ModuleNode module = VHDL_GetCurrentModule();
+
+            // Process sensitivity List is the rhs
+            List<string> sensitivityList = new List<string>();
+            sensitivityList.Add(ProtoCore.VHDL.Constants.ResetSignalName);
+            sensitivityList.AddRange(procSensitivityList);
+
+            // Process variable declaration
+            const string strIterationCount = "iterationCount";
+            List<ProtoCore.VHDL.AST.VariableDeclarationNode> variableDeclList = new List<ProtoCore.VHDL.AST.VariableDeclarationNode>();
+            variableDeclList.Add(new ProtoCore.VHDL.AST.VariableDeclarationNode(strIterationCount, ProtoCore.VHDL.Keyword.Integer));
+
+            // Close current process
+            // Set execution body to the current process
+            // Succeeding statements will be appended to this new process
+            module.CloseCurrentProcess();
+
+            // Reset sync ifstmt
+            ProtoCore.VHDL.AST.IfNode resetSyncIf = ProtoCore.VHDL.Utils.GenerateResetSyncTemplate();
+            resetSyncIf.IfBody.Add(new ProtoCore.VHDL.AST.AssignmentNode(
+                new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.SelectIndexSignalName),
+                new ProtoCore.VHDL.AST.HexStringNode(0, 8)));
+
+            // Reset sync elsif body (reset = 0)
+            resetSyncIf.ElsifBodyList.Add(module.ExecutionBody);
+
+            //==============================
+            // Execution Body
+            //==============================
+
+            // iterationCount := to_integer(signed(select_index));
+            List<ProtoCore.VHDL.AST.VHDLNode> argList = new List<ProtoCore.VHDL.AST.VHDLNode>();
+            ProtoCore.VHDL.AST.IdentifierNode argNode = new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.SelectIndexSignalName);
+            argList.Add(argNode);
+            ProtoCore.VHDL.AST.FunctionCallNode signedFunctionCall = 
+                new ProtoCore.VHDL.AST.FunctionCallNode(ProtoCore.VHDL.Keyword.Signed, argList);
+
+            argList = new List<ProtoCore.VHDL.AST.VHDLNode>();
+            argList.Add(signedFunctionCall);
+            ProtoCore.VHDL.AST.FunctionCallNode toIntFunctionCall = new ProtoCore.VHDL.AST.FunctionCallNode(
+                ProtoCore.VHDL.FunctionCallName.ToInteger, argList);
+
+            ProtoCore.VHDL.AST.AssignmentNode incrementCounterStmt1 = new ProtoCore.VHDL.AST.AssignmentNode(
+                new ProtoCore.VHDL.AST.IdentifierNode(strIterationCount),
+                toIntFunctionCall);
+
+            // iterationCount := iterationCount + 1;
+            ProtoCore.VHDL.AST.AssignmentNode incrementCounterStmt2 = new ProtoCore.VHDL.AST.AssignmentNode(
+                new ProtoCore.VHDL.AST.IdentifierNode(strIterationCount),
+                new ProtoCore.VHDL.AST.BinaryExpressionNode(
+                    new ProtoCore.VHDL.AST.IdentifierNode(strIterationCount),
+                    new ProtoCore.VHDL.AST.IdentifierNode("1"), 
+                    ProtoCore.VHDL.AST.BinaryExpressionNode.Operator.Add));
+
+            // select_index <= std_logic_vector(to_signed(iterationCount, 8));
+            argList = new List<ProtoCore.VHDL.AST.VHDLNode>();
+            argList.Add(new ProtoCore.VHDL.AST.IdentifierNode(strIterationCount));
+            argList.Add(new ProtoCore.VHDL.AST.IdentifierNode("8"));
+            ProtoCore.VHDL.AST.FunctionCallNode toSignedFunctionCall =
+                new ProtoCore.VHDL.AST.FunctionCallNode(ProtoCore.VHDL.FunctionCallName.ToSigned, argList);
+
+            argList = new List<ProtoCore.VHDL.AST.VHDLNode>();
+            argList.Add(toSignedFunctionCall);
+            ProtoCore.VHDL.AST.FunctionCallNode stdLogicVectorCall =
+                new ProtoCore.VHDL.AST.FunctionCallNode(ProtoCore.VHDL.Keyword.Std_logic_vector, argList);
+            ProtoCore.VHDL.AST.AssignmentNode incrementCounterStmt3 = new ProtoCore.VHDL.AST.AssignmentNode(
+                new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.SelectIndexSignalName),
+                stdLogicVectorCall);
+
+            module.AppendExecutionStatement(incrementCounterStmt1);
+            module.AppendExecutionStatement(incrementCounterStmt2);
+            module.AppendExecutionStatement(incrementCounterStmt3);
+
+            for (int i = 0; i < componentResultCount; ++i)
+            {
+
+            }
+
+            // Process Body
+            List<ProtoCore.VHDL.AST.VHDLNode> processBody = new List<ProtoCore.VHDL.AST.VHDLNode>();
+            processBody.Add(resetSyncIf);
+
+            ProtoCore.VHDL.AST.ProcessNode processNode = new ProtoCore.VHDL.AST.ProcessNode(
+                ProtoCore.VHDL.Utils.GenerateProcessName(description, module.GetProcessCount() + 1),
+                sensitivityList,
+                variableDeclList,
+                processBody
+                );
+            module.ProcessList.Add(processNode);
+          
         }
 
 

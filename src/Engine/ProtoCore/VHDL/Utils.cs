@@ -39,6 +39,10 @@ namespace ProtoCore.VHDL
             BinaryExprOperatorTable.Add(AST.BinaryExpressionNode.Operator.And, ProtoCore.VHDL.Keyword.And);
             BinaryExprOperatorTable.Add(AST.BinaryExpressionNode.Operator.Not, ProtoCore.VHDL.Keyword.Nor);
             BinaryExprOperatorTable.Add(AST.BinaryExpressionNode.Operator.Eq, "=");
+            BinaryExprOperatorTable.Add(AST.BinaryExpressionNode.Operator.Add, "+");
+            BinaryExprOperatorTable.Add(AST.BinaryExpressionNode.Operator.Sub, "-");
+            BinaryExprOperatorTable.Add(AST.BinaryExpressionNode.Operator.Mul, "*");
+            BinaryExprOperatorTable.Add(AST.BinaryExpressionNode.Operator.Div, "/");
         }
 
         public static string GeneratePortMapName(string componentName, int instanceCount)
