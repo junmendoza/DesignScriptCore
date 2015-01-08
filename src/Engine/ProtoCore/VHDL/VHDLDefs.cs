@@ -149,6 +149,9 @@ namespace ProtoCore.VHDL
         public const string IterationControlUnit = "IterationControlUnit";
         public const string ExecutionControlUnit = "ExecutionControlUnit";
         public const string WriteBackControlUnit = "WriteBackControlUnit";
+
+        public const string SignalNameParallelExecutionComplete = "parallel_exec_done";
+
     }
 
     public struct FunctionCallName
