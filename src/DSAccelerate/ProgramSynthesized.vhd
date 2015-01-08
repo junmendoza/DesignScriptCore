@@ -13,41 +13,42 @@ end ProgramSynthesized;
 architecture Behavioral of ProgramSynthesized is
 
 signal execution_started : std_logic;
-signal call_1_Increment_return_val : std_logic_vector(31 downto 0);
-signal call_1_ALU_Add_return_val : std_logic_vector(31 downto 0);
-signal call_1_ALU_Sub_return_val : std_logic_vector(31 downto 0);
-signal call_1_ALU_Mul_return_val : std_logic_vector(31 downto 0);
-signal call_1_ALU_Div_return_val : std_logic_vector(31 downto 0);
-signal x : std_logic_vector(31 downto 0);
-signal tSSA_4_4cc42779139d4e269b03bb7d3686bb3c : std_logic_vector(31 downto 0);
-signal tSSA_5_4cc42779139d4e269b03bb7d3686bb3c : std_logic_vector(31 downto 0);
-signal y : std_logic_vector(31 downto 0);
-signal a : std_logic_vector(31 downto 0);
-signal b : std_logic_vector(31 downto 0);
-signal tSSA_6_4cc42779139d4e269b03bb7d3686bb3c : std_logic_vector(31 downto 0);
-signal tSSA_7_4cc42779139d4e269b03bb7d3686bb3c : std_logic_vector(31 downto 0);
-signal tSSA_8_4cc42779139d4e269b03bb7d3686bb3c : std_logic_vector(31 downto 0);
-signal c : std_logic_vector(31 downto 0);
-signal tSSA_9_4cc42779139d4e269b03bb7d3686bb3c : std_logic_vector(31 downto 0);
-signal tSSA_10_4cc42779139d4e269b03bb7d3686bb3c : std_logic_vector(31 downto 0);
-signal tSSA_11_4cc42779139d4e269b03bb7d3686bb3c : std_logic_vector(31 downto 0);
-signal d : std_logic_vector(31 downto 0);
-signal tSSA_12_4cc42779139d4e269b03bb7d3686bb3c : std_logic_vector(31 downto 0);
-signal tSSA_13_4cc42779139d4e269b03bb7d3686bb3c : std_logic_vector(31 downto 0);
-signal tSSA_14_4cc42779139d4e269b03bb7d3686bb3c : std_logic_vector(31 downto 0);
-signal e : std_logic_vector(31 downto 0);
-signal tSSA_15_4cc42779139d4e269b03bb7d3686bb3c : std_logic_vector(31 downto 0);
-signal tSSA_16_4cc42779139d4e269b03bb7d3686bb3c : std_logic_vector(31 downto 0);
-signal tSSA_17_4cc42779139d4e269b03bb7d3686bb3c : std_logic_vector(31 downto 0);
-signal f : std_logic_vector(31 downto 0);
+signal parallel_exec_done_ALU_Add : std_logic;
+signal select_index : std_logic_vector(7 downto 0);
+signal ALU_Add1_op1 : std_logic_vector(31 downto 0);
+signal ALU_Add1_op2 : std_logic_vector(31 downto 0);
+signal ALU_Add2_op1 : std_logic_vector(31 downto 0);
+signal ALU_Add2_op2 : std_logic_vector(31 downto 0);
+signal ALU_Add3_op1 : std_logic_vector(31 downto 0);
+signal ALU_Add3_op2 : std_logic_vector(31 downto 0);
+signal ALU_Add1_result : std_logic_vector(31 downto 0);
+signal ALU_Add2_result : std_logic_vector(31 downto 0);
+signal ALU_Add3_result : std_logic_vector(31 downto 0);
+type t_array_7_32 is array (0 to 7) of std_logic_vector(31 downto 0);
+signal a : t_array_7_32;
 
-component Increment is
+
+signal b : t_array_7_32;
+
+
+signal c : t_array_7_32;
+
+
+component Mux_31_Component_In_ALU_Add is
 port( 
 	reset : in std_logic;
-	i : in std_logic_vector(31 downto 0);
-	return_Increment : out std_logic_vector(31 downto 0)
+	select_index : in std_logic_vector(7 downto 0);
+	op11 : in std_logic_vector(31 downto 0);
+	op21 : in std_logic_vector(31 downto 0);
+	op31 : in std_logic_vector(31 downto 0);
+	op12 : in std_logic_vector(31 downto 0);
+	op22 : in std_logic_vector(31 downto 0);
+	op32 : in std_logic_vector(31 downto 0);
+	op1 : out std_logic_vector(31 downto 0);
+	op2 : out std_logic_vector(31 downto 0)
 );
-end component Increment;
+end component Mux_31_Component_In_ALU_Add;
+
 component ALU_Add is
 port( 
 	reset : in std_logic;
@@ -56,65 +57,68 @@ port(
 	result : out std_logic_vector(31 downto 0)
 );
 end component ALU_Add;
-component ALU_Sub is
-port( 
-	reset : in std_logic;
-	op1 : in std_logic_vector(31 downto 0);
-	op2 : in std_logic_vector(31 downto 0);
-	result : out std_logic_vector(31 downto 0)
-);
-end component ALU_Sub;
-component ALU_Mul is
-port( 
-	reset : in std_logic;
-	op1 : in std_logic_vector(31 downto 0);
-	op2 : in std_logic_vector(31 downto 0);
-	result : out std_logic_vector(31 downto 0)
-);
-end component ALU_Mul;
-component ALU_Div is
-port( 
-	reset : in std_logic;
-	op1 : in std_logic_vector(31 downto 0);
-	op2 : in std_logic_vector(31 downto 0);
-	result : out std_logic_vector(31 downto 0)
-);
-end component ALU_Div;
+
 
 begin
-call_1_Increment : Increment port map
+call_1_Mux_31_Component_In_ALU_Add : Mux_31_Component_In_ALU_Add port map
 (
 reset => reset,
-i => tSSA_4_4cc42779139d4e269b03bb7d3686bb3c,
-return_Increment => call_1_Increment_return_val
+select_index => select_index,
+op11 => a(0),
+op21 => a(3),
+op31 => a(6),
+op12 => b(0),
+op22 => b(3),
+op32 => b(6),
+op1 => ALU_Add1_op1,
+op2 => ALU_Add1_op2
+);
+call_2_Mux_31_Component_In_ALU_Add : Mux_31_Component_In_ALU_Add port map
+(
+reset => reset,
+select_index => select_index,
+op11 => a(0),
+op21 => a(3),
+op31 => a(6),
+op12 => b(0),
+op22 => b(3),
+op32 => b(6),
+op1 => ALU_Add2_op1,
+op2 => ALU_Add2_op2
+);
+call_3_Mux_31_Component_In_ALU_Add : Mux_31_Component_In_ALU_Add port map
+(
+reset => reset,
+select_index => select_index,
+op11 => a(0),
+op21 => a(3),
+op31 => a(6),
+op12 => b(0),
+op22 => b(3),
+op32 => b(6),
+op1 => ALU_Add3_op1,
+op2 => ALU_Add3_op2
 );
 call_1_ALU_Add : ALU_Add port map
 (
 reset => reset,
-op1 => tSSA_6_4cc42779139d4e269b03bb7d3686bb3c,
-op2 => tSSA_7_4cc42779139d4e269b03bb7d3686bb3c,
-result => call_1_ALU_Add_return_val
+op1 => ALU_Add1_op1,
+op2 => ALU_Add1_op2,
+result => ALU_Add1_result
 );
-call_1_ALU_Sub : ALU_Sub port map
+call_2_ALU_Add : ALU_Add port map
 (
 reset => reset,
-op1 => tSSA_9_4cc42779139d4e269b03bb7d3686bb3c,
-op2 => tSSA_10_4cc42779139d4e269b03bb7d3686bb3c,
-result => call_1_ALU_Sub_return_val
+op1 => ALU_Add2_op1,
+op2 => ALU_Add2_op2,
+result => ALU_Add2_result
 );
-call_1_ALU_Mul : ALU_Mul port map
+call_3_ALU_Add : ALU_Add port map
 (
 reset => reset,
-op1 => tSSA_12_4cc42779139d4e269b03bb7d3686bb3c,
-op2 => tSSA_13_4cc42779139d4e269b03bb7d3686bb3c,
-result => call_1_ALU_Mul_return_val
-);
-call_1_ALU_Div : ALU_Div port map
-(
-reset => reset,
-op1 => tSSA_15_4cc42779139d4e269b03bb7d3686bb3c,
-op2 => tSSA_16_4cc42779139d4e269b03bb7d3686bb3c,
-result => call_1_ALU_Div_return_val
+op1 => ALU_Add3_op1,
+op2 => ALU_Add3_op2,
+result => ALU_Add3_result
 );
 
 proc_1_ProgramSynthesized : process(clock)
@@ -127,168 +131,80 @@ elsif reset = '0' then
 ClockSync : if rising_edge(clock) then
 if execution_started = '0' then
 execution_started <= '1';
-x <= X"00000001";
+a(0) <= X"00000001";
+a(1) <= X"00000002";
+a(2) <= X"00000003";
+a(3) <= X"00000004";
+a(4) <= X"00000005";
+a(5) <= X"00000006";
+a(6) <= X"00000007";
+b(0) <= X"0000000A";
+b(1) <= X"00000014";
+b(2) <= X"0000001E";
+b(3) <= X"00000028";
+b(4) <= X"00000032";
+b(5) <= X"0000003C";
+b(6) <= X"00000046";
 
 end if ;
 
 end if ClockSync;
+
 end if ResetSync;
 
 
 end process proc_1_ProgramSynthesized;
 
-proc_2_x : process(x)
+proc_2_WriteBackControlUnit : process(reset, ALU_Add1_result, ALU_Add2_result, ALU_Add3_result)
+variable iterationCount: integer;
 
 begin
 ResetSync : if reset = '1' then
+select_index <= X"00";
 
 elsif reset = '0' then
-tSSA_4_4cc42779139d4e269b03bb7d3686bb3c <= x;
+iterationCount := to_integer(signed(select_index));
+iterationCount := iterationCount + 1;
+select_index <= std_logic_vector(to_signed(iterationCount, 8));
+if select_index = X"00" then
+c(0) <= ALU_Add1_result;
+c(1) <= ALU_Add2_result;
+c(2) <= ALU_Add3_result;
+
+elsif select_index = X"01" then
+c(3) <= ALU_Add1_result;
+c(4) <= ALU_Add2_result;
+c(5) <= ALU_Add3_result;
+
+elsif select_index = X"02" then
+c(6) <= ALU_Add1_result;
+
+end if ;
+
 end if ResetSync;
 
 
-end process proc_2_x;
+end process proc_2_WriteBackControlUnit;
 
-proc_3_call_1_Increment_return_val : process(call_1_Increment_return_val)
+proc_3_IterationControlUnit : process(reset, select_index)
 
 begin
 ResetSync : if reset = '1' then
+parallel_exec_done_ALU_Add <= '0';
 
 elsif reset = '0' then
-tSSA_5_4cc42779139d4e269b03bb7d3686bb3c <= call_1_Increment_return_val;
+if parallel_exec_done_ALU_Add = '0' then
+if select_index = X"03" then
+parallel_exec_done_ALU_Add <= '1';
+
+end if ;
+
+end if ;
+
 end if ResetSync;
 
 
-end process proc_3_call_1_Increment_return_val;
-
-proc_4_tSSA_5_4cc42779139d4e269b03bb7d3686bb3c : process(tSSA_5_4cc42779139d4e269b03bb7d3686bb3c)
-
-begin
-ResetSync : if reset = '1' then
-
-elsif reset = '0' then
-y <= tSSA_5_4cc42779139d4e269b03bb7d3686bb3c;
-a <= X"0000000A";
-b <= X"00000005";
-end if ResetSync;
-
-
-end process proc_4_tSSA_5_4cc42779139d4e269b03bb7d3686bb3c;
-
-proc_5_a : process(a)
-
-begin
-ResetSync : if reset = '1' then
-
-elsif reset = '0' then
-tSSA_6_4cc42779139d4e269b03bb7d3686bb3c <= a;
-tSSA_7_4cc42779139d4e269b03bb7d3686bb3c <= b;
-end if ResetSync;
-
-
-end process proc_5_a;
-
-proc_6_call_1_ALU_Add_return_val : process(call_1_ALU_Add_return_val)
-
-begin
-ResetSync : if reset = '1' then
-
-elsif reset = '0' then
-tSSA_8_4cc42779139d4e269b03bb7d3686bb3c <= call_1_ALU_Add_return_val;
-end if ResetSync;
-
-
-end process proc_6_call_1_ALU_Add_return_val;
-
-proc_7_tSSA_8_4cc42779139d4e269b03bb7d3686bb3c : process(tSSA_8_4cc42779139d4e269b03bb7d3686bb3c)
-
-begin
-ResetSync : if reset = '1' then
-
-elsif reset = '0' then
-c <= tSSA_8_4cc42779139d4e269b03bb7d3686bb3c;
-tSSA_9_4cc42779139d4e269b03bb7d3686bb3c <= a;
-tSSA_10_4cc42779139d4e269b03bb7d3686bb3c <= b;
-end if ResetSync;
-
-
-end process proc_7_tSSA_8_4cc42779139d4e269b03bb7d3686bb3c;
-
-proc_8_call_1_ALU_Sub_return_val : process(call_1_ALU_Sub_return_val)
-
-begin
-ResetSync : if reset = '1' then
-
-elsif reset = '0' then
-tSSA_11_4cc42779139d4e269b03bb7d3686bb3c <= call_1_ALU_Sub_return_val;
-end if ResetSync;
-
-
-end process proc_8_call_1_ALU_Sub_return_val;
-
-proc_9_tSSA_11_4cc42779139d4e269b03bb7d3686bb3c : process(tSSA_11_4cc42779139d4e269b03bb7d3686bb3c)
-
-begin
-ResetSync : if reset = '1' then
-
-elsif reset = '0' then
-d <= tSSA_11_4cc42779139d4e269b03bb7d3686bb3c;
-tSSA_12_4cc42779139d4e269b03bb7d3686bb3c <= a;
-tSSA_13_4cc42779139d4e269b03bb7d3686bb3c <= b;
-end if ResetSync;
-
-
-end process proc_9_tSSA_11_4cc42779139d4e269b03bb7d3686bb3c;
-
-proc_10_call_1_ALU_Mul_return_val : process(call_1_ALU_Mul_return_val)
-
-begin
-ResetSync : if reset = '1' then
-
-elsif reset = '0' then
-tSSA_14_4cc42779139d4e269b03bb7d3686bb3c <= call_1_ALU_Mul_return_val;
-end if ResetSync;
-
-
-end process proc_10_call_1_ALU_Mul_return_val;
-
-proc_11_tSSA_14_4cc42779139d4e269b03bb7d3686bb3c : process(tSSA_14_4cc42779139d4e269b03bb7d3686bb3c)
-
-begin
-ResetSync : if reset = '1' then
-
-elsif reset = '0' then
-e <= tSSA_14_4cc42779139d4e269b03bb7d3686bb3c;
-tSSA_15_4cc42779139d4e269b03bb7d3686bb3c <= a;
-tSSA_16_4cc42779139d4e269b03bb7d3686bb3c <= b;
-end if ResetSync;
-
-
-end process proc_11_tSSA_14_4cc42779139d4e269b03bb7d3686bb3c;
-
-proc_12_call_1_ALU_Div_return_val : process(call_1_ALU_Div_return_val)
-
-begin
-ResetSync : if reset = '1' then
-
-elsif reset = '0' then
-tSSA_17_4cc42779139d4e269b03bb7d3686bb3c <= call_1_ALU_Div_return_val;
-end if ResetSync;
-
-
-end process proc_12_call_1_ALU_Div_return_val;
-
-proc_13_tSSA_17_4cc42779139d4e269b03bb7d3686bb3c : process(tSSA_17_4cc42779139d4e269b03bb7d3686bb3c)
-
-begin
-ResetSync : if reset = '1' then
-
-elsif reset = '0' then
-f <= tSSA_17_4cc42779139d4e269b03bb7d3686bb3c;
-end if ResetSync;
-
-
-end process proc_13_tSSA_17_4cc42779139d4e269b03bb7d3686bb3c;
+end process proc_3_IterationControlUnit;
 
 
 end Behavioral;
