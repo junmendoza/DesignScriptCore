@@ -208,11 +208,14 @@ namespace ProtoVHDL
             FunctionCallNode funcCallNode, 
             CallSite callsite, 
             int parallelInstanceCount,
+            int iterations,
+            int lastBatchCount,
             int selecIndexSignalSize )
         {
             Validity.Assert(funcCallNode.FormalArguments != null);
             Validity.Assert(funcCallNode.FormalArguments.Count > 0);
             int muxOutput = funcCallNode.FormalArguments.Count;
+            
             //-- BEGIN emit VHDL
 
             //=============================================
@@ -243,7 +246,7 @@ namespace ProtoVHDL
             //  end Mux31_ALU_In;
 
             string funcName = ProtoCore.VHDL.Utils.GetComponentMappedFunctionCallName(funcCallNode.Function.Name);
-            string multiplexerName = ProtoCore.VHDL.Utils.GenerateNameMultiplexerInputToParallelComponent(funcName, parallelInstanceCount);
+            string multiplexerName = ProtoCore.VHDL.Utils.GenerateNameMultiplexerInputToParallelComponent(funcName, iterations);
             ProtoCore.VHDL.AST.ModuleNode moduleInputMux = core.VhdlCore.CreateAndAppendDefaultModule(multiplexerName);
 
 
@@ -267,7 +270,7 @@ namespace ProtoVHDL
             // Generate input signals
             for (int i = 1; i <= funcCallNode.FormalArguments.Count; ++i)
             {
-                for (int j = 1; j <= parallelInstanceCount; ++j)
+                for (int j = 1; j <= iterations; ++j)
                 {
                     string inSignalName = operandPrefix + j.ToString() + i.ToString();
                     sensitivityList.Add(inSignalName);
@@ -318,7 +321,7 @@ namespace ProtoVHDL
             // Reset sync ifstmt
             ProtoCore.VHDL.AST.IfNode execBodyIf = new ProtoCore.VHDL.AST.IfNode();
             bool ifBodySet = false;
-            for (int i = 1; i <= parallelInstanceCount; ++i)
+            for (int i = 1; i <= iterations; ++i)
             {
                 List<ProtoCore.VHDL.AST.VHDLNode> codeBodyList = new List<ProtoCore.VHDL.AST.VHDLNode>();
                 for (int j = 1; j <= muxOutput; ++j)
@@ -393,18 +396,23 @@ namespace ProtoVHDL
             // Iterations: i = Elements / batchCount
             // Elements processed on the last iteration: last = Elements mod batchCount
 
-            // The total number of instances of the component to call
-            // This number is determined by heuristics given hardware data and program data
-            int componentInstanceCount = 3;
-
-
             // The total number of function calls
             int elements = callsite.ReturnSize;
+
+            // The total number of instances of the component to call
+            // This number is determined by heuristics given hardware data and program data
+            int componentInstanceCount = ProtoCore.VHDL.Utils.GetOptimalParallelComponentCount(elements, 0, 0, 0);
+
+
+            // Elements processed on last iteration
+            int lastBatchCount = elements % componentInstanceCount;
+
+            // Iterations
             int iterationCount = elements / componentInstanceCount;
-
-            // Elements processed on last batch
-            int lastBatchCount = elements % componentInstanceCount; 
-
+            if (lastBatchCount > 0)
+            {
+                ++iterationCount;
+            }
 
             //=============================================
             // Generate local signals
@@ -447,11 +455,11 @@ namespace ProtoVHDL
                 module.SignalDeclarationList.Add(signalInput);
             }
 
-            VHDL_EmitParallelComponentMultiplexer(lhs, funcCallNode, callsite, componentInstanceCount, selecIndexSignalSize);
+            VHDL_EmitParallelComponentMultiplexer(lhs, funcCallNode, callsite, componentInstanceCount, iterationCount, lastBatchCount, selecIndexSignalSize);
             VHDL_CreateProcessParallelComponentWriteback(ProtoCore.VHDL.Constants.WriteBackControlUnit, lhs, componentInstanceCount, writeBackSensitivityList, selecIndexSignalSize, lastBatchCount);
 
             VHDL_CreateProcessParallelComponentIterationControl(ProtoCore.VHDL.Constants.IterationControlUnit, strParallelExecComplete, iterationCount+lastBatchCount, selecIndexSignalSize);
-            VHDL_EmitParallelComponentInstance(lhs, funcCallNode, componentInstanceCount, componentInputList, writeBackSensitivityList, elements);
+            VHDL_EmitParallelComponentInstance(lhs, funcCallNode, componentInstanceCount, iterationCount, componentInputList, writeBackSensitivityList, elements);
 
 
             //-- END emit VHDL
@@ -491,6 +499,7 @@ namespace ProtoVHDL
             string lhs, 
             FunctionCallNode funcCallNode, 
             int parallelComponentInstance, 
+            int iterations,
             List<string> componentInputList,
             List<string> componentOutList,
             int maxElements)
@@ -501,7 +510,7 @@ namespace ProtoVHDL
             // Emit component multiplexers
             //================================
             string functionCallName = ProtoCore.VHDL.Utils.GetComponentMappedFunctionCallName(funcCallNode.Function.Name);
-            string multiplexerName = ProtoCore.VHDL.Utils.GenerateNameMultiplexerInputToParallelComponent(functionCallName, parallelComponentInstance);
+            string multiplexerName = ProtoCore.VHDL.Utils.GenerateNameMultiplexerInputToParallelComponent(functionCallName, iterations);
 
             ProtoCore.VHDL.AST.ModuleNode muxFunctionModule = core.VhdlCore.GetModule(multiplexerName);
 
@@ -510,7 +519,7 @@ namespace ProtoVHDL
                 new ProtoCore.VHDL.AST.ComponentNode(multiplexerName, muxFunctionModule.Entity.PortEntryList);
             module.ComponentList.Add(muxComponent);
 
-            // Emit portmap
+            // Emit each component portmap
             int outputIndex = 0;
             for (int i = 0; i < parallelComponentInstance; ++i)
             {
@@ -518,12 +527,15 @@ namespace ProtoVHDL
                 //  (
                 //      reset => reset,
                 //      select_index => select_index,
-                //      op11	=> array_a(0),
+                //
+                //      op11	=> array_a(0),  -- Argument 1 list
                 //      op21	=> array_a(3),
                 //      op31	=> array_a(6),
-                //      op12	=> array_b(0),
+                //
+                //      op12	=> array_b(0),  -- Argument 2 list
                 //      op22	=> array_b(3),
                 //      op32	=> array_b(6),
+                //
                 //      op1 	=> ALU1_op1,
                 //      op2 	=> ALU1_op2
                 //  );
@@ -532,12 +544,17 @@ namespace ProtoVHDL
                 List<string> signalMap = new List<string>();
                 signalMap.Add(ProtoCore.VHDL.Constants.ResetSignalName);
                 signalMap.Add(ProtoCore.VHDL.Constants.SelectIndexSignalName);
+
+                // Foreach function argument
                 foreach (AssociativeNode assocNode in funcCallNode.FormalArguments)
                 {
                     if (assocNode is IdentifierNode)
                     {
                         int arrayIndex = i;
-                        for (int j = 0; j < parallelComponentInstance; ++j)
+
+                        // Foreach function argument
+                        // Handle each function argument that needs to be multiplexed
+                        for (int j = 0; j < iterations; ++j)
                         {
                             string signalName = ProtoCore.VHDL.Keyword.Open;
                             if (arrayIndex < maxElements)

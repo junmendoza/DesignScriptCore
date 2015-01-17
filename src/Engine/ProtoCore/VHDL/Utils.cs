@@ -9,6 +9,19 @@ namespace ProtoCore.VHDL
 {
     public static class Utils
     {
+        /// <summary>
+        /// Computes the optimal instances of components in parallel
+        /// </summary>
+        /// <param name="elements"></param>
+        /// <param name="componentSize"></param>
+        /// <param name="blockSize"></param>
+        /// <param name="availableSize"></param>
+        /// <returns></returns>
+        public static int GetOptimalParallelComponentCount(int elements, int componentSize, int blockSize, int availableSize)
+        {
+            return 3;
+        }
+
         public static string GeneratePortList(List<AST.PortEntryNode> portEntryList)
         {
             StringBuilder portList = new StringBuilder();
