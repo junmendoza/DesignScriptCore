@@ -456,9 +456,9 @@ namespace ProtoVHDL
             }
 
             VHDL_EmitParallelComponentMultiplexer(lhs, funcCallNode, callsite, componentInstanceCount, iterationCount, lastBatchCount, selecIndexSignalSize);
-            VHDL_CreateProcessParallelComponentWriteback(ProtoCore.VHDL.Constants.WriteBackControlUnit, lhs, componentInstanceCount, writeBackSensitivityList, selecIndexSignalSize, lastBatchCount);
+            VHDL_CreateProcessParallelComponentWriteback(ProtoCore.VHDL.Constants.WriteBackControlUnit, lhs, componentInstanceCount, iterationCount, writeBackSensitivityList, selecIndexSignalSize, lastBatchCount);
 
-            VHDL_CreateProcessParallelComponentIterationControl(ProtoCore.VHDL.Constants.IterationControlUnit, strParallelExecComplete, iterationCount+lastBatchCount, selecIndexSignalSize);
+            VHDL_CreateProcessParallelComponentIterationControl(ProtoCore.VHDL.Constants.IterationControlUnit, strParallelExecComplete, iterationCount, selecIndexSignalSize);
             VHDL_EmitParallelComponentInstance(lhs, funcCallNode, componentInstanceCount, iterationCount, componentInputList, writeBackSensitivityList, elements);
 
 
@@ -819,6 +819,7 @@ namespace ProtoVHDL
             string description,
             string arrayDest,
             int parallelComponentCount,
+            int iterations,
             List<string> procSensitivityList,
             int selecIndexSignalSize,
             int lastBatchCount)
@@ -940,14 +941,14 @@ namespace ProtoVHDL
             bool ifBodySet = false;
             int assignmentInstanceCount = 0;
 
-            for (int i = 0; i < parallelComponentCount; ++i)
+            for (int i = 0; i < iterations; ++i)
             {
                 List<ProtoCore.VHDL.AST.VHDLNode> codeBodyList = new List<ProtoCore.VHDL.AST.VHDLNode>();
 
                 int batchProcessed = parallelComponentCount;
 
                 // Handle the last batch count
-                if (i == parallelComponentCount - 1)
+                if (i == iterations - 1)
                 {
                     if (lastBatchCount != 0)
                     {
