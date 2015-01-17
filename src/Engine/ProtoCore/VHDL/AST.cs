@@ -180,15 +180,15 @@ namespace ProtoCore.VHDL.AST
             // Architecture decl
             //==============================
             StringBuilder sbArchitectureDecl = new StringBuilder();
-            sbArchitectureDecl.Append(ProtoCore.VHDL.Keyword.Architecture);
+            sbArchitectureDecl.Append(ProtoCore.VHDL.Constants.Keyword.Architecture);
             sbArchitectureDecl.Append(" ");
             sbArchitectureDecl.Append("Behavioral");
             sbArchitectureDecl.Append(" ");
-            sbArchitectureDecl.Append(ProtoCore.VHDL.Keyword.Of);
+            sbArchitectureDecl.Append(ProtoCore.VHDL.Constants.Keyword.Of);
             sbArchitectureDecl.Append(" ");
             sbArchitectureDecl.Append(Name);
             sbArchitectureDecl.Append(" ");
-            sbArchitectureDecl.Append(ProtoCore.VHDL.Keyword.Is);
+            sbArchitectureDecl.Append(ProtoCore.VHDL.Constants.Keyword.Is);
 
             //==============================
             // Signal list
@@ -220,7 +220,7 @@ namespace ProtoCore.VHDL.AST
             // Architecture begin
             //==============================
             StringBuilder sbArchitectureBegin = new StringBuilder();
-            sbArchitectureBegin.Append(ProtoCore.VHDL.Keyword.Begin);
+            sbArchitectureBegin.Append(ProtoCore.VHDL.Constants.Keyword.Begin);
 
             //==============================
             // Portmap list
@@ -252,7 +252,7 @@ namespace ProtoCore.VHDL.AST
             // Architecture end
             //==============================
             StringBuilder sbArchitectureEnd = new StringBuilder();
-            sbArchitectureEnd.Append(ProtoCore.VHDL.Keyword.End);
+            sbArchitectureEnd.Append(ProtoCore.VHDL.Constants.Keyword.End);
             sbArchitectureEnd.Append(" ");
             sbArchitectureEnd.Append("Behavioral");
             sbArchitectureEnd.Append(";");
@@ -321,7 +321,7 @@ namespace ProtoCore.VHDL.AST
         {
             StringBuilder library = new StringBuilder();
 
-            library.Append(ProtoCore.VHDL.Keyword.Library);
+            library.Append(ProtoCore.VHDL.Constants.Keyword.Library);
             library.Append(" ");
             library.Append(Name);
             library.Append(";");
@@ -342,7 +342,7 @@ namespace ProtoCore.VHDL.AST
         {
             StringBuilder use = new StringBuilder();
 
-            use.Append(ProtoCore.VHDL.Keyword.Use);
+            use.Append(ProtoCore.VHDL.Constants.Keyword.Use);
             use.Append(" ");
             use.Append(Name);
             use.Append(";");
@@ -364,16 +364,16 @@ namespace ProtoCore.VHDL.AST
         {
             StringBuilder entity = new StringBuilder();
                 
-            entity.Append(ProtoCore.VHDL.Keyword.Entity);
+            entity.Append(ProtoCore.VHDL.Constants.Keyword.Entity);
             entity.Append(" ");
             entity.Append(Name);
             entity.Append(" ");
-            entity.Append(ProtoCore.VHDL.Keyword.Is);
+            entity.Append(ProtoCore.VHDL.Constants.Keyword.Is);
             entity.Append("\n");
 
             entity.Append(ProtoCore.VHDL.Utils.GeneratePortList(PortEntryList));
 
-            entity.Append(ProtoCore.VHDL.Keyword.End);
+            entity.Append(ProtoCore.VHDL.Constants.Keyword.End);
             entity.Append(" ");
             entity.Append(Name);
             entity.Append(";");
@@ -397,18 +397,18 @@ namespace ProtoCore.VHDL.AST
         {
             StringBuilder entity = new StringBuilder();
 
-            entity.Append(ProtoCore.VHDL.Keyword.Component);
+            entity.Append(ProtoCore.VHDL.Constants.Keyword.Component);
             entity.Append(" ");
             entity.Append(Name);
             entity.Append(" ");
-            entity.Append(ProtoCore.VHDL.Keyword.Is);
+            entity.Append(ProtoCore.VHDL.Constants.Keyword.Is);
             entity.Append("\n");
 
             entity.Append(ProtoCore.VHDL.Utils.GeneratePortList(PortEntryList));
 
-            entity.Append(ProtoCore.VHDL.Keyword.End);
+            entity.Append(ProtoCore.VHDL.Constants.Keyword.End);
             entity.Append(" ");
-            entity.Append(ProtoCore.VHDL.Keyword.Component);
+            entity.Append(ProtoCore.VHDL.Constants.Keyword.Component);
             entity.Append(" ");
             entity.Append(Name);
             entity.Append(";");
@@ -442,30 +442,30 @@ namespace ProtoCore.VHDL.AST
             string dir = string.Empty;
             if (EntryDirection == Direction.In)
             {
-                dir = ProtoCore.VHDL.Keyword.In;
+                dir = ProtoCore.VHDL.Constants.Keyword.In;
             }
             else if (EntryDirection == Direction.Out)
             {
-                dir = ProtoCore.VHDL.Keyword.Out;
+                dir = ProtoCore.VHDL.Constants.Keyword.Out;
             }
             else
             {
-                dir = ProtoCore.VHDL.Keyword.Inout;
+                dir = ProtoCore.VHDL.Constants.Keyword.Inout;
             }
 
             string type = string.Empty;
             if (BitCount == 1)
             {
-                type = ProtoCore.VHDL.Keyword.Std_logic;
+                type = ProtoCore.VHDL.Constants.Keyword.Std_logic;
             }
             else
             {
                 type =
-                    ProtoCore.VHDL.Keyword.Std_logic_vector
+                    ProtoCore.VHDL.Constants.Keyword.Std_logic_vector
                     + "("
                     + (BitCount - 1).ToString()
                     + " "
-                    + ProtoCore.VHDL.Keyword.Downto
+                    + ProtoCore.VHDL.Constants.Keyword.Downto
                     + " "
                     + "0"
                     + ")";
@@ -474,12 +474,12 @@ namespace ProtoCore.VHDL.AST
                     // := (others => '0')
                     type +=
                         " "
-                        + ProtoCore.VHDL.Constants.kVariableAssignSymbol
+                        + ProtoCore.VHDL.Constants.Naming.kVariableAssignSymbol
                         + " "
                         + "("
-                        + ProtoCore.VHDL.Keyword.Others
+                        + ProtoCore.VHDL.Constants.Keyword.Others
                         + " "
-                        + ProtoCore.VHDL.Constants.kDefaultAssignSymbol
+                        + ProtoCore.VHDL.Constants.Naming.kDefaultAssignSymbol
                         + " "
                         + "'0'"
                         + ")";
@@ -506,7 +506,7 @@ namespace ProtoCore.VHDL.AST
         public ArrayTypeDefinitionNode(List<int> dimensionList)
         {
             int elems = dimensionList[0];
-            ArrayTypeName = ProtoCore.VHDL.Utils.GenerateArrayTypeName(elems, ProtoCore.VHDL.Constants.SignalBitCount);
+            ArrayTypeName = ProtoCore.VHDL.Utils.GenerateArrayTypeName(elems, ProtoCore.VHDL.Constants.Numeric.SignalBitCount);
             this.DimensionList = new List<int>(dimensionList);
         }
 
@@ -514,27 +514,27 @@ namespace ProtoCore.VHDL.AST
         {
 	        // type t_array_3_32 is array (0 to 2) of STD_LOGIC_VECTOR(31 downto 0);
             StringBuilder sbArrayType = new StringBuilder();
-            sbArrayType.Append(ProtoCore.VHDL.Keyword.Type);
+            sbArrayType.Append(ProtoCore.VHDL.Constants.Keyword.Type);
             sbArrayType.Append(" ");
             sbArrayType.Append(ArrayTypeName);
             sbArrayType.Append(" ");
-            sbArrayType.Append(ProtoCore.VHDL.Keyword.Is);
+            sbArrayType.Append(ProtoCore.VHDL.Constants.Keyword.Is);
 
 
             StringBuilder sbDimension = new StringBuilder();
-            sbDimension.Append(ProtoCore.VHDL.Keyword.Array);
+            sbDimension.Append(ProtoCore.VHDL.Constants.Keyword.Array);
             sbDimension.Append(" (0 ");
-            sbDimension.Append(ProtoCore.VHDL.Keyword.To);
+            sbDimension.Append(ProtoCore.VHDL.Constants.Keyword.To);
             sbDimension.Append(" ");
             sbDimension.Append(DimensionList[0].ToString());
             sbDimension.Append(")");
 
             StringBuilder sbElementType = new StringBuilder();
-            sbElementType.Append(ProtoCore.VHDL.Keyword.Std_logic_vector);
+            sbElementType.Append(ProtoCore.VHDL.Constants.Keyword.Std_logic_vector);
             sbElementType.Append("(");
-            sbElementType.Append(ProtoCore.VHDL.Constants.SignalBitCount - 1);
+            sbElementType.Append(ProtoCore.VHDL.Constants.Numeric.SignalBitCount - 1);
             sbElementType.Append(" ");
-            sbElementType.Append(ProtoCore.VHDL.Keyword.Downto);
+            sbElementType.Append(ProtoCore.VHDL.Constants.Keyword.Downto);
             sbElementType.Append(" 0)");
 
             StringBuilder sbFormat = new StringBuilder();
@@ -542,7 +542,7 @@ namespace ProtoCore.VHDL.AST
             sbFormat.Append(" ");
             sbFormat.Append(sbDimension);
             sbFormat.Append(" ");
-            sbFormat.Append(ProtoCore.VHDL.Keyword.Of);
+            sbFormat.Append(ProtoCore.VHDL.Constants.Keyword.Of);
             sbFormat.Append(" ");
             sbFormat.Append(sbElementType);
             sbFormat.Append(";");
@@ -562,7 +562,7 @@ namespace ProtoCore.VHDL.AST
 
         public override string ToString()
         {
-            return ProtoCore.VHDL.Keyword.Variable + " " + Name + ":" + " " + Type + ";"; 
+            return ProtoCore.VHDL.Constants.Keyword.Variable + " " + Name + ":" + " " + Type + ";"; 
         }
 
         public string Name { get; private set; }
@@ -571,7 +571,7 @@ namespace ProtoCore.VHDL.AST
 
     public class SignalDeclarationNode : VHDLNode
     {
-        public SignalDeclarationNode(string signal, ArrayTypeDefinitionNode arrayType = null, string arrayTypeName = null, int bits = ProtoCore.VHDL.Constants.SignalBitCount)
+        public SignalDeclarationNode(string signal, ArrayTypeDefinitionNode arrayType = null, string arrayTypeName = null, int bits = ProtoCore.VHDL.Constants.Numeric.SignalBitCount)
         {
             SignalName = signal;
             BitCount = bits;
@@ -579,11 +579,11 @@ namespace ProtoCore.VHDL.AST
             ArrayTypeName = arrayTypeName;
         }
 
-        public SignalDeclarationNode(ProtoCore.DSASM.SymbolNode symbol, ArrayTypeDefinitionNode arrayType = null, string arrayTypeName = null, int bits = ProtoCore.VHDL.Constants.SignalBitCount)
+        public SignalDeclarationNode(ProtoCore.DSASM.SymbolNode symbol, ArrayTypeDefinitionNode arrayType = null, string arrayTypeName = null, int bits = ProtoCore.VHDL.Constants.Numeric.SignalBitCount)
         {
            DSSymbol = symbol;
            SignalName = DSSymbol.name;
-           BitCount = ProtoCore.VHDL.Constants.SignalBitCount;
+           BitCount = ProtoCore.VHDL.Constants.Numeric.SignalBitCount;
            ArrayTypeName = arrayTypeName;
 
            int elements = DSSymbol.size;
@@ -596,7 +596,7 @@ namespace ProtoCore.VHDL.AST
            else
            {
                // Handle other data type size here
-               BitCount = ProtoCore.VHDL.Constants.SignalBitCount;
+               BitCount = ProtoCore.VHDL.Constants.Numeric.SignalBitCount;
            }
         }
 
@@ -605,23 +605,23 @@ namespace ProtoCore.VHDL.AST
             string type = string.Empty;
             if (BitCount == 1)
             {
-                type = ProtoCore.VHDL.Keyword.Std_logic;
+                type = ProtoCore.VHDL.Constants.Keyword.Std_logic;
             }
             else
             {
                 type =
-                    ProtoCore.VHDL.Keyword.Std_logic_vector
+                    ProtoCore.VHDL.Constants.Keyword.Std_logic_vector
                     + "("
                     + (BitCount - 1).ToString()
                     + " "
-                    + ProtoCore.VHDL.Keyword.Downto
+                    + ProtoCore.VHDL.Constants.Keyword.Downto
                     + " "
                     + "0"
                     + ")";
             }
 
             string signalDecl =
-                ProtoCore.VHDL.Keyword.Signal
+                ProtoCore.VHDL.Constants.Keyword.Signal
                 + " "
                 + SignalName
                 + " : "
@@ -639,7 +639,7 @@ namespace ProtoCore.VHDL.AST
             }
 
             StringBuilder sbSignalDecl = new StringBuilder();
-            sbSignalDecl.Append(ProtoCore.VHDL.Keyword.Signal);
+            sbSignalDecl.Append(ProtoCore.VHDL.Constants.Keyword.Signal);
             sbSignalDecl.Append(" ");
             sbSignalDecl.Append(SignalName);
             sbSignalDecl.Append(" : ");
@@ -703,9 +703,9 @@ namespace ProtoCore.VHDL.AST
             portmapDecl.Append(" : ");
             portmapDecl.Append(Component.Name);
             portmapDecl.Append(" ");
-            portmapDecl.Append(ProtoCore.VHDL.Keyword.Port);
+            portmapDecl.Append(ProtoCore.VHDL.Constants.Keyword.Port);
             portmapDecl.Append(" ");
-            portmapDecl.Append(ProtoCore.VHDL.Keyword.Map);
+            portmapDecl.Append(ProtoCore.VHDL.Constants.Keyword.Map);
 
             // Signal map
             StringBuilder portmapSignals = new StringBuilder();
@@ -757,7 +757,7 @@ namespace ProtoCore.VHDL.AST
             StringBuilder processStart = new StringBuilder();
             processStart.Append(ProcessName);
             processStart.Append(" : ");
-            processStart.Append(ProtoCore.VHDL.Keyword.Process);
+            processStart.Append(ProtoCore.VHDL.Constants.Keyword.Process);
 
             // Generate sensitivity list
             if (SensitivityList.Count > 0)
@@ -788,7 +788,7 @@ namespace ProtoCore.VHDL.AST
 
             // Generate body
             StringBuilder processBody = new StringBuilder();
-            processBody.Append(ProtoCore.VHDL.Keyword.Begin);
+            processBody.Append(ProtoCore.VHDL.Constants.Keyword.Begin);
             processBody.Append("\n");
 
             if (Body.Count > 0)
@@ -803,9 +803,9 @@ namespace ProtoCore.VHDL.AST
 
             StringBuilder processEnd = new StringBuilder();
             processEnd.Append("\n");
-            processEnd.Append(ProtoCore.VHDL.Keyword.End);
+            processEnd.Append(ProtoCore.VHDL.Constants.Keyword.End);
             processEnd.Append(" ");
-            processEnd.Append(ProtoCore.VHDL.Keyword.Process);
+            processEnd.Append(ProtoCore.VHDL.Constants.Keyword.Process);
             processEnd.Append(" ");
             processEnd.Append(ProcessName);
             processEnd.Append(";");
@@ -846,11 +846,11 @@ namespace ProtoCore.VHDL.AST
             sbFormat.Append(" ");
             if (IsSignalAssignment)
             {
-                sbFormat.Append(ProtoCore.VHDL.Constants.kSignalAssignSymbol);
+                sbFormat.Append(ProtoCore.VHDL.Constants.Naming.kSignalAssignSymbol);
             }
             else
             {
-                sbFormat.Append(ProtoCore.VHDL.Constants.kVariableAssignSymbol);
+                sbFormat.Append(ProtoCore.VHDL.Constants.Naming.kVariableAssignSymbol);
             }
             sbFormat.Append(" ");
             sbFormat.Append(RHS.ToString());
@@ -925,11 +925,11 @@ namespace ProtoCore.VHDL.AST
             Validity.Assert(sbIfExpr != null);
 
             // If expr
-            sbIfExpr.Append(ProtoCore.VHDL.Keyword.If);
+            sbIfExpr.Append(ProtoCore.VHDL.Constants.Keyword.If);
             sbIfExpr.Append(" ");
             sbIfExpr.Append(IfExpr.ToString());
             sbIfExpr.Append(" ");
-            sbIfExpr.Append(ProtoCore.VHDL.Keyword.Then);
+            sbIfExpr.Append(ProtoCore.VHDL.Constants.Keyword.Then);
             sbIfExpr.Append("\n");
 
             // If body
@@ -948,11 +948,11 @@ namespace ProtoCore.VHDL.AST
                 for (int i = 0; i < ElsifExprList.Count; ++i)
                 {
                     VHDLNode exprNode = ElsifExprList[i];
-                    sbElsifStmt.Append(ProtoCore.VHDL.Keyword.Elsif);
+                    sbElsifStmt.Append(ProtoCore.VHDL.Constants.Keyword.Elsif);
                     sbElsifStmt.Append(" ");
                     sbElsifStmt.Append(exprNode.ToString());
                     sbElsifStmt.Append(" ");
-                    sbElsifStmt.Append(ProtoCore.VHDL.Keyword.Then);
+                    sbElsifStmt.Append(ProtoCore.VHDL.Constants.Keyword.Then);
                     sbElsifStmt.Append("\n");
 
                     // Elsif body
@@ -970,7 +970,7 @@ namespace ProtoCore.VHDL.AST
             StringBuilder sbElseBody = new StringBuilder();
             if (ElseBody.Count > 0)
             {
-                sbElse.Append(ProtoCore.VHDL.Keyword.Else);
+                sbElse.Append(ProtoCore.VHDL.Constants.Keyword.Else);
                 sbElse.Append("\n\t");
 
                 // Else body
@@ -983,9 +983,9 @@ namespace ProtoCore.VHDL.AST
             }
 
             StringBuilder sbEndIf = new StringBuilder();
-            sbEndIf.Append(ProtoCore.VHDL.Keyword.End);
+            sbEndIf.Append(ProtoCore.VHDL.Constants.Keyword.End);
             sbEndIf.Append(" ");
-            sbEndIf.Append(ProtoCore.VHDL.Keyword.If);
+            sbEndIf.Append(ProtoCore.VHDL.Constants.Keyword.If);
             sbEndIf.Append(" ");
             sbEndIf.Append(Name);
             sbEndIf.Append(";");

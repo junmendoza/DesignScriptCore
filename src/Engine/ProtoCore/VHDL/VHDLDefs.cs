@@ -1,5 +1,5 @@
 ﻿
-namespace ProtoCore.VHDL
+namespace ProtoCore.VHDL.Constants
 {
     // http://www.xilinx.com/itp/xilinx10/isehelp/ite_r_vhdl_reserved_words.htm
     public struct Keyword
@@ -126,11 +126,14 @@ namespace ProtoCore.VHDL
         public const string Xor	                = "xor";    // Logical operator for types bit and Boolean and for one-dimensional arrays of these types. Logical exclusive or.  
     }
 
-    public struct Constants
-    {
+    public struct Numeric 
+    {        
         public const int kInvalidIndex = -1;
         public const int SignalBitCount = 32;
+    }
 
+    public struct Naming
+    {
         public const string kSignalAssignSymbol = "<=";
         public const string kDefaultAssignSymbol = "=>";
         public const string kVariableAssignSymbol = ":=";

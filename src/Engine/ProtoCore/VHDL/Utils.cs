@@ -19,13 +19,15 @@ namespace ProtoCore.VHDL
         /// <returns></returns>
         public static int GetOptimalParallelComponentCount(int elements, int componentSize, int blockSize, int availableSize)
         {
-            return 3;
+            int parallelComponents = 1;
+            double d = Math.Ceiling((double)blockSize / (double)componentSize);
+            return parallelComponents;
         }
 
         public static string GeneratePortList(List<AST.PortEntryNode> portEntryList)
         {
             StringBuilder portList = new StringBuilder();
-            portList.Append(ProtoCore.VHDL.Keyword.Port);
+            portList.Append(ProtoCore.VHDL.Constants.Keyword.Port);
             portList.Append("(");
             portList.Append(" ");
 
@@ -46,11 +48,11 @@ namespace ProtoCore.VHDL
         public static void InitTables()
         {
             BinaryExprOperatorTable = new Dictionary<AST.BinaryExpressionNode.Operator, string>();
-            BinaryExprOperatorTable.Add(AST.BinaryExpressionNode.Operator.Or, ProtoCore.VHDL.Keyword.Or);
-            BinaryExprOperatorTable.Add(AST.BinaryExpressionNode.Operator.Nor, ProtoCore.VHDL.Keyword.Nor);
-            BinaryExprOperatorTable.Add(AST.BinaryExpressionNode.Operator.Xnor, ProtoCore.VHDL.Keyword.Xnor);
-            BinaryExprOperatorTable.Add(AST.BinaryExpressionNode.Operator.And, ProtoCore.VHDL.Keyword.And);
-            BinaryExprOperatorTable.Add(AST.BinaryExpressionNode.Operator.Not, ProtoCore.VHDL.Keyword.Nor);
+            BinaryExprOperatorTable.Add(AST.BinaryExpressionNode.Operator.Or, ProtoCore.VHDL.Constants.Keyword.Or);
+            BinaryExprOperatorTable.Add(AST.BinaryExpressionNode.Operator.Nor, ProtoCore.VHDL.Constants.Keyword.Nor);
+            BinaryExprOperatorTable.Add(AST.BinaryExpressionNode.Operator.Xnor, ProtoCore.VHDL.Constants.Keyword.Xnor);
+            BinaryExprOperatorTable.Add(AST.BinaryExpressionNode.Operator.And, ProtoCore.VHDL.Constants.Keyword.And);
+            BinaryExprOperatorTable.Add(AST.BinaryExpressionNode.Operator.Not, ProtoCore.VHDL.Constants.Keyword.Nor);
             BinaryExprOperatorTable.Add(AST.BinaryExpressionNode.Operator.Eq, "=");
             BinaryExprOperatorTable.Add(AST.BinaryExpressionNode.Operator.Add, "+");
             BinaryExprOperatorTable.Add(AST.BinaryExpressionNode.Operator.Sub, "-");
@@ -70,7 +72,7 @@ namespace ProtoCore.VHDL
 
         public static string GenerateProcessName(string description, int processCount)
         {
-            return ProtoCore.VHDL.Constants.PrefixProcess + "_" + processCount.ToString() + "_" + description;
+            return ProtoCore.VHDL.Constants.Naming.PrefixProcess + "_" + processCount.ToString() + "_" + description;
         }
 
         public static string GetBinaryOperatorString(VHDL.AST.BinaryExpressionNode.Operator optr)
@@ -85,14 +87,14 @@ namespace ProtoCore.VHDL
         
         public static string GenerateArrayTypeName(int elements, int elementSize)
         {
-            return ProtoCore.VHDL.Constants.PrefixArrayType + "_" + elements.ToString() + "_" + elementSize.ToString();
+            return ProtoCore.VHDL.Constants.Naming.PrefixArrayType + "_" + elements.ToString() + "_" + elementSize.ToString();
         }
 
 
         public static string GenerateNameMultiplexerInputToParallelComponent(string targetComponentName, int elements)
         {
             // Mux31_ALU_In
-            return ProtoCore.VHDL.Constants.PrefixMultiplexer + "_" + elements.ToString() + "1" + "_" + ProtoCore.VHDL.Constants.PrefixComponentInput + "_" + targetComponentName;
+            return ProtoCore.VHDL.Constants.Naming.PrefixMultiplexer + "_" + elements.ToString() + "1" + "_" + ProtoCore.VHDL.Constants.Naming.PrefixComponentInput + "_" + targetComponentName;
         }
             
         /// <summary>
@@ -153,15 +155,15 @@ namespace ProtoCore.VHDL
         public static ProtoCore.VHDL.AST.IfNode GenerateResetSyncTemplate()
         {            
             // Reset sync ifstmt
-            ProtoCore.VHDL.AST.IfNode resetSyncIf = new ProtoCore.VHDL.AST.IfNode(ProtoCore.VHDL.Constants.ResetSync);
+            ProtoCore.VHDL.AST.IfNode resetSyncIf = new ProtoCore.VHDL.AST.IfNode(ProtoCore.VHDL.Constants.Naming.ResetSync);
             resetSyncIf.IfExpr = new ProtoCore.VHDL.AST.BinaryExpressionNode(
-                new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.ResetSignalName),
+                new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.Naming.ResetSignalName),
                 new ProtoCore.VHDL.AST.BitStringNode(1),
                 ProtoCore.VHDL.AST.BinaryExpressionNode.Operator.Eq
                 );
 
             resetSyncIf.ElsifExprList.Add(new ProtoCore.VHDL.AST.BinaryExpressionNode(
-                new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.ResetSignalName),
+                new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.Naming.ResetSignalName),
                 new ProtoCore.VHDL.AST.BitStringNode(0),
                 ProtoCore.VHDL.AST.BinaryExpressionNode.Operator.Eq
                 ));
@@ -173,14 +175,14 @@ namespace ProtoCore.VHDL
         {
             // rising_edge call
             List<ProtoCore.VHDL.AST.VHDLNode> argList = new List<ProtoCore.VHDL.AST.VHDLNode>();
-            argList.Add(new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.ClockSignalName));
+            argList.Add(new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.Naming.ClockSignalName));
             ProtoCore.VHDL.AST.FunctionCallNode clockedgeCall = new ProtoCore.VHDL.AST.FunctionCallNode(
-                ProtoCore.VHDL.Constants.RisingEdge,
+                ProtoCore.VHDL.Constants.Naming.RisingEdge,
                 argList
                 );
 
             // clock sync ifstmt
-            ProtoCore.VHDL.AST.IfNode clockIf = new ProtoCore.VHDL.AST.IfNode(ProtoCore.VHDL.Constants.ClockSync);
+            ProtoCore.VHDL.AST.IfNode clockIf = new ProtoCore.VHDL.AST.IfNode(ProtoCore.VHDL.Constants.Naming.ClockSync);
             clockIf.IfExpr = clockedgeCall;
 
             return clockIf;

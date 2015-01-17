@@ -67,7 +67,7 @@ namespace ProtoVHDL
                     {
                         List<int> dimList = new List<int>();
                         dimList.Add(symbol.size);
-                        arrayTypeName = ProtoCore.VHDL.Utils.GenerateArrayTypeName(dimList[0], ProtoCore.VHDL.Constants.SignalBitCount);
+                        arrayTypeName = ProtoCore.VHDL.Utils.GenerateArrayTypeName(dimList[0], ProtoCore.VHDL.Constants.Numeric.SignalBitCount);
                         if (!module.DefinedArrayTypes.ContainsKey(arrayTypeName))
                         {
                             // The array type is not yet defined in the module
@@ -114,7 +114,7 @@ namespace ProtoVHDL
             {
                 if (bnode.RightNode is IntNode)
                 {
-                    ProtoCore.VHDL.AST.VHDLNode rNode = new ProtoCore.VHDL.AST.HexStringNode((int)(bnode.RightNode as IntNode).Value, ProtoCore.VHDL.Constants.SignalBitCount);
+                    ProtoCore.VHDL.AST.VHDLNode rNode = new ProtoCore.VHDL.AST.HexStringNode((int)(bnode.RightNode as IntNode).Value, ProtoCore.VHDL.Constants.Numeric.SignalBitCount);
                     ProtoCore.VHDL.AST.AssignmentNode assignNode = new ProtoCore.VHDL.AST.AssignmentNode(
                         new ProtoCore.VHDL.AST.IdentifierNode(lhsName),
                         rNode
@@ -169,7 +169,7 @@ namespace ProtoVHDL
                 string indexIntoArray = lhsArrayName + "(" + elemnum++ + ")";
                 if (arrayElem is IntNode)
                 {
-                    ProtoCore.VHDL.AST.VHDLNode rNode = new ProtoCore.VHDL.AST.HexStringNode((int)(arrayElem as IntNode).Value, ProtoCore.VHDL.Constants.SignalBitCount);
+                    ProtoCore.VHDL.AST.VHDLNode rNode = new ProtoCore.VHDL.AST.HexStringNode((int)(arrayElem as IntNode).Value, ProtoCore.VHDL.Constants.Numeric.SignalBitCount);
                     ProtoCore.VHDL.AST.AssignmentNode assignNode = new ProtoCore.VHDL.AST.AssignmentNode(
                         new ProtoCore.VHDL.AST.IdentifierNode(indexIntoArray),
                         rNode
@@ -251,8 +251,8 @@ namespace ProtoVHDL
 
 
             // Port entries
-            ProtoCore.VHDL.AST.PortEntryNode reset = new ProtoCore.VHDL.AST.PortEntryNode(ProtoCore.VHDL.Constants.ResetSignalName, ProtoCore.VHDL.AST.PortEntryNode.Direction.In, 1);
-            ProtoCore.VHDL.AST.PortEntryNode sel_IterationIndex = new ProtoCore.VHDL.AST.PortEntryNode(ProtoCore.VHDL.Constants.SelectIndexSignalName, ProtoCore.VHDL.AST.PortEntryNode.Direction.In, selecIndexSignalSize);
+            ProtoCore.VHDL.AST.PortEntryNode reset = new ProtoCore.VHDL.AST.PortEntryNode(ProtoCore.VHDL.Constants.Naming.ResetSignalName, ProtoCore.VHDL.AST.PortEntryNode.Direction.In, 1);
+            ProtoCore.VHDL.AST.PortEntryNode sel_IterationIndex = new ProtoCore.VHDL.AST.PortEntryNode(ProtoCore.VHDL.Constants.Naming.SelectIndexSignalName, ProtoCore.VHDL.AST.PortEntryNode.Direction.In, selecIndexSignalSize);
 
             List<ProtoCore.VHDL.AST.PortEntryNode> listPortEntry = new List<ProtoCore.VHDL.AST.PortEntryNode>();
             listPortEntry.Add(reset);
@@ -262,8 +262,8 @@ namespace ProtoVHDL
 
             // Process sensitivity List 
             List<string> sensitivityList = new List<string>();
-            sensitivityList.Add(ProtoCore.VHDL.Constants.ResetSignalName);
-            sensitivityList.Add(ProtoCore.VHDL.Constants.SelectIndexSignalName);
+            sensitivityList.Add(ProtoCore.VHDL.Constants.Naming.ResetSignalName);
+            sensitivityList.Add(ProtoCore.VHDL.Constants.Naming.SelectIndexSignalName);
 
             const string operandPrefix = "op";
 
@@ -276,7 +276,7 @@ namespace ProtoVHDL
                     sensitivityList.Add(inSignalName);
                     ProtoCore.VHDL.AST.PortEntryNode opInput =
                         new ProtoCore.VHDL.AST.PortEntryNode(
-                            inSignalName, ProtoCore.VHDL.AST.PortEntryNode.Direction.In, ProtoCore.VHDL.Constants.SignalBitCount, true);
+                            inSignalName, ProtoCore.VHDL.AST.PortEntryNode.Direction.In, ProtoCore.VHDL.Constants.Numeric.SignalBitCount, true);
                     listPortEntry.Add(opInput);
                 }
             }
@@ -287,7 +287,7 @@ namespace ProtoVHDL
             {
                 string outSignalName = operandPrefix + i.ToString();
                 ProtoCore.VHDL.AST.PortEntryNode opInput =
-                    new ProtoCore.VHDL.AST.PortEntryNode(outSignalName, ProtoCore.VHDL.AST.PortEntryNode.Direction.Out, ProtoCore.VHDL.Constants.SignalBitCount);
+                    new ProtoCore.VHDL.AST.PortEntryNode(outSignalName, ProtoCore.VHDL.AST.PortEntryNode.Direction.Out, ProtoCore.VHDL.Constants.Numeric.SignalBitCount);
                 listPortEntry.Add(opInput);
             }
 
@@ -340,7 +340,7 @@ namespace ProtoVHDL
                 {
                     // Setup if
                     ifExpr = new ProtoCore.VHDL.AST.BinaryExpressionNode(
-                        new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.SelectIndexSignalName),
+                        new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.Naming.SelectIndexSignalName),
                         new ProtoCore.VHDL.AST.HexStringNode(i - 1, selecIndexSignalSize),
                          ProtoCore.VHDL.AST.BinaryExpressionNode.Operator.Eq);
                     execBodyIf.IfExpr = ifExpr;
@@ -351,7 +351,7 @@ namespace ProtoVHDL
                 {
                     // Setup elseif
                     ifExpr = new ProtoCore.VHDL.AST.BinaryExpressionNode(
-                        new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.SelectIndexSignalName),
+                        new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.Naming.SelectIndexSignalName),
                         new ProtoCore.VHDL.AST.HexStringNode(i - 1, selecIndexSignalSize),
                          ProtoCore.VHDL.AST.BinaryExpressionNode.Operator.Eq);
                     execBodyIf.ElsifExprList.Add(ifExpr);
@@ -420,14 +420,14 @@ namespace ProtoVHDL
             const int selecIndexSignalSize = 8;
             string funcName = ProtoCore.VHDL.Utils.GetComponentMappedFunctionCallName(funcCallNode.Function.Name);
 
-            string strParallelExecComplete = ProtoCore.VHDL.Constants.SignalNameParallelExecutionComplete + "_" + funcName;
+            string strParallelExecComplete = ProtoCore.VHDL.Constants.Naming.SignalNameParallelExecutionComplete + "_" + funcName;
             ProtoCore.VHDL.AST.SignalDeclarationNode signalParallelExecDoneFlag =
                 new ProtoCore.VHDL.AST.SignalDeclarationNode(strParallelExecComplete, null, null, 1);
             module.SignalDeclarationList.Add(signalParallelExecDoneFlag);
 
 
             ProtoCore.VHDL.AST.SignalDeclarationNode signalSelectIndex =
-                new ProtoCore.VHDL.AST.SignalDeclarationNode(ProtoCore.VHDL.Constants.SelectIndexSignalName, null, null, selecIndexSignalSize);
+                new ProtoCore.VHDL.AST.SignalDeclarationNode(ProtoCore.VHDL.Constants.Naming.SelectIndexSignalName, null, null, selecIndexSignalSize);
             module.SignalDeclarationList.Add(signalSelectIndex);
 
             // Generate parallel component inputs
@@ -456,9 +456,9 @@ namespace ProtoVHDL
             }
 
             VHDL_EmitParallelComponentMultiplexer(lhs, funcCallNode, callsite, componentInstanceCount, iterationCount, lastBatchCount, selecIndexSignalSize);
-            VHDL_CreateProcessParallelComponentWriteback(ProtoCore.VHDL.Constants.WriteBackControlUnit, lhs, componentInstanceCount, iterationCount, writeBackSensitivityList, selecIndexSignalSize, lastBatchCount);
+            VHDL_CreateProcessParallelComponentWriteback(ProtoCore.VHDL.Constants.Naming.WriteBackControlUnit, lhs, componentInstanceCount, iterationCount, writeBackSensitivityList, selecIndexSignalSize, lastBatchCount);
 
-            VHDL_CreateProcessParallelComponentIterationControl(ProtoCore.VHDL.Constants.IterationControlUnit, strParallelExecComplete, iterationCount, selecIndexSignalSize);
+            VHDL_CreateProcessParallelComponentIterationControl(ProtoCore.VHDL.Constants.Naming.IterationControlUnit, strParallelExecComplete, iterationCount, selecIndexSignalSize);
             VHDL_EmitParallelComponentInstance(lhs, funcCallNode, componentInstanceCount, iterationCount, componentInputList, writeBackSensitivityList, elements);
 
 
@@ -542,8 +542,8 @@ namespace ProtoVHDL
                 core.VhdlCore.UpdateComponentInstanceCount(multiplexerName);
                 string instanceName = ProtoCore.VHDL.Utils.GeneratePortMapName(multiplexerName, core.VhdlCore.ComponentInstanceCountMap[multiplexerName]);
                 List<string> signalMap = new List<string>();
-                signalMap.Add(ProtoCore.VHDL.Constants.ResetSignalName);
-                signalMap.Add(ProtoCore.VHDL.Constants.SelectIndexSignalName);
+                signalMap.Add(ProtoCore.VHDL.Constants.Naming.ResetSignalName);
+                signalMap.Add(ProtoCore.VHDL.Constants.Naming.SelectIndexSignalName);
 
                 // Foreach function argument
                 foreach (AssociativeNode assocNode in funcCallNode.FormalArguments)
@@ -556,7 +556,7 @@ namespace ProtoVHDL
                         // Handle each function argument that needs to be multiplexed
                         for (int j = 0; j < iterations; ++j)
                         {
-                            string signalName = ProtoCore.VHDL.Keyword.Open;
+                            string signalName = ProtoCore.VHDL.Constants.Keyword.Open;
                             if (arrayIndex < maxElements)
                             {
                                 signalName = (assocNode as IdentifierNode).Name + "(" + arrayIndex.ToString() + ")";
@@ -605,7 +605,7 @@ namespace ProtoVHDL
                 core.VhdlCore.UpdateComponentInstanceCount(functionCallName);
                 string instanceName = ProtoCore.VHDL.Utils.GeneratePortMapName(functionCallName, core.VhdlCore.ComponentInstanceCountMap[functionCallName]);
                 List<string> signalMap = new List<string>();
-                signalMap.Add(ProtoCore.VHDL.Constants.ResetSignalName);
+                signalMap.Add(ProtoCore.VHDL.Constants.Naming.ResetSignalName);
                 for (int j = 0; j < funcCallNode.FormalArguments.Count; ++j)
                 {
                     signalMap.Add(componentInputList[outputIndex++]);
@@ -653,7 +653,7 @@ namespace ProtoVHDL
             //========================================
             string instanceName = ProtoCore.VHDL.Utils.GeneratePortMapName(functionCallName, core.VhdlCore.ComponentInstanceCountMap[functionCallName]);
             List<string> signalMap = new List<string>();
-            signalMap.Add(ProtoCore.VHDL.Constants.ResetSignalName);
+            signalMap.Add(ProtoCore.VHDL.Constants.Naming.ResetSignalName);
             foreach (AssociativeNode assocNode in funcCallNode.FormalArguments)
             {
                 if (assocNode is IdentifierNode)
@@ -663,7 +663,7 @@ namespace ProtoVHDL
                 else if (assocNode is IntNode)
                 {
                     int intVal = (int)(assocNode as IntNode).Value;
-                    ProtoCore.VHDL.AST.HexStringNode hexStringNode = new ProtoCore.VHDL.AST.HexStringNode(intVal, ProtoCore.VHDL.Constants.SignalBitCount);
+                    ProtoCore.VHDL.AST.HexStringNode hexStringNode = new ProtoCore.VHDL.AST.HexStringNode(intVal, ProtoCore.VHDL.Constants.Numeric.SignalBitCount);
                     signalMap.Add(hexStringNode.ToString());
                 }
                 else
@@ -744,8 +744,8 @@ namespace ProtoVHDL
 
             // Process sensitivity List is the rhs
             List<string> sensitivityList = new List<string>();
-            sensitivityList.Add(ProtoCore.VHDL.Constants.ResetSignalName);
-            sensitivityList.Add(ProtoCore.VHDL.Constants.SelectIndexSignalName);
+            sensitivityList.Add(ProtoCore.VHDL.Constants.Naming.ResetSignalName);
+            sensitivityList.Add(ProtoCore.VHDL.Constants.Naming.SelectIndexSignalName);
 
             // Process variable declaration
             List<ProtoCore.VHDL.AST.VariableDeclarationNode> variableDeclList = new List<ProtoCore.VHDL.AST.VariableDeclarationNode>();
@@ -775,7 +775,7 @@ namespace ProtoVHDL
             // end if;
             ProtoCore.VHDL.AST.IfNode selIndexIf = new ProtoCore.VHDL.AST.IfNode();
             ProtoCore.VHDL.AST.BinaryExpressionNode ifExpr = new ProtoCore.VHDL.AST.BinaryExpressionNode(
-                new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.SelectIndexSignalName),
+                new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.Naming.SelectIndexSignalName),
                 new ProtoCore.VHDL.AST.HexStringNode(iterationCount, selecIndexSignalSize),
                     ProtoCore.VHDL.AST.BinaryExpressionNode.Operator.Eq);
             selIndexIf.IfExpr = ifExpr;
@@ -862,7 +862,7 @@ namespace ProtoVHDL
             // Process variable declaration
             const string strIterationCount = "iterationCount";
             List<ProtoCore.VHDL.AST.VariableDeclarationNode> variableDeclList = new List<ProtoCore.VHDL.AST.VariableDeclarationNode>();
-            variableDeclList.Add(new ProtoCore.VHDL.AST.VariableDeclarationNode(strIterationCount, ProtoCore.VHDL.Keyword.Integer));
+            variableDeclList.Add(new ProtoCore.VHDL.AST.VariableDeclarationNode(strIterationCount, ProtoCore.VHDL.Constants.Keyword.Integer));
 
             // Close current process
             // Set execution body to the current process
@@ -872,7 +872,7 @@ namespace ProtoVHDL
             // Reset sync ifstmt
             ProtoCore.VHDL.AST.IfNode resetSyncIf = ProtoCore.VHDL.Utils.GenerateResetSyncTemplate();
             resetSyncIf.IfBody.Add(new ProtoCore.VHDL.AST.AssignmentNode(
-                new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.SelectIndexSignalName),
+                new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.Naming.SelectIndexSignalName),
                 new ProtoCore.VHDL.AST.HexStringNode(0, 8)));
 
             // Reset sync elsif body (reset = 0)
@@ -884,15 +884,15 @@ namespace ProtoVHDL
 
             // iterationCount := to_integer(signed(select_index));
             List<ProtoCore.VHDL.AST.VHDLNode> argList = new List<ProtoCore.VHDL.AST.VHDLNode>();
-            ProtoCore.VHDL.AST.IdentifierNode argNode = new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.SelectIndexSignalName);
+            ProtoCore.VHDL.AST.IdentifierNode argNode = new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.Naming.SelectIndexSignalName);
             argList.Add(argNode);
             ProtoCore.VHDL.AST.FunctionCallNode signedFunctionCall = 
-                new ProtoCore.VHDL.AST.FunctionCallNode(ProtoCore.VHDL.Keyword.Signed, argList);
+                new ProtoCore.VHDL.AST.FunctionCallNode(ProtoCore.VHDL.Constants.Keyword.Signed, argList);
 
             argList = new List<ProtoCore.VHDL.AST.VHDLNode>();
             argList.Add(signedFunctionCall);
             ProtoCore.VHDL.AST.FunctionCallNode toIntFunctionCall = new ProtoCore.VHDL.AST.FunctionCallNode(
-                ProtoCore.VHDL.FunctionCallName.ToInteger, argList);
+                ProtoCore.VHDL.Constants.FunctionCallName.ToInteger, argList);
 
             ProtoCore.VHDL.AST.AssignmentNode incrementCounterStmt1 = new ProtoCore.VHDL.AST.AssignmentNode(
                 new ProtoCore.VHDL.AST.IdentifierNode(strIterationCount),
@@ -911,14 +911,14 @@ namespace ProtoVHDL
             argList.Add(new ProtoCore.VHDL.AST.IdentifierNode(strIterationCount));
             argList.Add(new ProtoCore.VHDL.AST.IdentifierNode("8"));
             ProtoCore.VHDL.AST.FunctionCallNode toSignedFunctionCall =
-                new ProtoCore.VHDL.AST.FunctionCallNode(ProtoCore.VHDL.FunctionCallName.ToSigned, argList);
+                new ProtoCore.VHDL.AST.FunctionCallNode(ProtoCore.VHDL.Constants.FunctionCallName.ToSigned, argList);
 
             argList = new List<ProtoCore.VHDL.AST.VHDLNode>();
             argList.Add(toSignedFunctionCall);
             ProtoCore.VHDL.AST.FunctionCallNode stdLogicVectorCall =
-                new ProtoCore.VHDL.AST.FunctionCallNode(ProtoCore.VHDL.Keyword.Std_logic_vector, argList);
+                new ProtoCore.VHDL.AST.FunctionCallNode(ProtoCore.VHDL.Constants.Keyword.Std_logic_vector, argList);
             ProtoCore.VHDL.AST.AssignmentNode incrementCounterStmt3 = new ProtoCore.VHDL.AST.AssignmentNode(
-                new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.SelectIndexSignalName),
+                new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.Naming.SelectIndexSignalName),
                 stdLogicVectorCall);
 
             module.AppendExecutionStatement(incrementCounterStmt1);
@@ -973,7 +973,7 @@ namespace ProtoVHDL
                 {
                     // Setup if
                     ifExpr = new ProtoCore.VHDL.AST.BinaryExpressionNode(
-                        new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.SelectIndexSignalName),
+                        new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.Naming.SelectIndexSignalName),
                         new ProtoCore.VHDL.AST.HexStringNode(i, selecIndexSignalSize),
                          ProtoCore.VHDL.AST.BinaryExpressionNode.Operator.Eq);
                     execBodyIf.IfExpr = ifExpr;
@@ -984,7 +984,7 @@ namespace ProtoVHDL
                 {
                     // Setup elseif
                     ifExpr = new ProtoCore.VHDL.AST.BinaryExpressionNode(
-                        new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.SelectIndexSignalName),
+                        new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.Naming.SelectIndexSignalName),
                         new ProtoCore.VHDL.AST.HexStringNode(i, selecIndexSignalSize),
                          ProtoCore.VHDL.AST.BinaryExpressionNode.Operator.Eq);
                     execBodyIf.ElsifExprList.Add(ifExpr);
@@ -1167,19 +1167,19 @@ namespace ProtoVHDL
 
 
             // Auto generated signals
-            ProtoCore.VHDL.AST.SignalDeclarationNode execStartFlagSignal = 
-                new ProtoCore.VHDL.AST.SignalDeclarationNode(ProtoCore.VHDL.Constants.ExecutionStartFlagName, null, null, 1);
+            ProtoCore.VHDL.AST.SignalDeclarationNode execStartFlagSignal =
+                new ProtoCore.VHDL.AST.SignalDeclarationNode(ProtoCore.VHDL.Constants.Naming.ExecutionStartFlagName, null, null, 1);
             topModule.SignalDeclarationList.Add(execStartFlagSignal);
 
             // execution_started <= '0'
             ProtoCore.VHDL.AST.AssignmentNode execStartFlagSet0 = new ProtoCore.VHDL.AST.AssignmentNode(
-                new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.ExecutionStartFlagName),
+                new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.Naming.ExecutionStartFlagName),
                 new ProtoCore.VHDL.AST.BitStringNode(0)
                 );
             
             // execution_started <= '1'
             ProtoCore.VHDL.AST.AssignmentNode execStartFlagSet1 = new ProtoCore.VHDL.AST.AssignmentNode(
-                new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.ExecutionStartFlagName),
+                new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.Naming.ExecutionStartFlagName),
                 new ProtoCore.VHDL.AST.BitStringNode(1)
                 );
 
@@ -1192,7 +1192,7 @@ namespace ProtoVHDL
             //  end if; 
             ProtoCore.VHDL.AST.IfNode executionBodyIf = new ProtoCore.VHDL.AST.IfNode();
             executionBodyIf.IfExpr = new ProtoCore.VHDL.AST.BinaryExpressionNode(
-                new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.ExecutionStartFlagName),
+                new ProtoCore.VHDL.AST.IdentifierNode(ProtoCore.VHDL.Constants.Naming.ExecutionStartFlagName),
                 new ProtoCore.VHDL.AST.BitStringNode(0),
                 ProtoCore.VHDL.AST.BinaryExpressionNode.Operator.Eq
                 );
@@ -1226,7 +1226,7 @@ namespace ProtoVHDL
 
             // Sensitivity
             List<string> sensitivityList = new List<string>();
-            sensitivityList.Add(ProtoCore.VHDL.Constants.ClockSignalName);
+            sensitivityList.Add(ProtoCore.VHDL.Constants.Naming.ClockSignalName);
 
             // Entry Process
             ProtoCore.VHDL.AST.ProcessNode entryProcess = new ProtoCore.VHDL.AST.ProcessNode(
