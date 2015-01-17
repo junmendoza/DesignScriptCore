@@ -18,6 +18,7 @@ namespace ProtoCore.VHDL
             ArrayDataSize = 1;
             CurrentDataSize = 1;
             GenerateBuiltInComponents();
+            AvailableBRAMSize = ProtoCore.VHDL.Constants.FPGATarget.MaxBRAMSize;
         }
 
         private void GenerateBuiltInComponents()
@@ -160,6 +161,7 @@ namespace ProtoCore.VHDL
         public string ModuleName { get; set; }
         public int ArrayDataSize { get; set; }
         public int CurrentDataSize { get; set; }
+        public int AvailableBRAMSize { get; set; }
         
         /// <summary>
         /// Tracks the number of times a component is instantiated

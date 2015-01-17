@@ -19,8 +19,14 @@ namespace ProtoCore.VHDL
         /// <returns></returns>
         public static int GetOptimalParallelComponentCount(int elements, int componentSize, int blockSize, int availableSize)
         {
-            int parallelComponents = 1;
-            double d = Math.Ceiling((double)blockSize / (double)componentSize);
+            int parallelComponents = blockSize / componentSize;
+
+            // If there are resources available, the optimal component count is equal to the number of elements
+            // This will allow the component call to complete in 1 cycle
+            if (parallelComponents > elements)
+            {
+                parallelComponents = elements;
+            }
             return parallelComponents;
         }
 

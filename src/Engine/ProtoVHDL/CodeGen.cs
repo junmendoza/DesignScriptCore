@@ -401,7 +401,9 @@ namespace ProtoVHDL
 
             // The total number of instances of the component to call
             // This number is determined by heuristics given hardware data and program data
-            int componentInstanceCount = ProtoCore.VHDL.Utils.GetOptimalParallelComponentCount(elements, 0, 0, 0);
+            int componentSize = 1;
+            int componentInstanceCount = ProtoCore.VHDL.Utils.GetOptimalParallelComponentCount(
+                elements, componentSize, ProtoCore.VHDL.Constants.FPGATarget.MaxBRAMBlockSize, core.VhdlCore.AvailableBRAMSize);
 
 
             // Elements processed on last iteration

@@ -132,6 +132,12 @@ namespace ProtoCore.VHDL.Constants
         public const int SignalBitCount = 32;
     }
 
+    public struct FPGATarget
+    {
+        public const int MaxBRAMSize = 10000;       // Maximum Block RAM available for allocation
+        public const int MaxBRAMBlockSize = 3;    // The maximum number of block memory allowed for allocating constructs
+    }
+
     public struct Naming
     {
         public const string kSignalAssignSymbol = "<=";
