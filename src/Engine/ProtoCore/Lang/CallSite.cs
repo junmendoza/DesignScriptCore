@@ -561,6 +561,9 @@ namespace ProtoCore
                     resolvesFeps = new List<FunctionEndPoint>() { fep };
                     replicationInstructions = replicationControl.Instructions;
 
+                    // No replication 
+                    ReplicationType = ReplicationCallType.None;
+
                     return;
                 }
             }
