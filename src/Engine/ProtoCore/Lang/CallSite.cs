@@ -25,7 +25,7 @@ namespace ProtoCore
         {
             Zipped,     
             Cartesian,
-            None,       // Normal function call (non-replicating)
+            Normal,     // Normal function call (non-replicating)
             UnTyped     // Unknown replication
         }
 
@@ -39,13 +39,20 @@ namespace ProtoCore
         /// <returns></returns>
         ReplicationCallType GetReplicationCallType(List<ReplicationInstruction> repInstrList)
         {
-            // TODO: this needs the proper adapter
-            // Currently, it just checks for the zipped flag of the first instr
+            // TODO: This function needs futher enhancement on analyzing replication instructions
+
+            // No replication instructions means no replication occured
+            if (repInstrList.Count == 0)
+            {
+                return ReplicationCallType.Normal;
+            }
+
+            // Check replication type
             if (repInstrList[0].Zipped)
             {
                 return ReplicationCallType.Zipped;
             }
-            return ReplicationCallType.None;
+            return ReplicationCallType.UnTyped;
         }
 
         /// <summary>
@@ -562,7 +569,7 @@ namespace ProtoCore
                     replicationInstructions = replicationControl.Instructions;
 
                     // No replication 
-                    ReplicationType = ReplicationCallType.None;
+                    ReplicationType = GetReplicationCallType(replicationInstructions);
 
                     return;
                 }
@@ -649,6 +656,9 @@ namespace ProtoCore
 
                     resolvesFeps = new List<FunctionEndPoint>() { compliantTarget };
                     replicationInstructions = replicationControl.Instructions;
+
+                    ReplicationType = GetReplicationCallType(replicationInstructions);
+
                     return;
                 }
             }
@@ -696,6 +706,7 @@ namespace ProtoCore
 
                             resolvesFeps = new List<FunctionEndPoint>() { compliantTarget };
                             replicationInstructions = rc.Instructions;
+                            ReplicationType = GetReplicationCallType(replicationInstructions);
                             return;
                         }
                     }
@@ -748,6 +759,7 @@ namespace ProtoCore
                             core.DSExecutable.EventSink.PrintMessage(log.ToString());
                         resolvesFeps = new List<FunctionEndPoint>() { compliantTarget };
                         replicationInstructions = rc.Instructions;
+                        ReplicationType = GetReplicationCallType(replicationInstructions);
                         return;
                     }
                 }

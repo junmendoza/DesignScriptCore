@@ -479,7 +479,7 @@ namespace ProtoVHDL
             Validity.Assert(core.CallsiteCache.ContainsKey(funcCallNode.CallSiteIdentifier));
 
             callsite = core.CallsiteCache[funcCallNode.CallSiteIdentifier];
-            if (callsite.ReplicationType == CallSite.ReplicationCallType.None)
+            if (callsite.ReplicationType == CallSite.ReplicationCallType.Normal)
             {
                 VHDL_EmitComponentInstance(lhs, funcCallNode);
             }
