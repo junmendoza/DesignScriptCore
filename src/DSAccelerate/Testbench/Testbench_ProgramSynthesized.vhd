@@ -50,9 +50,6 @@ ARCHITECTURE behavior OF Testbench_ProgramSynthesized IS
    --Inputs
    signal clock : std_logic := '0';
    signal reset : std_logic := '1';
-
-   -- Clock period definitions
-   constant clock_period : time := 10 ns;
  
 BEGIN
  
@@ -73,7 +70,7 @@ BEGIN
 		reset <= '0';
 		wait for 5 ns;
 		
-		for a in 1 to 10 loop
+		for a in 1 to 100 loop
 			clock <= not clock;
 			wait for 5 ns;
 		end loop;
