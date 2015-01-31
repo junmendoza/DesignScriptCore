@@ -94,6 +94,7 @@ begin
 			lo_bits := 0;
 			hi_bits := 7;
 			start_send_byte <= '0';
+			transmit_done <= '0';
 		elsif reset = '0' then 
 			if transmit_done = '0' then
 				if baudRateEnable = '1' then

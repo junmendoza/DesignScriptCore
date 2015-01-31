@@ -75,6 +75,7 @@ begin
 				elsif transmitState = STATE_DONE then	
 					dataout <= '1'; -- stop bit
 					done <= '1';
+					bitnum := 0;
 					transmitState <= STATE_IDLE;
 				end if;
 			end if ClockSync;
