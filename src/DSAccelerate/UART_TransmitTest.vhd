@@ -63,6 +63,7 @@ architecture Behavioral of UART_TransmitTest is
 	signal baudRateEnable : STD_LOGIC := '0';
 	signal transmit_byte_done : STD_LOGIC := '0';
 	signal serial_data : STD_LOGIC_VECTOR(31 downto 0) := X"CCCCCCCC";
+	signal start_send_byte : STD_LOGIC := '0';
 	signal byte_to_send : STD_LOGIC_VECTOR(7 downto 0);
 	signal transmit_done : STD_LOGIC := '0';
 
@@ -79,7 +80,7 @@ begin
 	(
 		clock => clock,
 		reset => reset,
-		transmit => baudRateEnable,
+		transmit => start_send_byte,
 		send_data => byte_to_send,
 		dataout => RS232_dataout,
 		done => transmit_byte_done
@@ -92,16 +93,20 @@ begin
 		if reset = '1' then
 			lo_bits := 0;
 			hi_bits := 7;
+			start_send_byte <= '0';
 		elsif reset = '0' then 
 			if transmit_done = '0' then
 				if baudRateEnable = '1' then
 					if lo_bits = 32 then
 						transmit_done <= '1';
 					else
+						start_send_byte <= '1';
 						byte_to_send(7 downto 0) <= serial_data(hi_bits downto lo_bits);
 						lo_bits := lo_bits + 8;
 						hi_bits := hi_bits + 8;
 					end if;
+				elsif baudRateEnable = '0' then
+					start_send_byte <= '0';
 				end if;
 			end if;
 		end if;
