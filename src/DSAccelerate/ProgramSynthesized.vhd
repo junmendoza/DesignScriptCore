@@ -27,7 +27,6 @@ component UART_Transmitter is
 	Port( clock : in STD_LOGIC;
 			reset : in STD_LOGIC;
 			send_data : in STD_LOGIC;
-			--data : in STD_LOGIC_VECTOR(7 downto 0);
 			dataout : out STD_LOGIC
 		 );
 end component UART_Transmitter;

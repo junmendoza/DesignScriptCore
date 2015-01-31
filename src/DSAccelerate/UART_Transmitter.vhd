@@ -29,9 +29,10 @@ use UNISIM.VComponents.all;
 entity UART_Transmitter is
 	Port( clock : in STD_LOGIC;
 			reset : in STD_LOGIC;
-			send_data : in STD_LOGIC;
-			--data : in STD_LOGIC_VECTOR(7 downto 0);
-			dataout : out STD_LOGIC
+			transmit : in STD_LOGIC;
+			send_data : in STD_LOGIC_VECTOR(7 downto 0);
+			dataout : out STD_LOGIC;
+			done : out STD_LOGIC 
 		 );
 end UART_Transmitter;
 
@@ -44,9 +45,7 @@ architecture Behavioral of UART_Transmitter is
 				STATE_DONE
 			 );	
 			 
-	signal sent : STD_LOGIC;
 	signal transmitState : TRANSMIT_STATE;
-	signal data : std_logic_vector(7 downto 0) := "11001100";
 	
 begin
 	process(clock, reset)
@@ -56,28 +55,26 @@ begin
 		ResetSync : if reset = '1' then
 			transmitState <= STATE_IDLE;
 			bitnum := 0;
-			sent <= '0';
+			done <= '0';
 		elsif reset = '0' then
 			ClockSync : if rising_edge(clock) then
-				if send_data = '1' then
-					if sent = '0' then
-						if transmitState = STATE_IDLE then
-							transmitState <= STATE_START;
-						elsif transmitState = STATE_START then
-							dataout <= '0'; --send start bit
-							transmitState <= STATE_TRANSMIT;
-						elsif transmitState = STATE_TRANSMIT then
-							if bitnum = 8 then
-								transmitState <= STATE_DONE;
-							else
-								dataout <= data(bitnum); -- send data
-								bitnum := bitnum + 1;
-							end if;
-						elsif transmitState = STATE_DONE then	
-							dataout <= '1'; -- stop bit
-							sent <= '1';
+				if transmit = '1' then
+					if transmitState = STATE_IDLE then
+						transmitState <= STATE_START;
+					elsif transmitState = STATE_START then
+						dataout <= '0'; --send start bit
+						transmitState <= STATE_TRANSMIT;
+					elsif transmitState = STATE_TRANSMIT then
+						if bitnum = 8 then
+							transmitState <= STATE_DONE;
+						else
+							dataout <= send_data(bitnum); -- send data
+							bitnum := bitnum + 1;
 						end if;
-					end if;
+					elsif transmitState = STATE_DONE then	
+						dataout <= '1'; -- stop bit
+						done <= '1';
+				end if;
 				end if;
 			end if ClockSync;
 		end if ResetSync;
