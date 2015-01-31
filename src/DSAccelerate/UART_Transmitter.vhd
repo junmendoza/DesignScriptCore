@@ -58,23 +58,24 @@ begin
 			done <= '0';
 		elsif reset = '0' then
 			ClockSync : if rising_edge(clock) then
-				if transmit = '1' then
-					if transmitState = STATE_IDLE then
+				if transmitState = STATE_IDLE then
+					if transmit = '1' then
 						transmitState <= STATE_START;
-					elsif transmitState = STATE_START then
-						dataout <= '0'; --send start bit
-						transmitState <= STATE_TRANSMIT;
-					elsif transmitState = STATE_TRANSMIT then
-						if bitnum = 8 then
-							transmitState <= STATE_DONE;
-						else
-							dataout <= send_data(bitnum); -- send data
-							bitnum := bitnum + 1;
-						end if;
-					elsif transmitState = STATE_DONE then	
-						dataout <= '1'; -- stop bit
-						done <= '1';
-				end if;
+					end if;
+				elsif transmitState = STATE_START then
+					dataout <= '0'; --send start bit
+					transmitState <= STATE_TRANSMIT;
+				elsif transmitState = STATE_TRANSMIT then
+					if bitnum = 8 then
+						transmitState <= STATE_DONE;
+					else
+						dataout <= send_data(bitnum); -- send data
+						bitnum := bitnum + 1;
+					end if;
+				elsif transmitState = STATE_DONE then	
+					dataout <= '1'; -- stop bit
+					done <= '1';
+					transmitState <= STATE_IDLE;
 				end if;
 			end if ClockSync;
 		end if ResetSync;

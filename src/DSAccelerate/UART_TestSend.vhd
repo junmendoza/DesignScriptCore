@@ -80,7 +80,7 @@ BEGIN
 		reset <= '0';
 		wait for 5 ns;
 		
-		for a in 1 to 100 loop
+		for a in 1 to 100000 loop
 			clock <= not clock;
 			wait for 5 ns;
 		end loop;

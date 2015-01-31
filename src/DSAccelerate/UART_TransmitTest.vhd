@@ -63,7 +63,7 @@ architecture Behavioral of UART_TransmitTest is
 	signal baudRateEnable : STD_LOGIC := '0';
 	signal transmit_byte_done : STD_LOGIC := '0';
 	signal serial_data : STD_LOGIC_VECTOR(31 downto 0) := X"CCCCCCCC";
-	signal send_byte : STD_LOGIC_VECTOR(7 downto 0);
+	signal byte_to_send : STD_LOGIC_VECTOR(7 downto 0);
 	signal transmit_done : STD_LOGIC := '0';
 
 begin
@@ -80,19 +80,12 @@ begin
 		clock => clock,
 		reset => reset,
 		transmit => baudRateEnable,
-		send_data => send_byte,
+		send_data => byte_to_send,
 		dataout => RS232_dataout,
 		done => transmit_byte_done
 	);
 
-	tx_send_byte : process(clock)
-	begin
-		if reset = '1' then
-		elsif reset = '0' then 
-		end if;
-	end process tx_send_byte;
-	
-	tx_byte_sent : process(transmit_byte_done)
+	tx_send_byte : process(baudRateEnable)
 		variable lo_bits : integer;
 		variable hi_bits : integer;
 	begin
@@ -100,18 +93,21 @@ begin
 			lo_bits := 0;
 			hi_bits := 7;
 		elsif reset = '0' then 
-			if baudRateEnable = '1' then
-				send_byte(7 downto 0) <= serial_data(hi_bits downto lo_bits);
-				lo_bits := lo_bits + 8;
-				hi_bits := hi_bits + 8;
-				if lo_bits = 32 then
-					transmit_done <= '1';
+			if transmit_done = '0' then
+				if baudRateEnable = '1' then
+					if lo_bits = 32 then
+						transmit_done <= '1';
+					else
+						byte_to_send(7 downto 0) <= serial_data(hi_bits downto lo_bits);
+						lo_bits := lo_bits + 8;
+						hi_bits := hi_bits + 8;
+					end if;
 				end if;
 			end if;
 		end if;
-	end process tx_byte_sent;
- 
-	tx_complete : process(clock)
+	end process tx_send_byte;
+	
+	tx_complete : process(reset, transmit_done)
 	begin
 		if reset = '1' then
 			LED(0) <= '0';
