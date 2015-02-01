@@ -42,7 +42,7 @@ architecture Behavioral of BaudRateGenerator is
 begin
 	process(clock, reset)
 		variable clock_ticks : integer;
-		variable baud_rate : integer := 434;
+		variable baud_rate : integer := 5208;
 	begin
 		ResetSync: if reset = '1' then
 			clock_ticks := 0;

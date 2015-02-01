@@ -27,9 +27,11 @@ use UNISIM.VComponents.all;
 
 
 entity UART_Transmitter is
-	Port( clock : in STD_LOGIC;
+	Port( 
+			clock : in STD_LOGIC;
 			reset : in STD_LOGIC;
 			transmit : in STD_LOGIC;
+			baudRateEnable : in STD_LOGIC;
 			send_data : in STD_LOGIC_VECTOR(7 downto 0);
 			dataout : out STD_LOGIC;
 			done : out STD_LOGIC 
@@ -58,26 +60,27 @@ begin
 			done <= '0';
 		elsif reset = '0' then
 			ClockSync : if rising_edge(clock) then
-				if transmitState = STATE_IDLE then
-					if transmit = '1' then
-						transmitState <= STATE_START;
-					end if;
-				elsif transmitState = STATE_START then
-					dataout <= '0'; --send start bit
-					transmitState <= STATE_TRANSMIT;
-				elsif transmitState = STATE_TRANSMIT then
-					if bitnum = 8 then
-						transmitState <= STATE_DONE;
-					else
-						dataout <= send_data(bitnum); -- send data
-						bitnum := bitnum + 1;
-					end if;
-				elsif transmitState = STATE_DONE then	
-					dataout <= '1'; -- stop bit
-					done <= '1';
-					bitnum := 0;
-					transmitState <= STATE_IDLE;
-				end if;
+				done <= '0';
+				ThereIsDataToTransmit : if transmit = '1' then
+					BaudRatePulse : if baudRateEnable = '1' then
+						sm : if transmitState = STATE_IDLE then
+							transmitState <= STATE_TRANSMIT;
+							dataout <= '0'; -- send start bit
+						elsif transmitState = STATE_TRANSMIT then
+							dataout <= send_data(bitnum); -- send data
+							if bitnum = 7 then
+								transmitState <= STATE_DONE;
+							else
+								bitnum := bitnum + 1;
+							end if;
+						elsif transmitState = STATE_DONE then	
+							dataout <= '1'; -- stop bit
+							done <= '1';
+							bitnum := 0;
+							transmitState <= STATE_IDLE;
+						end if sm;
+					end if BaudRatePulse;
+				end if ThereIsDataToTransmit;
 			end if ClockSync;
 		end if ResetSync;
 	end process;
