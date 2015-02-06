@@ -63,7 +63,7 @@ architecture Behavioral of UART_TransmitTest is
 
 	signal baudRateEnable : STD_LOGIC := '0';
 	signal transmit_byte_done : STD_LOGIC := '0';
-	signal serial_data : STD_LOGIC_VECTOR(31 downto 0) := X"41414141";
+	signal serial_data : STD_LOGIC_VECTOR(31 downto 0) := X"41424344";
 	signal start_send_byte : STD_LOGIC := '0';
 	signal byte_to_send : STD_LOGIC_VECTOR(7 downto 0);
 	signal transmit_done : STD_LOGIC := '0';
@@ -98,21 +98,23 @@ begin
 			start_send_byte <= '0';
 			transmit_done <= '0';
 		elsif reset = '0' then 
-			IsEntireTransmitComplete : if transmit_done = '0' then
-				CanSendByte : if start_send_byte = '0' then
-					if lo_bits = 32 then
-						transmit_done <= '1';
-					else
-						start_send_byte <= '1';
-						byte_to_send(7 downto 0) <= serial_data(hi_bits downto lo_bits);
-						lo_bits := lo_bits + 8;
-						hi_bits := hi_bits + 8;
-					end if;
-				elsif transmit_byte_done = '1' then
-					-- Last byte sent, set state for sending next byte
-					start_send_byte <= '0';
-				end if CanSendByte;
-			end if IsEntireTransmitComplete;
+			ClockSync : if rising_edge(clock) then
+				IsEntireTransmitComplete : if transmit_done = '0' then
+					CanSendByte : if start_send_byte = '0' then
+						if lo_bits = 32 then
+							transmit_done <= '1';
+						else
+							start_send_byte <= '1';
+							byte_to_send(7 downto 0) <= serial_data(hi_bits downto lo_bits);
+							lo_bits := lo_bits + 8;
+							hi_bits := hi_bits + 8;
+						end if;
+					elsif transmit_byte_done = '1' then
+						-- Last byte sent, set state for sending next byte
+						start_send_byte <= '0';
+					end if CanSendByte;
+				end if IsEntireTransmitComplete;
+			end if ClockSync;
 		end if ResetSync;
 	end process tx_Queue_Bytes;
 	
