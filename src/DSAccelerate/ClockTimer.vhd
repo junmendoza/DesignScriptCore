@@ -43,8 +43,7 @@ architecture Behavioral of ClockTimer is
 	-- 1ms in clock cycles
 	-- 50mhz / 1000 
 	constant ms_50mhz_clock_cycles : integer := 50000;
-	
-	signal iMsElapsed : std_logic_vector(31 downto 0) := (others => '0');
+
 begin
 
 	timer : process(clock, reset)
