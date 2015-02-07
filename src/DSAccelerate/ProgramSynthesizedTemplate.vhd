@@ -22,6 +22,17 @@ architecture Behavioral of ProgramSynthesizedTemplate is
 	signal d : std_logic_vector(31 downto 0);
 
 	signal exec_done : std_logic := '0';
+	
+	signal ms_elapsed : std_logic_vector(31 downto 0) := (others => '0');
+
+	component ClockTimer is
+		Port( 
+				clock : in STD_LOGIC;
+				reset : in STD_LOGIC;
+				start : in STD_LOGIC;
+				ms_elapsed : out STD_LOGIC_VECTOR(31 downto 0)
+			 );
+	end component ClockTimer;
 
 	component ALU_Add is
 	port( 
@@ -44,6 +55,14 @@ architecture Behavioral of ProgramSynthesizedTemplate is
 
 begin
 
+	ms_timer : ClockTimer port map
+	(
+		clock => clock,
+		reset => reset,
+		start => execution_started,
+		ms_elapsed => ms_elapsed
+	);
+
 	call_1_ALU_Add : ALU_Add port map
 	(
 		reset => reset,
@@ -51,6 +70,7 @@ begin
 		op2 => b,
 		result => call_1_ALU_Add_return_val
 	);
+	
 	call_1_ALU_Mul : ALU_Mul port map
 	(
 		reset => reset,
@@ -63,6 +83,7 @@ begin
 	begin
 		ResetSync : if reset = '1' then
 			execution_started <= '0';
+			ms_elapsed <= X"00000000";
 			
 		elsif reset = '0' then
 			ClockSync : if rising_edge(clock) then
