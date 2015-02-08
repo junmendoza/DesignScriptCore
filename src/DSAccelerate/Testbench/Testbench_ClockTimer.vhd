@@ -44,6 +44,7 @@ ARCHITECTURE behavior OF Testbench_ClockTimer IS
 			clock : in STD_LOGIC;
 			reset : in STD_LOGIC;
 			start : in STD_LOGIC;
+			done : in STD_LOGIC;
 			clockticks_elapsed : out STD_LOGIC_VECTOR(63 downto 0);
 			ms_elapsed : out STD_LOGIC_VECTOR(31 downto 0)
         );
@@ -54,6 +55,7 @@ ARCHITECTURE behavior OF Testbench_ClockTimer IS
    signal clock : std_logic := '0';
    signal reset : std_logic := '1';
    signal start : std_logic := '0';
+   signal done : std_logic := '0';
 
  	--Outputs
    signal ms_elapsed : std_logic_vector(31 downto 0);
@@ -66,6 +68,7 @@ BEGIN
           clock => clock,
           reset => reset,
           start => start,
+          done => done,
           clockticks_elapsed => clockticks_elapsed,
           ms_elapsed => ms_elapsed
         );
@@ -82,6 +85,7 @@ BEGIN
 		-- Begin execution
 		reset <= '0';
 		start <= '1';
+		done <= '0';
 		wait for 5 ns;
 		
 		for a in 1 to 1000000 loop
@@ -89,7 +93,7 @@ BEGIN
 			wait for 1 ns;
 			
 			if a = 999995 then
-				start <= '0';
+				done <= '1';
 			end if;
 		end loop;
 		
