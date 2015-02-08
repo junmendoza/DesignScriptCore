@@ -24,12 +24,15 @@ architecture Behavioral of ProgramSynthesizedTemplate is
 	signal exec_done : std_logic := '0';
 	
 	signal ms_elapsed : std_logic_vector(31 downto 0) := (others => '0');
+	signal clockticks_elapsed : std_logic_vector(63 downto 0) := (others => '0');
 
 	component ClockTimer is
 		Port( 
 				clock : in STD_LOGIC;
 				reset : in STD_LOGIC;
 				start : in STD_LOGIC;
+				done : in STD_LOGIC;
+				clockticks_elapsed : out STD_LOGIC_VECTOR(63 downto 0);
 				ms_elapsed : out STD_LOGIC_VECTOR(31 downto 0)
 			 );
 	end component ClockTimer;
@@ -59,7 +62,9 @@ begin
 	(
 		clock => clock,
 		reset => reset,
-		start => execution_started,
+		start => not reset,
+		done => exec_done,
+		clockticks_elapsed => clockticks_elapsed,
 		ms_elapsed => ms_elapsed
 	);
 
