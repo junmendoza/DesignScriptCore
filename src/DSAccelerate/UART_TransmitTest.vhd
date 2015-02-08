@@ -41,25 +41,16 @@ end UART_TransmitTest;
 
 architecture Behavioral of UART_TransmitTest is
 
-	component BaudRateGenerator is
+	component UART is
 		Port( 
-				clock : in STD_LOGIC;
-				reset : in STD_LOGIC;
-				baudRateEnable : out STD_LOGIC
-			 );
-	end component BaudRateGenerator;
-
-	component UART_Transmitter is
-		Port( 
-				clock : in STD_LOGIC;
-				reset : in STD_LOGIC;
-				transmit : in STD_LOGIC;
-				baudRateEnable : in STD_LOGIC;
-				send_data : in STD_LOGIC_VECTOR(7 downto 0);
+				clock  : in  STD_LOGIC;
+				reset : in  STD_LOGIC;	
+				start_transmit : in STD_LOGIC;
+				send_byte : in STD_LOGIC_VECTOR(7 downto 0);
 				dataout : out STD_LOGIC;
-				done : out STD_LOGIC 
+				byte_sent : out STD_LOGIC 
 			 );
-	end component UART_Transmitter;
+	end component UART;
 
 	signal baudRateEnable : STD_LOGIC := '0';
 	signal transmit_byte_done : STD_LOGIC := '0';
@@ -69,23 +60,15 @@ architecture Behavioral of UART_TransmitTest is
 	signal transmit_done : STD_LOGIC := '0';
 
 begin
-
-	baudrate : BaudRateGenerator port map
-	(
-		clock => clock,
-		reset => reset,
-		baudRateEnable => baudRateEnable
-	);
 	
-	uart_transmitdata : UART_Transmitter port map
+	uart_transmitdata : UART port map
 	(
 		clock => clock,
 		reset => reset,
-		transmit => start_send_byte,
-		baudRateEnable => baudRateEnable,
-		send_data => byte_to_send,
+		start_transmit => start_send_byte,
+		send_byte => byte_to_send,
 		dataout => RS232_dataout,
-		done => transmit_byte_done
+		byte_sent => transmit_byte_done
 	);
 
 	tx_Queue_Bytes : process(clock, reset)
