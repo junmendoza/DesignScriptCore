@@ -34,6 +34,7 @@ entity ClockTimer is
 			clock : in STD_LOGIC;
 			reset : in STD_LOGIC;
 			start : in STD_LOGIC;
+			clockticks_elapsed : out STD_LOGIC_VECTOR(63 downto 0);
 			ms_elapsed : out STD_LOGIC_VECTOR(31 downto 0)
 		 );
 end ClockTimer;
@@ -49,6 +50,7 @@ begin
 	timer : process(clock, reset)
 		variable iMsElapsed : integer := 0;		-- milliseconds elapsed since execution started
 		variable clk_elapsed : integer := 0;	-- clock timer that resets for every millisecond
+		variable iClockCyclesElapsed : integer := 0;	-- clock ticks since the execution started
 	
 	begin
 		ResetSync : if reset = '1' then
@@ -58,14 +60,17 @@ begin
 		elsif reset = '0' then
 			StartTimer : if start = '1' then
 				ClockSync : if rising_edge(clock) then
+					iClockCyclesElapsed := iClockCyclesElapsed + 1;
 					IsOneMillisecond : if clk_elapsed = ms_50mhz_clock_cycles then
 						clk_elapsed := 0;
 						iMsElapsed := iMsElapsed + 1;
-						ms_elapsed <= std_logic_vector(to_unsigned(iMsElapsed, 32));
 					else
 						clk_elapsed := clk_elapsed + 1;
 					end if IsOneMillisecond;
 				end if ClockSync;
+			elsif start = '0' then
+				ms_elapsed <= std_logic_vector(to_unsigned(iMsElapsed, 32));
+				clockticks_elapsed <= std_logic_vector(to_unsigned(iClockCyclesElapsed, 64));
 			end if StartTimer;
 		end if ResetSync;
 	end process timer;

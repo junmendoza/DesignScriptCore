@@ -41,10 +41,11 @@ ARCHITECTURE behavior OF Testbench_ClockTimer IS
  
     COMPONENT ClockTimer
     PORT(
-         clock : IN  std_logic;
-         reset : IN  std_logic;
-         start : IN  std_logic;
-         ms_elapsed : OUT  std_logic_vector(31 downto 0)
+			clock : in STD_LOGIC;
+			reset : in STD_LOGIC;
+			start : in STD_LOGIC;
+			clockticks_elapsed : out STD_LOGIC_VECTOR(63 downto 0);
+			ms_elapsed : out STD_LOGIC_VECTOR(31 downto 0)
         );
     END COMPONENT;
     
@@ -56,6 +57,7 @@ ARCHITECTURE behavior OF Testbench_ClockTimer IS
 
  	--Outputs
    signal ms_elapsed : std_logic_vector(31 downto 0);
+   signal clockticks_elapsed : std_logic_vector(63 downto 0);
  
 BEGIN
  
@@ -64,6 +66,7 @@ BEGIN
           clock => clock,
           reset => reset,
           start => start,
+          clockticks_elapsed => clockticks_elapsed,
           ms_elapsed => ms_elapsed
         );
 		  
@@ -84,6 +87,10 @@ BEGIN
 		for a in 1 to 1000000 loop
 			clock <= not clock;
 			wait for 1 ns;
+			
+			if a = 999995 then
+				start <= '0';
+			end if;
 		end loop;
 		
 		wait;
