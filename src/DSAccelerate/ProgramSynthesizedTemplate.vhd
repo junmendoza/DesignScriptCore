@@ -14,17 +14,22 @@ end ProgramSynthesizedTemplate;
 architecture Behavioral of ProgramSynthesizedTemplate is
 
 	signal execution_started : std_logic;
+	signal exec_done : std_logic := '0';
 	signal call_1_ALU_Add_return_val : std_logic_vector(31 downto 0);
 	signal call_1_ALU_Mul_return_val : std_logic_vector(31 downto 0);
+
+	-- Serial transmission signals
+	signal start_transmit_4bytes : std_logic := '0';	-- Flag to start transmission of the 4byte data
+	signal send_4bytes_complete : std_logic := '0';		-- Flags if the transmission of a 4byte chucnk is complete
+	signal data_4bytes : std_logic_vector(31 downto 0) := (others => '0'); -- 4 byte data to send 
+	
+	-- Signals here will be transmitted to a display device
+	signal clockticks_elapsed : std_logic_vector(63 downto 0) := (others => '0');
+	signal ms_elapsed : std_logic_vector(31 downto 0) := (others => '0');
 	signal a : std_logic_vector(31 downto 0);
 	signal b : std_logic_vector(31 downto 0);
 	signal c : std_logic_vector(31 downto 0);
 	signal d : std_logic_vector(31 downto 0);
-
-	signal exec_done : std_logic := '0';
-	
-	signal ms_elapsed : std_logic_vector(31 downto 0) := (others => '0');
-	signal clockticks_elapsed : std_logic_vector(63 downto 0) := (others => '0');
 
 	component ClockTimer is
 		Port( 
@@ -36,6 +41,17 @@ architecture Behavioral of ProgramSynthesizedTemplate is
 				ms_elapsed : out STD_LOGIC_VECTOR(31 downto 0)
 			 );
 	end component ClockTimer;
+	
+	component UartTransmit4 is
+		Port( 
+				clock : in STD_LOGIC;
+				reset : in STD_LOGIC;
+				start_transmit_4bytes: in STD_LOGIC;
+				data_4bytes : in STD_LOGIC_VECTOR(31 downto 0);
+				send_4bytes_complete : out STD_LOGIC;
+				RS232_dataout : out STD_LOGIC
+			 );
+	end component UartTransmit4;
 
 	component ALU_Add is
 	port( 
@@ -67,7 +83,17 @@ begin
 		clockticks_elapsed => clockticks_elapsed,
 		ms_elapsed => ms_elapsed
 	);
-
+	
+	uart_send_4byte : UartTransmit4 port map
+	(
+		clock 						=> clock,
+		reset 						=> reset,
+		start_transmit_4bytes	=> start_transmit_4bytes,
+		data_4bytes					=> data_4bytes,
+		send_4bytes_complete  	=> send_4bytes_complete,
+		RS232_dataout 				=> RS232_dataout
+	);
+	
 	call_1_ALU_Add : ALU_Add port map
 	(
 		reset => reset,
