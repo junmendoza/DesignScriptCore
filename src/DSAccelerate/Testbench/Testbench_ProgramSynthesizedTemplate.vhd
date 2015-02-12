@@ -42,7 +42,8 @@ ARCHITECTURE behavior OF Testbench_ProgramSynthesizedTemplate IS
     COMPONENT ProgramSynthesizedTemplate
     PORT(
          clock : IN  std_logic;
-         reset : IN  std_logic
+         reset : IN  std_logic;
+			RS232_dataout : out STD_LOGIC
         );
     END COMPONENT;
     
@@ -50,13 +51,15 @@ ARCHITECTURE behavior OF Testbench_ProgramSynthesizedTemplate IS
    --Inputs
    signal clock : std_logic := '0';
    signal reset : std_logic := '1';
+   signal RS232_dataout : std_logic := '0';
  
 BEGIN
  
 	-- Instantiate the Unit Under Test (UUT)
    uut: ProgramSynthesizedTemplate PORT MAP (
           clock => clock,
-          reset => reset
+          reset => reset,
+			 RS232_dataout => RS232_dataout
         );
 
    -- Stimulus process
@@ -70,7 +73,7 @@ BEGIN
 		reset <= '0';
 		wait for 5 ns;
 		
-		for a in 1 to 1000 loop
+		for a in 1 to 10000000 loop
 			clock <= not clock;
 			wait for 5 ns;
 		end loop;
