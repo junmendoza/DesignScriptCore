@@ -81,21 +81,27 @@ begin
 			start_send_byte <= '0';
 			send_4bytes_complete <= '0';
 		elsif reset = '0' then 
-			BeginSend4ByteData : if start_transmit_4bytes = '1' then
-				CanSendByte : if start_send_byte = '0' then
-					if lo_bits = 32 then
-						send_4bytes_complete <= '1';
-					else
-						start_send_byte <= '1';
-						byte_to_send(7 downto 0) <= data_4bytes(hi_bits downto lo_bits);
-						lo_bits := lo_bits + 8;
-						hi_bits := hi_bits + 8;
-					end if;
-				elsif transmit_byte_done = '1' then
-					-- Last byte sent, set state for sending next byte
-					start_send_byte <= '0';
-				end if CanSendByte;
-			end if BeginSend4ByteData;
+			Clocksync : if rising_edge(clock) then
+				BeginSend4ByteData : if start_transmit_4bytes = '1' then
+					send_4bytes_complete <= '0';
+					CanSendByte : if start_send_byte = '0' then
+						if lo_bits = 32 then
+							-- Reset 
+							send_4bytes_complete <= '1';
+							lo_bits := 0;
+							hi_bits := 7;
+						else
+							start_send_byte <= '1';
+							byte_to_send(7 downto 0) <= data_4bytes(hi_bits downto lo_bits);
+							lo_bits := lo_bits + 8;
+							hi_bits := hi_bits + 8;
+						end if;
+					elsif transmit_byte_done = '1' then
+						-- Last byte sent, set state for sending next byte
+						start_send_byte <= '0';
+					end if CanSendByte;
+				end if BeginSend4ByteData;
+			end if Clocksync;
 		end if ResetSync;
 	end process tx_Queue_Bytes;
 
