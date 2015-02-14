@@ -7,7 +7,8 @@ entity ProgramSynthesizedTemplate is
 port( 
 	clock : in std_logic;
 	reset : in std_logic;
-	RS232_dataout : out STD_LOGIC
+	RS232_dataout : out STD_LOGIC;
+	LED : out STD_LOGIC_VECTOR(7 downto 0)
 );
 end ProgramSynthesizedTemplate;
 
@@ -19,6 +20,7 @@ architecture Behavioral of ProgramSynthesizedTemplate is
 	signal call_1_ALU_Mul_return_val : std_logic_vector(31 downto 0);
 
 	-- Serial transmission signal
+	signal transmit_done : std_logic := '0';				-- Flag the entire transmission is complete
 	signal transmit_started : std_logic := '0';			-- Flag to start transmission of execution data
 	signal start_transmit_4bytes : std_logic := '0';	-- Flag to start transmission of 1 4byte data
 	signal send_4bytes_complete : std_logic := '0';		-- Flags if the transmission of a 4byte chunk is complete
@@ -125,6 +127,7 @@ begin
 			canSend := false;
 			data_count <= X"00";
 			start_transmit_4bytes <= '0';	
+			transmit_done <= '0';
 		elsif reset = '0' then
 			IsExecutionDone : if exec_done = '1' then
 			
@@ -153,6 +156,7 @@ begin
 						data_4bytes <= d;
 					elsif data_count = X"04" then
 						start_transmit_4bytes <= '0';
+						transmit_done <= '1';
 					end if mux_dataval;
 				
 					varIndex := to_integer(unsigned(data_count));
@@ -164,6 +168,23 @@ begin
 		end if ResetSync;
 	end process proc_transmit_data;
 	
+	tx_complete : process(reset, transmit_done)
+	begin
+		if reset = '1' then
+			LED(0) <= '0';
+			LED(1) <= '0';
+			LED(2) <= '0';
+			LED(3) <= '0';
+			LED(4) <= '0';
+			LED(5) <= '0';
+			LED(6) <= '0';
+			LED(7) <= '0';
+		elsif reset = '0' then 
+			if transmit_done = '1' then
+				LED(0) <= '1';
+			end if;
+		end if;
+	end process tx_complete;
 
 	proc_1_ProgramSynthesized : process(clock)
 	begin
