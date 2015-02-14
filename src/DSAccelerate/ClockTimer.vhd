@@ -57,7 +57,7 @@ begin
 		ResetSync : if reset = '1' then
 			iMsElapsed := 0;
 			clk_elapsed := 0;
-			
+			iClockCyclesElapsed := 0;
 		elsif reset = '0' then
 			ClockSync : if rising_edge(clock) then
 				StartTimer : if start = '1' then

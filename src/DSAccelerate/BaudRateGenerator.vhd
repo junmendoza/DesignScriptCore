@@ -39,10 +39,11 @@ end BaudRateGenerator;
 
 architecture Behavioral of BaudRateGenerator is
 
+	constant baud_rate : integer := 5208;
+	
 begin
 	process(clock, reset)
 		variable clock_ticks : integer;
-		variable baud_rate : integer := 5208;
 	begin
 		ResetSync: if reset = '1' then
 			clock_ticks := 0;

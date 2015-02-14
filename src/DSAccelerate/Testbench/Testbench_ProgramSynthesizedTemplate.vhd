@@ -73,7 +73,19 @@ BEGIN
 		reset <= '0';
 		wait for 5 ns;
 		
-		for a in 1 to 10000000 loop
+		for a in 1 to 2000000 loop
+			clock <= not clock;
+			wait for 5 ns;
+		end loop;
+		
+		reset <= '1';
+		wait for 5 ns;		
+		
+		-- Begin execution
+		reset <= '0';
+		wait for 5 ns;
+		
+		for a in 1 to 2000000 loop
 			clock <= not clock;
 			wait for 5 ns;
 		end loop;
