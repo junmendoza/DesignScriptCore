@@ -130,6 +130,10 @@ begin
 			
 				canSend := false;
 				CanStartFirstTransmit : if transmit_started = '0' then
+					-- Set transmit flag
+					-- This controls the transmission of bits in the UartTransmit4 component
+					start_transmit_4bytes <= '1'; 
+					
 					transmit_started <= '1';
 					canSend := true;
 				end if CanStartFirstTransmit;
@@ -139,7 +143,6 @@ begin
 				end if CanStartTransmitAfterPreviousTransmitIsDone;
 				
 				if canSend = true then
-					start_transmit_4bytes <= '1';
 					mux_dataval : if data_count = X"00" then
 						data_4bytes <= a;
 					elsif data_count = X"01" then
@@ -148,14 +151,15 @@ begin
 						data_4bytes <= c;
 					elsif data_count = X"03" then
 						data_4bytes <= d;
+					elsif data_count = X"04" then
+						start_transmit_4bytes <= '0';
 					end if mux_dataval;
 				
 					varIndex := to_integer(unsigned(data_count));
 					varIndex := varIndex + 1;
 					data_count <= std_logic_vector(to_unsigned(varIndex, 8));
-				
+					
 				end if;
-
 			end if IsExecutionDone;
 		end if ResetSync;
 	end process proc_transmit_data;
