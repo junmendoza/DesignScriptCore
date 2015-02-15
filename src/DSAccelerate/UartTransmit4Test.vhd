@@ -102,6 +102,7 @@ begin
 					-- Set transmit flag
 					-- This controls the transmission of bits in the UartTransmit4 component
 					start_transmit_4bytes <= '1'; 
+					transmit_started <= '1';
 					canSend := true;
 				end if CanStartFirstTransmit;
 				
