@@ -60,8 +60,8 @@ begin
 			done <= '0';
 		elsif reset = '0' then
 			ClockSync : if rising_edge(clock) then
-				done <= '0';
 				ThereIsDataToTransmit : if transmit = '1' then
+					done <= '0';
 					BaudRatePulse : if baudRateEnable = '1' then
 						sm : if transmitState = STATE_IDLE then
 							transmitState <= STATE_TRANSMIT;

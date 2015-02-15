@@ -42,6 +42,12 @@ end UartTransmit4;
 
 architecture Behavioral of UartTransmit4 is
 
+	type TRANSMIT_4BYTE_STATE is( 
+						 STATE_IDLE, 
+						 STATE_TRANSMIT,
+						 STATE_DONE
+					  );
+					  
 	component UART is
 		Port( 
 				clock  : in  STD_LOGIC;
@@ -57,7 +63,7 @@ architecture Behavioral of UartTransmit4 is
 	signal transmit_byte_done : STD_LOGIC := '0';
 	signal start_send_byte : STD_LOGIC := '0';
 	signal byte_to_send : STD_LOGIC_VECTOR(7 downto 0);
-	signal transmit_4bytedata_complete : STD_LOGIC := '0';
+	signal transmit_state : TRANSMIT_4BYTE_STATE := STATE_IDLE;
 
 begin
 	
@@ -80,16 +86,22 @@ begin
 			hi_bits := 7;
 			start_send_byte <= '0';
 			send_4bytes_complete <= '0';
+			transmit_state <= STATE_IDLE;
 		elsif reset = '0' then 
 			Clocksync : if rising_edge(clock) then
-				BeginSend4ByteData : if start_transmit_4bytes = '1' then
-					send_4bytes_complete <= '0';
+				send_4bytes_complete <= '0';
+				sm_transmit : if transmit_state = STATE_IDLE then 
+					if start_transmit_4bytes = '1' then
+						transmit_state <= STATE_TRANSMIT;
+					end if;
+				elsif transmit_state = STATE_TRANSMIT then 
 					CanSendByte : if start_send_byte = '0' then
 						if lo_bits = 32 then
 							-- Reset 
-							send_4bytes_complete <= '1';
 							lo_bits := 0;
 							hi_bits := 7;
+							send_4bytes_complete <= '1';
+							transmit_state <= STATE_DONE;
 						else
 							start_send_byte <= '1';
 							byte_to_send(7 downto 0) <= data_4bytes(hi_bits downto lo_bits);
@@ -100,11 +112,12 @@ begin
 						-- Last byte sent, set state for sending next byte
 						start_send_byte <= '0';
 					end if CanSendByte;
-				end if BeginSend4ByteData;
+					
+				elsif transmit_state = STATE_DONE then 
+					transmit_state <= STATE_IDLE;
+				end if sm_transmit;
 			end if Clocksync;
 		end if ResetSync;
 	end process tx_Queue_Bytes;
-
-
 end Behavioral;
 
