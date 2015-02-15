@@ -112,7 +112,7 @@ begin
 							canSend := true;
 						elsif data_count = X"02" then
 							start_transmit_4bytes <= '0';
-							transmit_done <= '1';
+							--transmit_done <= '1';
 						end if mux_dataval;
 					
 						BeginSendData : if canSend = true then
