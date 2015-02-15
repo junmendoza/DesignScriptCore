@@ -130,43 +130,6 @@ begin
 			transmit_done <= '0';
 			sending_4bytes <= '0';
 		elsif reset = '0' then
---			IsExecutionDone : if exec_done = '1' then
---			
---				canSend := false;
---				CanStartFirstTransmit : if transmit_started = '0' then
---					-- Set transmit flag
---					-- This controls the transmission of bits in the UartTransmit4 component
---					start_transmit_4bytes <= '1'; 
---					
---					transmit_started <= '1';
---					canSend := true;
---				end if CanStartFirstTransmit;
---				
---				CanStartTransmitAfterPreviousTransmitIsDone : if send_4bytes_complete = '1' then
---					canSend := true;
---				end if CanStartTransmitAfterPreviousTransmitIsDone;
---				
---				if canSend = true then
---					mux_dataval : if data_count = X"00" then
---						data_4bytes <= a;
---					elsif data_count = X"01" then
---						data_4bytes <= b;
---					elsif data_count = X"02" then
---						data_4bytes <= c;
---					elsif data_count = X"03" then
---						data_4bytes <= d;
---					elsif data_count = X"04" then
---						start_transmit_4bytes <= '0';
---						transmit_done <= '1';
---					end if mux_dataval;
---				
---					varIndex := to_integer(unsigned(data_count));
---					varIndex := varIndex + 1;
---					data_count <= std_logic_vector(to_unsigned(varIndex, 8));
---					
---				end if;
---			end if IsExecutionDone;
-
 			ClockSync : if rising_edge(clock) then
 				IsExecutionDone : if exec_done = '1' then
 					IsSending4Bytes : if sending_4bytes = '0' then
@@ -174,16 +137,20 @@ begin
 						-- Setup the next 4 bytes
 						canSend := false;
 						mux_dataval : if data_count = X"00" then
-							data_4bytes <= X"41424344";
+							--data_4bytes <= X"41424344";
+							data_4bytes <= a;
 							canSend := true;
 						elsif data_count = X"01" then
-							data_4bytes <= X"45464748";
+							--data_4bytes <= X"45464748";
+							data_4bytes <= b;
 							canSend := true;
 						elsif data_count = X"02" then
-							data_4bytes <= X"49505152";
+							--data_4bytes <= X"49505152";
+							data_4bytes <= c;
 							canSend := true;
 						elsif data_count = X"03" then
-							data_4bytes <= X"53545556";
+							--data_4bytes <= X"53545556";
+							data_4bytes <= d;
 							canSend := true;
 						elsif data_count = X"04" then
 							start_transmit_4bytes <= '0';
